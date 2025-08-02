@@ -12,9 +12,10 @@ import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
-
-import './globals.css'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { getServerSideURL } from '@/utilities/getURL'
+import './globals.css'
+import Drawer from '@/components/ui/drawer'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
@@ -28,15 +29,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <Providers>
-          <AdminBar
-            adminBarProps={{
-              preview: isEnabled,
-            }}
-          />
+          <NuqsAdapter>
+            <AdminBar
+              adminBarProps={{
+                preview: isEnabled,
+              }}
+            />
 
-          <Header />
-          {children}
-          <Footer />
+            <Header />
+            {children}
+            <Drawer />
+            <Footer />
+          </NuqsAdapter>
         </Providers>
       </body>
     </html>

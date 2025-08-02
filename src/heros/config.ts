@@ -35,6 +35,10 @@ export const hero: Field = {
           label: 'Low Impact',
           value: 'lowImpact',
         },
+        {
+          label: 'High Impact with Property Search',
+          value: 'highImpactWithPropertySearch',
+        },
       ],
       required: true,
     },
@@ -56,13 +60,18 @@ export const hero: Field = {
     linkGroup({
       overrides: {
         maxRows: 2,
+        required: false,
+        admin: {
+          condition: (_, { type } = {}) => !['highImpactWithPropertySearch'].includes(type),
+        },
       },
     }),
     {
       name: 'media',
       type: 'upload',
       admin: {
-        condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
+        condition: (_, { type } = {}) =>
+          ['highImpact', 'mediumImpact', 'highImpactWithPropertySearch'].includes(type),
       },
       relationTo: 'media',
       required: true,

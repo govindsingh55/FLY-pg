@@ -188,7 +188,7 @@ export interface Page {
   id: string;
   title: string;
   hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact' | 'highImpactWithPropertySearch';
     richText?: {
       root: {
         type: string;
@@ -230,20 +230,7 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout: (
-    | {
-        placeholder?: string | null;
-        showCityFilter?: boolean | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'searchBar';
-      }
-    | CallToActionBlock
-    | ContentBlock
-    | MediaBlock
-    | ArchiveBlock
-    | FormBlock
-  )[];
+  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
   meta?: {
     title?: string | null;
     /**
@@ -1440,14 +1427,6 @@ export interface PagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        searchBar?:
-          | T
-          | {
-              placeholder?: T;
-              showCityFilter?: T;
-              id?: T;
-              blockName?: T;
-            };
         cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
