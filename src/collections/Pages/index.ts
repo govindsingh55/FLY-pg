@@ -67,10 +67,11 @@ export const Pages: CollectionConfig<'pages'> = {
       type: 'tabs',
       tabs: [
         {
-          fields: [hero],
           label: 'Hero',
+          fields: [hero],
         },
         {
+          label: 'Content',
           fields: [
             {
               name: 'layout',
@@ -82,11 +83,10 @@ export const Pages: CollectionConfig<'pages'> = {
               },
             },
           ],
-          label: 'Content',
         },
         {
-          name: 'meta',
           label: 'SEO',
+          name: 'meta',
           fields: [
             OverviewField({
               titlePath: 'meta.title',

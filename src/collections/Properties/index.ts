@@ -18,97 +18,251 @@ const propertiesAccess = {
   read: () => true,
 }
 
+import { generateSlug } from './generateSlug'
+import { generatePreviewPath } from '@/utilities/generatePreviewPath'
+
+// Removed FieldAccess import, use inline types below
+const previewAccess = ({ req, data }: { req: any; data?: any }) => {
+  const user = req.user as { role?: string; id?: string } | undefined
+  // Only admins or assigned manager can preview/edit
+  if (!user) return false
+  if (user.role === 'admin') return true
+  if (user.role === 'manager' && data && data.manager === user.id) return true
+  return false
+}
+
 const Properties: CollectionConfig = {
   slug: 'properties',
-  admin: { useAsTitle: 'name' },
+  admin: {
+    useAsTitle: 'name',
+    livePreview: {
+      url: ({ data, req }) => {
+        const path = generatePreviewPath({
+          slug: typeof data?.slug === 'string' ? data.slug : '',
+          collection: 'properties',
+          req,
+        })
+
+        return path
+      },
+    },
+    preview: (data, { req }) =>
+      generatePreviewPath({
+        slug: typeof data?.slug === 'string' ? data.slug : '',
+        collection: 'properties',
+        req,
+      }),
+  },
   access: propertiesAccess,
+
   hooks: {
     afterChange: [roomRentPriceRange],
+    beforeValidate: [
+      async ({ data }) => {
+        if (data && !data.slug && data.name) {
+          data.slug = generateSlug(data.name)
+        }
+        return data
+      },
+    ],
   },
   fields: [
-    { name: 'name', type: 'text', required: true },
-    { name: 'address', type: 'richText', required: true },
     {
-      name: 'location',
-      type: 'group',
-      fields: [
-        { name: 'state', type: 'text', required: true },
-        { name: 'city', type: 'text', required: true },
-        { name: 'sector', type: 'text', required: false },
-        { name: 'coordinates', type: 'point', required: true },
-        { name: 'mapLink', type: 'text', required: true },
-      ],
-    },
-    { name: 'description', type: 'richText' },
-    {
-      name: 'propertyType',
-      type: 'select',
-      options: ['PG', 'Hostel', 'Apartment'],
-      required: true,
-    },
-    { name: 'genderType', type: 'select', options: ['Unisex', 'Male', 'Female'], required: true },
-    { name: 'status', type: 'select', options: ['active', 'inactive'], defaultValue: 'active' },
-    { name: 'featured', type: 'checkbox', defaultValue: false },
-    {
-      name: 'amenities',
-      type: 'array',
-      fields: [
+      type: 'tabs',
+      tabs: [
         {
-          name: 'amenity',
-          type: 'select',
-          options: [
-            'AC',
-            'Bed Sheet',
-            'Security',
-            'Pillow',
-            'Wash',
-            'Refrigerator',
-            'Power Backup',
-            'CCTV',
-            'House Keeping',
-            'Reception',
-            'Drinking Water',
-            'Almirah',
-            'Bathroom',
+          label: 'General',
+          fields: [
+            { name: 'name', type: 'text', required: true },
+            {
+              name: 'slug',
+              type: 'text',
+              unique: true,
+              required: true,
+              admin: { position: 'sidebar', description: 'Auto-generated from name, editable.' },
+            },
+            {
+              name: 'images',
+              type: 'array',
+              fields: [
+                { name: 'image', type: 'upload', relationTo: 'media', required: false },
+                { name: 'isCover', type: 'checkbox', defaultValue: false },
+              ],
+            },
+            {
+              name: 'preview',
+              type: 'checkbox',
+              defaultValue: false,
+              access: { update: previewAccess },
+            },
+            { name: 'description', type: 'richText' },
+            {
+              type: 'group',
+              name: 'address',
+              label: 'Address',
+              fields: [
+                {
+                  name: 'address',
+                  type: 'richText',
+                  required: true,
+                  admin: { description: 'The full address of the property' },
+                },
+                {
+                  name: 'location',
+                  type: 'group',
+                  fields: [
+                    { name: 'state', type: 'text', required: true },
+                    { name: 'city', type: 'text', required: true },
+                    { name: 'sector', type: 'text', required: false },
+                    { name: 'coordinates', type: 'point', required: true },
+                    { name: 'mapLink', type: 'text', required: true },
+                  ],
+                  admin: {
+                    description: 'Useful for searching and displaying on maps',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'propertyType',
+              type: 'select',
+              options: ['PG', 'Hostel', 'Apartment'],
+              required: true,
+            },
+            {
+              name: 'genderType',
+              type: 'select',
+              options: ['Unisex', 'Male', 'Female'],
+              required: true,
+            },
+            {
+              name: 'status',
+              type: 'select',
+              options: ['active', 'inactive'],
+              defaultValue: 'active',
+            },
+            { name: 'featured', type: 'checkbox', defaultValue: false },
+            {
+              name: 'amenities',
+              type: 'select',
+              hasMany: true,
+              options: [
+                {
+                  label: 'AC',
+                  value: 'AC',
+                },
+                {
+                  label: 'Bed Sheet',
+                  value: 'Bed Sheet',
+                },
+                {
+                  label: 'Security',
+                  value: 'Security',
+                },
+                {
+                  label: 'Pillow',
+                  value: 'Pillow',
+                },
+                {
+                  label: 'Wash',
+                  value: 'Wash',
+                },
+                {
+                  label: 'Refrigerator',
+                  value: 'Refrigerator',
+                },
+                {
+                  label: 'Power Backup',
+                  value: 'Power Backup',
+                },
+                {
+                  label: 'CCTV',
+                  value: 'CCTV',
+                },
+                {
+                  label: 'House Keeping',
+                  value: 'House Keeping',
+                },
+                {
+                  label: 'Reception',
+                  value: 'Reception',
+                },
+                {
+                  label: 'Parking',
+                  value: 'Parking',
+                },
+                {
+                  label: 'WiFi',
+                  value: 'WiFi',
+                },
+              ],
+            },
+            {
+              name: 'foodMenu',
+              type: 'relationship',
+              relationTo: 'food-menu',
+              required: false,
+            },
+            {
+              name: 'nearbyLocations',
+              type: 'array',
+              fields: [
+                { name: 'name', type: 'text' },
+                { name: 'distance', type: 'text' },
+              ],
+            },
+            { name: 'manager', type: 'relationship', relationTo: 'users', required: true },
+          ],
+        },
+        {
+          label: 'Rooms',
+          fields: [
+            { name: 'rooms', type: 'relationship', relationTo: 'rooms', hasMany: true },
+            {
+              name: 'roomRentPriceRange',
+              type: 'group',
+              admin: { readOnly: true },
+              fields: [
+                { name: 'min', type: 'number' },
+                { name: 'max', type: 'number' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'SEO',
+          name: 'meta',
+          fields: [
+            {
+              name: 'title',
+              type: 'text',
+              admin: { description: 'SEO Title (Open Graph)' },
+            },
+            {
+              name: 'description',
+              type: 'textarea',
+              admin: { description: 'SEO Description (Open Graph)' },
+            },
+            {
+              name: 'image',
+              type: 'upload',
+              relationTo: 'media',
+              admin: { description: 'SEO Image (Open Graph)' },
+            },
           ],
         },
       ],
     },
-    {
-      name: 'images',
-      type: 'array',
-      fields: [
-        { name: 'image', type: 'upload', relationTo: 'media', required: false },
-        { name: 'isCover', type: 'checkbox', defaultValue: false },
-      ],
-    },
-    {
-      name: 'foodMenu',
-      type: 'relationship',
-      relationTo: 'food-menu',
-      required: false,
-    },
-    {
-      name: 'nearbyLocations',
-      type: 'array',
-      fields: [
-        { name: 'name', type: 'text' },
-        { name: 'distance', type: 'text' },
-      ],
-    },
-    { name: 'manager', type: 'relationship', relationTo: 'users', required: true },
-    { name: 'relatedProperties', type: 'relationship', relationTo: 'properties', hasMany: true },
-    { name: 'rooms', type: 'relationship', relationTo: 'rooms', hasMany: true },
-    {
-      name: 'roomRentPriceRange',
-      type: 'group',
-      admin: { readOnly: true },
-      fields: [
-        { name: 'min', type: 'number' },
-        { name: 'max', type: 'number' },
-      ],
-    },
   ],
+  versions: {
+    drafts: {
+      autosave: {
+        interval: 100, // We set this interval for optimal live preview
+      },
+      schedulePublish: true,
+    },
+    maxPerDoc: 50,
+  },
 }
 
 export default Properties

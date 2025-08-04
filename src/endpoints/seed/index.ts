@@ -19,6 +19,7 @@ import supportTicketsSeed from './support-tickets'
 import visitBookingsSeed from './visit-bookings'
 import propertiesSeed from './properties'
 import roomsSeed from './rooms'
+import { Property } from '@/payload-types'
 
 const collections: CollectionSlug[] = [
   'categories',
@@ -99,7 +100,7 @@ export const seed = async ({
   // For each mediaSeed item, fetch a demo image and upload it as the file
   const demoImageUrl =
     'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post1.webp'
-  const seededMedia = []
+  const seededMedia: Array<{ id: string; createdAt: string; updatedAt: string }> = []
   for (const media of mediaSeed) {
     const fileBuffer = await fetchFileByURL(demoImageUrl)
     const mediaData = {
@@ -230,12 +231,25 @@ export const seed = async ({
   const seededProperties = []
   for (let i = 0; i < propertiesSeed.length; i++) {
     const property = propertiesSeed[i]
-    // Replace manager with demoAuthor's id if present
     // Omit foodMenu from the property seed object
-    const { foodMenu, ...propertyData } = property
+    const { foodMenu, ...propertyData }: Omit<Property, 'id' | 'createdAt' | 'updatedAt'> = property
+
+    // Assign demoAuthor as manager
     if (propertyData.manager && typeof propertyData.manager === 'string') {
       propertyData.manager = demoAuthor.id
     }
+
+    // Assign full media object for images and meta.image
+    if (Array.isArray(propertyData.images)) {
+      propertyData.images = propertyData.images.map((img, idx) => ({
+        ...img,
+        image: seededMedia[0],
+      }))
+    }
+    if (propertyData.meta && typeof propertyData.meta === 'object') {
+      propertyData.meta.image = seededMedia[i % seededMedia.length]
+    }
+
     const doc = await payload.create({ collection: 'properties', data: propertyData })
     seededProperties.push(doc)
   }

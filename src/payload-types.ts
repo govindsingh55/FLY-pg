@@ -444,32 +444,18 @@ export interface User {
 export interface Property {
   id: string;
   name: string;
-  address: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  location: {
-    state: string;
-    city: string;
-    sector?: string | null;
-    /**
-     * @minItems 2
-     * @maxItems 2
-     */
-    coordinates: [number, number];
-    mapLink: string;
-  };
+  /**
+   * Auto-generated from name, editable.
+   */
+  slug: string;
+  images?:
+    | {
+        image?: (string | null) | Media;
+        isCover?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  preview?: boolean | null;
   description?: {
     root: {
       type: string;
@@ -485,38 +471,59 @@ export interface Property {
     };
     [k: string]: unknown;
   } | null;
+  address: {
+    /**
+     * The full address of the property
+     */
+    address: {
+      root: {
+        type: string;
+        children: {
+          type: string;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    };
+    /**
+     * Useful for searching and displaying on maps
+     */
+    location: {
+      state: string;
+      city: string;
+      sector?: string | null;
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      coordinates: [number, number];
+      mapLink: string;
+    };
+  };
   propertyType: 'PG' | 'Hostel' | 'Apartment';
   genderType: 'Unisex' | 'Male' | 'Female';
   status?: ('active' | 'inactive') | null;
   featured?: boolean | null;
   amenities?:
-    | {
-        amenity?:
-          | (
-              | 'AC'
-              | 'Bed Sheet'
-              | 'Security'
-              | 'Pillow'
-              | 'Wash'
-              | 'Refrigerator'
-              | 'Power Backup'
-              | 'CCTV'
-              | 'House Keeping'
-              | 'Reception'
-              | 'Drinking Water'
-              | 'Almirah'
-              | 'Bathroom'
-            )
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  images?:
-    | {
-        image?: (string | null) | Media;
-        isCover?: boolean | null;
-        id?: string | null;
-      }[]
+    | (
+        | 'AC'
+        | 'Bed Sheet'
+        | 'Security'
+        | 'Pillow'
+        | 'Wash'
+        | 'Refrigerator'
+        | 'Power Backup'
+        | 'CCTV'
+        | 'House Keeping'
+        | 'Reception'
+        | 'Parking'
+        | 'WiFi'
+      )[]
     | null;
   foodMenu?: (string | null) | FoodMenu;
   nearbyLocations?:
@@ -527,14 +534,28 @@ export interface Property {
       }[]
     | null;
   manager: string | User;
-  relatedProperties?: (string | Property)[] | null;
   rooms?: (string | Room)[] | null;
   roomRentPriceRange?: {
     min?: number | null;
     max?: number | null;
   };
+  meta?: {
+    /**
+     * SEO Title (Open Graph)
+     */
+    title?: string | null;
+    /**
+     * SEO Description (Open Graph)
+     */
+    description?: string | null;
+    /**
+     * SEO Image (Open Graph)
+     */
+    image?: (string | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1732,27 +1753,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface PropertiesSelect<T extends boolean = true> {
   name?: T;
-  address?: T;
-  location?:
-    | T
-    | {
-        state?: T;
-        city?: T;
-        sector?: T;
-        coordinates?: T;
-        mapLink?: T;
-      };
-  description?: T;
-  propertyType?: T;
-  genderType?: T;
-  status?: T;
-  featured?: T;
-  amenities?:
-    | T
-    | {
-        amenity?: T;
-        id?: T;
-      };
+  slug?: T;
   images?:
     | T
     | {
@@ -1760,6 +1761,27 @@ export interface PropertiesSelect<T extends boolean = true> {
         isCover?: T;
         id?: T;
       };
+  preview?: T;
+  description?: T;
+  address?:
+    | T
+    | {
+        address?: T;
+        location?:
+          | T
+          | {
+              state?: T;
+              city?: T;
+              sector?: T;
+              coordinates?: T;
+              mapLink?: T;
+            };
+      };
+  propertyType?: T;
+  genderType?: T;
+  status?: T;
+  featured?: T;
+  amenities?: T;
   foodMenu?: T;
   nearbyLocations?:
     | T
@@ -1769,7 +1791,6 @@ export interface PropertiesSelect<T extends boolean = true> {
         id?: T;
       };
   manager?: T;
-  relatedProperties?: T;
   rooms?: T;
   roomRentPriceRange?:
     | T
@@ -1777,8 +1798,16 @@ export interface PropertiesSelect<T extends boolean = true> {
         min?: T;
         max?: T;
       };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2295,6 +2324,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'posts';
           value: string | Post;
+        } | null)
+      | ({
+          relationTo: 'properties';
+          value: string | Property;
         } | null);
     global?: string | null;
     user?: (string | null) | User;
