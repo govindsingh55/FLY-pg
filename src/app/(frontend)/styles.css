@@ -1,164 +1,171 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Custom theme palette: approved mapping
+   primary=Forest Green, secondary=Deep Blue, accent=Muted Ochre,
+   plum=Plum, sage=Sage Green, rust=Rust, taupe=Mushroom Taupe,
+   cream=Warm Cream, inky=Inky Blue
+*/
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Tailwind color tokens mapping to CSS variables */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* additional brand utilities */
+  --color-plum: var(--plum);
+  --color-sage: var(--sage);
+  --color-rust: var(--rust);
+  --color-taupe: var(--taupe);
+  --color-cream: var(--cream);
+  --color-inky: var(--inky);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Base (light) theme */
 :root {
-  --font-mono: 'Roboto Mono', monospace;
+  --radius: 0.625rem;
+
+  /* neutrals */
+  --background: #ffffff;
+  --foreground: #1b1b1b;
+  --card: #ffffff;
+  --card-foreground: #1b1b1b;
+  --popover: #ffffff;
+  --popover-foreground: #1b1b1b;
+
+  /* brand palette (HEX approximations) */
+  --primary: #183a2c;              /* Forest Green */
+  --primary-foreground: #e8f1ec;
+
+  --secondary: #254457;            /* Deep Blue */
+  --secondary-foreground: #e6eef3;
+
+  --accent: #c59a2a;               /* Muted Ochre */
+  --accent-foreground: #231f12;
+
+  --plum: #4a2a3b;                 /* Plum */
+  --sage: #8aa17f;                 /* Sage Green */
+  --rust: #a14e3b;                 /* Rust */
+  --taupe: #b4a38f;                /* Mushroom Taupe */
+  --cream: #efe7d7;                /* Warm Cream */
+  --inky: #2a3b49;                 /* Inky Blue */
+
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+
+  --destructive: #ef4444;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #94a3b8;
+
+  /* charts keep generic hues */
+  --chart-1: #7c3aed;
+  --chart-2: #06b6d4;
+  --chart-3: #2563eb;
+  --chart-4: #eab308;
+  --chart-5: #22c55e;
+
+  /* sidebar */
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: #f1f5f9;
+  --sidebar-accent: #eef2f7;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #94a3b8;
 }
 
-* {
-  box-sizing: border-box;
+/* Dark theme */
+.dark {
+  --background: #0f1212;
+  --foreground: #f5f7f6;
+  --card: #161a1a;
+  --card-foreground: #f5f7f6;
+  --popover: #161a1a;
+  --popover-foreground: #f5f7f6;
+
+  --primary: #2a5a46;               /* elevated forest */
+  --primary-foreground: #e5f0ea;
+
+  --secondary: #2c5066;
+  --secondary-foreground: #e6eef3;
+
+  --accent: #b3871f;
+  --accent-foreground: #f8f7f4;
+
+  --plum: #5b3549;
+  --sage: #90a88a;
+  --rust: #b15843;
+  --taupe: #c1b29f;
+  --cream: #f0e8d9;
+  --inky: #334959;
+
+  --muted: #232727;
+  --muted-foreground: #9aa3ad;
+
+  --destructive: #f87171;
+  --border: #2b3131;
+  --input: #303636;
+  --ring: #64748b;
+
+  --chart-1: #8b5cf6;
+  --chart-2: #22d3ee;
+  --chart-3: #60a5fa;
+  --chart-4: #facc15;
+  --chart-5: #34d399;
+
+  --sidebar: #0f1212;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: #e5f0ea;
+  --sidebar-accent: #1b2020;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #232828;
+  --sidebar-ring: #64748b;
 }
 
-html {
-  font-size: 18px;
-  line-height: 32px;
-
-  background: rgb(0, 0, 0);
-  -webkit-font-smoothing: antialiased;
-}
-
-html,
-body,
-#app {
-  height: 100%;
-}
-
-body {
-  font-family: system-ui;
-  font-size: 18px;
-  line-height: 32px;
-
-  margin: 0;
-  color: rgb(1000, 1000, 1000);
-
-  @media (max-width: 1024px) {
-    font-size: 15px;
-    line-height: 24px;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-h1 {
-  margin: 40px 0;
-  font-size: 64px;
-  line-height: 70px;
-  font-weight: bold;
-
-  @media (max-width: 1024px) {
-    margin: 24px 0;
-    font-size: 42px;
-    line-height: 42px;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 38px;
-    line-height: 38px;
-  }
-
-  @media (max-width: 400px) {
-    font-size: 32px;
-    line-height: 32px;
-  }
-}
-
-p {
-  margin: 24px 0;
-
-  @media (max-width: 1024px) {
-    margin: calc(var(--base) * 0.75) 0;
-  }
-}
-
-a {
-  color: currentColor;
-
-  &:focus {
-    opacity: 0.8;
-    outline: none;
-  }
-
-  &:active {
-    opacity: 0.7;
-    outline: none;
-  }
-}
-
-svg {
-  vertical-align: middle;
-}
-
-.home {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  height: 100vh;
-  padding: 45px;
-  max-width: 1024px;
-  margin: 0 auto;
-  overflow: hidden;
-
-  @media (max-width: 400px) {
-    padding: 24px;
-  }
-
-  .content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-
-    h1 {
-      text-align: center;
-    }
-  }
-
-  .links {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    a {
-      text-decoration: none;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-    }
-
-    .admin {
-      color: rgb(0, 0, 0);
-      background: rgb(1000, 1000, 1000);
-      border: 1px solid rgb(0, 0, 0);
-    }
-
-    .docs {
-      color: rgb(1000, 1000, 1000);
-      background: rgb(0, 0, 0);
-      border: 1px solid rgb(1000, 1000, 1000);
-    }
-  }
-
-  .footer {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    @media (max-width: 1024px) {
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    p {
-      margin: 0;
-    }
-
-    .codeLink {
-      text-decoration: none;
-      padding: 0 0.5rem;
-      background: rgb(60, 60, 60);
-      border-radius: 4px;
-    }
+  body {
+    @apply bg-background text-foreground;
   }
 }
