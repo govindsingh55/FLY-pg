@@ -13,12 +13,6 @@ const Customers: CollectionConfig = {
       required: true,
     },
     {
-      name: 'email',
-      type: 'email',
-      required: true,
-      unique: true,
-    },
-    {
       name: 'phone',
       type: 'text',
       required: false,

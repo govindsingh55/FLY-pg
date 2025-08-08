@@ -2,9 +2,12 @@
 
 import * as Lucide from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
 
 export function BottomNav() {
   const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
   const isDark = theme === 'dark'
   const items: {
     key: string
@@ -38,11 +41,24 @@ export function BottomNav() {
               ) : it.key === 'theme' ? (
                 <button
                   onClick={() => {
+                    // Avoid SSR/CSR mismatch by only toggling after mount
+                    if (!mounted) return
                     setTheme(isDark ? 'light' : 'dark')
                   }}
                   className="flex flex-col items-center gap-1 rounded-md px-2 py-1.5 hover:text-primary"
                 >
-                  {isDark ? <Lucide.Moon className="size-5" /> : <Lucide.Sun className="size-5" />}
+                  <span aria-hidden suppressHydrationWarning>
+                    {mounted ? (
+                      isDark ? (
+                        <Lucide.Moon className="size-5" />
+                      ) : (
+                        <Lucide.Sun className="size-5" />
+                      )
+                    ) : (
+                      // Stable placeholder during SSR to prevent hydration mismatch
+                      <Lucide.Moon className="size-5" />
+                    )}
+                  </span>
                   <span>{it.label}</span>
                 </button>
               ) : (

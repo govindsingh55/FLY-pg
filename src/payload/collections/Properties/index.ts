@@ -56,7 +56,7 @@ const Properties: CollectionConfig = {
   access: propertiesAccess,
 
   hooks: {
-    afterChange: [roomRentPriceRange],
+    beforeChange: [roomRentPriceRange],
     beforeValidate: [
       async ({ data }) => {
         if (data && !data.slug && data.name) {

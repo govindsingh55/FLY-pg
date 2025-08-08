@@ -74,6 +74,7 @@ const SupportTickets: CollectionConfig = {
   },
   fields: [
     { name: 'customer', type: 'relationship', relationTo: 'customers', required: true },
+    { name: 'property', type: 'relationship', relationTo: 'properties', required: false },
     { name: 'staff', type: 'relationship', relationTo: 'users' },
     {
       name: 'type',

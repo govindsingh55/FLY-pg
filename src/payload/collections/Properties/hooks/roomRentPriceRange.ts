@@ -1,29 +1,35 @@
-import { type CollectionAfterChangeHook } from 'payload'
+import { CollectionBeforeChangeHook, type CollectionAfterChangeHook } from 'payload'
 import type { Property, Room } from '@/payload/payload-types'
-const roomRentPriceRange: CollectionAfterChangeHook<Property> = async ({ doc, req, operation }) => {
+const roomRentPriceRange: CollectionBeforeChangeHook<Property> = async ({
+  data,
+  req,
+  operation,
+}) => {
   if (operation === 'update' || operation === 'create') {
-    if (doc.rooms && Array.isArray(doc.rooms) && doc.rooms?.length > 0) {
+    if (data.rooms && Array.isArray(data.rooms) && data.rooms?.length > 0) {
+      const roomIds = data.rooms.map((room: any) =>
+        typeof room === 'object' ? room._id || room.id : room,
+      )
       const rooms = await req.payload.find({
         collection: 'rooms',
-        where: { id: { in: doc.rooms } },
-        limit: doc.rooms.length,
-      });
-      if (!rooms.docs || rooms.docs.length === 0) return doc
+        where: { id: { in: roomIds } },
+        limit: roomIds.length,
+      })
+      if (!rooms.docs || rooms.docs.length === 0) return data
 
-      const rents: number[] = rooms.docs
-        .map((room: Room) => room.rent)
-      if (rents.length === 0) return doc
+      const rents: number[] = rooms.docs.map((room: Room) => room.rent)
+      if (rents.length === 0) return data
 
       const min = Math.min(...rents)
       const max = Math.max(...rents)
 
       return {
-        ...doc,
+        ...data,
         roomRentPriceRange: { min, max },
       }
     }
   }
-  return doc
+  return data
 }
 
 export default roomRentPriceRange

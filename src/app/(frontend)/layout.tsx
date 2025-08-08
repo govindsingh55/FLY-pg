@@ -5,6 +5,7 @@ import Filters from '@/components/marketing/Filters'
 import Navbar from '@/components/marketing/Navbar'
 import Footer from '@/components/marketing/Footer'
 import { BottomNav } from '@/components/marketing/components'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 export const metadata = {
   description: 'A blank template using Payload in a Next.js app.',
@@ -23,11 +24,13 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <BottomNav />
-          <Filters />
+          <NuqsAdapter>
+            <Navbar />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+            <BottomNav />
+            <Filters />
+          </NuqsAdapter>
         </ThemeProvider>
       </body>
     </html>

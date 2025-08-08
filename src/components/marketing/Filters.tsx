@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import * as Lucide from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,7 @@ import {
   DrawerFooter,
 } from '@/components/ui/drawer'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet'
+import { parseAsString, parseAsStringEnum, parseAsInteger, useQueryStates } from 'nuqs'
 
 /**
  * Unified Filters Component
@@ -27,71 +28,105 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/com
  *       It does NOT filter the data; server/pages should read params.
  */
 
-type TypeValue = 'pg' | 'hostel' | 'apartment' | ''
-type SharingValue = 'single' | 'two' | 'three' | ''
+type TypeValue = 'pg' | 'hostel' | 'apartment'
+type SharingValue = 'single' | 'two' | 'three'
 type SortValue = 'newest' | 'price_asc' | 'price_desc'
 
-function useQueryState() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
+// nuqs parsers using v2 API: use withDefault(undefined) for optional params
+// and serialize to null to drop keys from the URL when empty.
+const parsers = {
+  q: parseAsString.withDefault(''),
+  city: parseAsString.withDefault(''),
+  type: parseAsStringEnum<TypeValue>(['pg', 'hostel', 'apartment']).withDefault('apartment'),
+  sharing: parseAsStringEnum<SharingValue>(['single', 'two', 'three']).withDefault('single'),
+  minPrice: parseAsInteger.withDefault(0),
+  maxPrice: parseAsInteger.withDefault(0),
+  roomType: parseAsString.withDefault(''),
+  amenities: parseAsString.withDefault(''),
+  sort: parseAsStringEnum<SortValue>(['newest', 'price_asc', 'price_desc']).withDefault('newest'),
+  page: parseAsInteger.withDefault(1),
+} as const
+
+function useNuqsFilters() {
+  // history replace + shallow routing
+  const [values, setValues] = useQueryStates(parsers, { history: 'replace', shallow: true })
   const pathname = usePathname()
 
-  const current = useMemo(() => {
-    const get = (k: string) => searchParams.get(k) ?? ''
-    const city = get('city')
-    const type = (get('type') as TypeValue) || ''
-    const sharing = (get('sharing') as SharingValue) || ''
-    const q = get('q')
-    const minPrice = get('minPrice')
-    const maxPrice = get('maxPrice')
-    const roomType = get('roomType')
-    const amenities = get('amenities')
-    const sort = (searchParams.get('sort') as SortValue) || 'newest'
-    return { city, type, sharing, q, minPrice, maxPrice, roomType, amenities, sort }
-  }, [searchParams])
+  // helpers to set fields; setting empty/invalid clears param (null)
+  function setParams(
+    next: Partial<Record<keyof typeof parsers, string | number | null | undefined>>,
+  ) {
+    const patch: any = {}
 
-  function setParams(next: Partial<Record<string, string>>) {
-    const sp = new URLSearchParams(Array.from(searchParams.entries()))
-    for (const [k, v] of Object.entries(next)) {
-      const val = v ?? ''
-      if (val.trim()) sp.set(k, val.trim())
-      else sp.delete(k)
+    for (const [k, vRaw] of Object.entries(next)) {
+      const key = k as keyof typeof parsers
+      let v: any = vRaw
+      if (typeof v === 'string') {
+        const trimmed = v.trim()
+        v = trimmed.length ? trimmed : null
+      }
+      if (key === 'minPrice' || key === 'maxPrice' || key === 'page') {
+        if (typeof v === 'string') {
+          const n = Number.parseInt(v, 10)
+          v = Number.isFinite(n) ? n : null
+        }
+        if (typeof v === 'number' && !Number.isFinite(v)) v = null
+      }
+      patch[key] = v === undefined ? null : v
     }
-    // Keep page reset consistent
-    sp.set('page', '1')
-    // Default sort if missing
-    if (!sp.get('sort')) sp.set('sort', 'newest')
-    router.replace(`${pathname}?${sp.toString()}`, { scroll: false })
+
+    // page reset to 1 on any filter update except when explicitly provided
+    if (!('page' in next)) {
+      patch.page = 1
+    }
+    // ensure default sort when explicitly unset
+    if ('sort' in next && (next as any).sort == null) {
+      patch.sort = 'newest'
+    }
+
+    setValues(patch)
   }
 
   function clearAll() {
-    const keys = [
-      'city',
-      'type',
-      'sharing',
-      'q',
-      'minPrice',
-      'maxPrice',
-      'roomType',
-      'amenities',
-      'sort',
-    ]
-    const sp = new URLSearchParams(Array.from(searchParams.entries()))
-    keys.forEach((k) => sp.delete(k))
-    // leave page reset and default sort
-    sp.set('page', '1')
-    sp.set('sort', 'newest')
-    router.replace(`${pathname}?${sp.toString()}`, { scroll: false })
+    setValues({
+      q: null,
+      city: null,
+      type: null,
+      sharing: null,
+      minPrice: null,
+      maxPrice: null,
+      roomType: null,
+      amenities: null,
+      sort: 'newest',
+      page: 1,
+    })
   }
+
+  const current = useMemo(() => {
+    // For UI, keep empty strings compatible with existing defaults
+    return {
+      city: values.city ?? '',
+      type: (values.type as TypeValue | null) ?? null,
+      sharing: (values.sharing as SharingValue | null) ?? null,
+      q: values.q ?? '',
+      minPrice: values.minPrice && values.minPrice !== 0 ? String(values.minPrice) : '',
+      maxPrice: values.maxPrice && values.maxPrice !== 0 ? String(values.maxPrice) : '',
+      roomType: values.roomType ?? '',
+      amenities: values.amenities ?? '',
+      sort: (values.sort as SortValue) ?? 'newest',
+      page: values.page ?? 1,
+      pathname,
+    }
+  }, [values, pathname])
 
   return { current, setParams, clearAll }
 }
 
 export function FilterBadges({ className }: { className?: string }) {
-  const { current, clearAll } = useQueryState()
+  const { current, clearAll } = useNuqsFilters()
   const chips = [
     current.city && { label: current.city, key: 'city' },
-    current.type && { label: current.type.toUpperCase(), key: 'type' },
+    current.type && { label: String(current.type).toUpperCase(), key: 'type' },
     current.sharing &&
       ({
         label: `${current.sharing} sharing`
@@ -138,8 +173,8 @@ function FiltersPanel({
 }: {
   current: {
     city: string
-    type: TypeValue
-    sharing: SharingValue
+    type: TypeValue | null
+    sharing: SharingValue | null
     q: string
     minPrice: string
     maxPrice: string
@@ -147,7 +182,7 @@ function FiltersPanel({
     amenities: string
     sort: SortValue
   }
-  setParams: (next: Partial<Record<string, string>>) => void
+  setParams: (next: Partial<Record<string, string | number | null | undefined>>) => void
   isPGorHostel: boolean
   onClose: () => void
 }) {
@@ -197,8 +232,8 @@ function FiltersPanel({
               onClick={() =>
                 setParams({
                   type: t,
-                  // if apartment, blank sharing
-                  sharing: t === 'apartment' ? '' : current.sharing,
+                  // if apartment, clear sharing in same batch
+                  sharing: t === 'apartment' ? null : (current.sharing ?? null),
                 })
               }
               className={cn(
@@ -304,19 +339,19 @@ function FiltersPanel({
         <Button
           variant="outline"
           onClick={() => {
-            // Clear all but leave default sort and page
-            const empty: Partial<Record<string, string>> = {
-              city: '',
-              type: '',
-              sharing: '',
-              q: '',
-              minPrice: '',
-              maxPrice: '',
-              roomType: '',
-              amenities: '',
+            // Clear all by setting to null, keep sort 'newest' and page 1
+            setParams({
+              q: null,
+              city: null,
+              type: null,
+              sharing: null,
+              minPrice: null,
+              maxPrice: null,
+              roomType: null,
+              amenities: null,
               sort: 'newest',
-            }
-            setParams(empty as Record<string, string>)
+              page: 1,
+            })
           }}
         >
           Reset
@@ -330,7 +365,7 @@ function FiltersPanel({
 export default function Filters() {
   const [open, setOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
-  const { current, setParams } = useQueryState()
+  const { current, setParams } = useNuqsFilters()
 
   // Track screen size and ensure only one primitive can render
   useEffect(() => {
