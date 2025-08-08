@@ -31,7 +31,7 @@ export function Navbar() {
           <Link href="#amenities" className="hover:text-primary">
             Amenities
           </Link>
-          <Link href="#properties" className="hover:text-primary">
+          <Link href="/properties" className="hover:text-primary">
             Properties
           </Link>
           <Link href="#community" className="hover:text-primary">

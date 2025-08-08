@@ -17,11 +17,25 @@ export async function seedFoodMenu(payload: Payload, req: PayloadRequest) {
             children: [
               {
                 type: 'paragraph',
-                children: [{ text: `Description for Menu ${i}` }],
+                children: [
+                  {
+                    type: 'text',
+                    text: `description of menu ${i}`,
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                textFormat: 0,
                 version: 1,
               },
             ],
-            direction: null,
+            direction: 'ltr',
             format: '',
             indent: 0,
             version: 1,

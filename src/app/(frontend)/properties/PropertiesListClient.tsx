@@ -132,7 +132,7 @@ export default function PropertiesListClient({
     const isInitial = JSON.stringify(params) === JSON.stringify(initialParams)
     if (isInitial) return
     setLoading(true)
-    fetch('/api/properties?' + new URLSearchParams(params).toString())
+    fetch('/api/public/properties?' + new URLSearchParams(params).toString())
       .then((res) => res.json())
       .then((json) => setData(json))
       .finally(() => setLoading(false))
