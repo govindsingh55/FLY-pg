@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import { resendVerificationPlaceholder } from './verify-email-action'
 import {
   Card,
   CardHeader,
@@ -12,6 +14,22 @@ import {
 } from '@/components/ui/card'
 
 export default function VerifyEmailPage() {
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  async function handleResend(e: React.FormEvent) {
+    e.preventDefault()
+    setMessage(null)
+    setLoading(true)
+    try {
+      const res = await resendVerificationPlaceholder()
+      setMessage(res.error || 'Verification email resent (if account exists and not yet verified).')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -24,16 +42,20 @@ export default function VerifyEmailPage() {
           Click the verification link in the email we just sent to complete your account setup. If
           you don't see it, check your spam folder.
         </p>
-
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          className="flex items-center justify-between gap-3"
-        >
-          <span>Didn't receive an email?</span>
-          <Button type="submit" variant="outline">
-            Resend email
+        <form onSubmit={handleResend} className="flex flex-col sm:flex-row gap-3 items-stretch">
+          <input
+            type="email"
+            placeholder="you@example.com"
+            className="flex-1 rounded-md border px-3 py-2 bg-background"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <Button type="submit" variant="outline" disabled={loading}>
+            {loading ? 'Sending…' : 'Resend email'}
           </Button>
         </form>
+        {message && <p className="text-xs text-muted-foreground">{message}</p>}
       </CardContent>
 
       <CardFooter className="justify-center text-sm text-muted-foreground">

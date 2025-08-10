@@ -4,10 +4,10 @@ import Link from 'next/link'
 
 export function Footer() {
   return (
-    <footer className="mt-12 border-t bg-background pb-24 md:pb-8">
+    <footer className="border-t bg-background pb-16 md:pb-0">
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4 justify-center items-center text-center">
-          <div>
+        <div className="grid gap-6 grid-cols-3 md:grid-cols-4 justify-center items-center text-center">
+          <div className="col-span-3 md:col-span-1">
             <div className="flex items-center gap-2 justify-center">
               <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <span className="text-primary font-bold">PG</span>

@@ -6,6 +6,7 @@ import Navbar from '@/components/marketing/Navbar'
 import Footer from '@/components/marketing/Footer'
 import { BottomNav } from '@/components/marketing/components'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { Toaster } from '@/components/ui/sonner'
 
 export const metadata = {
   description: 'A blank template using Payload in a Next.js app.',
@@ -17,7 +18,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body className="min-h-screen flex flex-col bg-background text-foreground antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -26,11 +27,15 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         >
           <NuqsAdapter>
             <Navbar />
-            <main className="min-h-screen">{children}</main>
+            {/* Main site content: no vertical centering so pages can scroll naturally */}
+            <main className="flex-1 flex flex-col w-full justify-start items-stretch">
+              {children}
+            </main>
             <Footer />
             <BottomNav />
             <Filters />
           </NuqsAdapter>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

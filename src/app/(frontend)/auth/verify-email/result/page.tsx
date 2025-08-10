@@ -1,5 +1,4 @@
-'use client'
-
+import { verifyEmailAction } from '../verify-email-action'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,25 +10,29 @@ import {
   CardFooter,
 } from '@/components/ui/card'
 
-export default function VerifyEmailResultPage() {
-  // Static UI: in a real app, you'd read query like ?status=success|error and branch UI
-  const status: 'success' | 'error' = 'success'
+interface Props {
+  searchParams: { token?: string }
+}
+
+export default async function VerifyEmailResultPage({ searchParams }: Props) {
+  const token = searchParams.token
+  const result = token ? await verifyEmailAction(token) : { error: 'Missing token' }
+  const success = !!result.success
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl">
-          {status === 'success' ? 'Email verified' : 'Verification failed'}
+          {success ? 'Email verified' : 'Verification failed'}
         </CardTitle>
         <CardDescription>
-          {status === 'success'
+          {success
             ? 'Your email has been successfully verified.'
-            : 'We could not verify your email. The link may be invalid or expired.'}
+            : result.error || 'We could not verify your email. The link may be invalid or expired.'}
         </CardDescription>
       </CardHeader>
-
       <CardContent className="space-y-4 text-sm text-muted-foreground">
-        {status === 'success' ? (
+        {success ? (
           <p>You can now sign in to your account.</p>
         ) : (
           <p>
@@ -37,11 +40,12 @@ export default function VerifyEmailResultPage() {
           </p>
         )}
       </CardContent>
-
       <CardFooter className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-        <Button asChild variant="outline" className="w-full sm:w-auto">
-          <Link href="/auth/verify-email">Back</Link>
-        </Button>
+        {!success && (
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link href="/auth/verify-email">Back</Link>
+          </Button>
+        )}
         <Button asChild className="w-full sm:w-auto">
           <Link href="/auth/sign-in">Go to sign in</Link>
         </Button>

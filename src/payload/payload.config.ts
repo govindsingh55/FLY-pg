@@ -17,6 +17,7 @@ import Bookings from './collections/Bookings'
 import FoodMenu from './collections/FoodMenu'
 import SupportTickets from './collections/SupportTickets'
 import SupportMedia from './collections/SupportMedia'
+import { resendAdapter } from '@payloadcms/email-resend'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -56,4 +57,9 @@ export default buildConfig({
     payloadCloudPlugin(),
     // storage-adapter-placeholder
   ],
+  email: resendAdapter({
+    defaultFromAddress: process.env.RESEND_FROM_ADDRESS || 'onboarding@resend.dev',
+    defaultFromName: process.env.RESEND_FROM_NAME || 'FLY PG',
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
 })

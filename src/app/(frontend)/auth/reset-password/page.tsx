@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,45 +13,78 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card'
+import { toast } from 'sonner'
+import { resetPasswordAction } from './reset-password-action'
 
 export default function ResetPasswordPage() {
-  // Static UI: in real flow, you'd read token from search params and validate states
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token') || ''
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError(null)
+    setSuccess(false)
+    setLoading(true)
+    const formData = new FormData(e.currentTarget)
+    formData.set('token', token)
+    const result = await resetPasswordAction(formData)
+    setLoading(false)
+    if (result?.success) {
+      toast('Password reset successful! You can now sign in.', {
+        description: 'Your password has been updated.',
+        duration: 6000,
+      })
+      setSuccess(true)
+    } else {
+      setError(typeof result.error === 'string' ? result.error : JSON.stringify(result.error))
+    }
+  }
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="items-center text-center">
         <CardTitle className="text-2xl">Reset your password</CardTitle>
-        <CardDescription>Enter a new password for your account</CardDescription>
+        <CardDescription>Enter your new password below.</CardDescription>
       </CardHeader>
-
       <CardContent className="space-y-4">
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault()
-          }}
-        >
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              New password
-            </label>
-            <Input id="password" type="password" placeholder="••••••••" required />
+        {success ? (
+          <div className="flex flex-col items-center justify-center min-h-[180px] text-center gap-4">
+            <div className="text-green-600 text-lg font-semibold">Password reset successful!</div>
+            <div className="text-muted-foreground">
+              You can now{' '}
+              <Link href="/auth/sign-in" className="text-primary hover:underline">
+                sign in
+              </Link>
+              .
+            </div>
           </div>
-
-          <div className="space-y-2">
-            <label htmlFor="confirm" className="text-sm font-medium">
-              Confirm password
-            </label>
-            <Input id="confirm" type="password" placeholder="••••••••" required />
-          </div>
-
-          <Button type="submit" className="w-full">
-            Update password
-          </Button>
-        </form>
+        ) : (
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                New Password
+              </label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                minLength={6}
+                required
+              />
+            </div>
+            {error && <div className="text-red-500 text-sm">{error}</div>}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Resetting...' : 'Reset password'}
+            </Button>
+          </form>
+        )}
       </CardContent>
-
       <CardFooter className="justify-center text-sm text-muted-foreground">
-        Back to{' '}
+        Remembered your password?{' '}
         <Link href="/auth/sign-in" className="ml-1 text-primary hover:underline">
           Sign in
         </Link>
