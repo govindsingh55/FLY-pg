@@ -1,9 +1,10 @@
 'use client'
 
-import * as Lucide from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '../../components/ui/button'
+import { Loader2 } from 'lucide-react'
 import ThemeToggleBtn from './ThemeToggleBtn'
+import { useUser } from '@/lib/state/user'
 
 /**
  * Navbar layout rules:
@@ -11,6 +12,7 @@ import ThemeToggleBtn from './ThemeToggleBtn'
  * - Mobile (<md): single row with centered logo only. No hidden overlay row (prevents duplicate/tucked logo).
  */
 export function Navbar() {
+  const { isAuthenticated, status, logout } = useUser()
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur">
       {/* Desktop grid */}
@@ -42,16 +44,34 @@ export function Navbar() {
         {/* Right: Actions */}
         <div className="flex items-center justify-end gap-2">
           <ThemeToggleBtn />
-          <Link href="/auth/sign-in">
-            <Button asChild variant="ghost">
-              <span>Sign in</span>
+          {status === 'loading' && (
+            <div className="h-9 w-9 inline-flex items-center justify-center rounded-md border">
+              <Loader2
+                className="h-4 w-4 animate-spin text-muted-foreground"
+                aria-label="Loading session"
+              />
+              <span className="sr-only">Loading session...</span>
+            </div>
+          )}
+          {status !== 'loading' && !isAuthenticated && (
+            <>
+              <Link href="/auth/sign-in">
+                <Button asChild variant="ghost">
+                  <span>Sign in</span>
+                </Button>
+              </Link>
+              <Link href="/auth/sign-up">
+                <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <span>Sign up</span>
+                </Button>
+              </Link>
+            </>
+          )}
+          {status !== 'loading' && isAuthenticated && (
+            <Button asChild variant="ghost" onClick={logout}>
+              <span>Logout</span>
             </Button>
-          </Link>
-          <Link href="/auth/sign-up">
-            <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <span>Sign up</span>
-            </Button>
-          </Link>
+          )}
         </div>
       </div>
 

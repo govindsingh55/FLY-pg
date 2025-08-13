@@ -1,6 +1,7 @@
 import React from 'react'
 import './styles.css'
 import { ThemeProvider } from '../../components/theme-provider'
+import { UserProvider } from '@/lib/state/user'
 import Filters from '@/components/marketing/Filters'
 import Navbar from '@/components/marketing/Navbar'
 import Footer from '@/components/marketing/Footer'
@@ -25,16 +26,18 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <NuqsAdapter>
-            <Navbar />
-            {/* Main site content: no vertical centering so pages can scroll naturally */}
-            <main className="flex-1 flex flex-col w-full justify-start items-stretch">
-              {children}
-            </main>
-            <Footer />
-            <BottomNav />
-            <Filters />
-          </NuqsAdapter>
+          <UserProvider>
+            <NuqsAdapter>
+              <Navbar />
+              {/* Main site content: no vertical centering so pages can scroll naturally */}
+              <main className="flex-1 flex flex-col w-full justify-start items-stretch">
+                {children}
+              </main>
+              <Footer />
+              <BottomNav />
+              <Filters />
+            </NuqsAdapter>
+          </UserProvider>
           <Toaster />
         </ThemeProvider>
       </body>

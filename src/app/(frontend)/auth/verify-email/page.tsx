@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { resendVerificationPlaceholder } from './verify-email-action'
+import { useAuthActions } from '@/lib/state/user'
 import {
   Card,
   CardHeader,
@@ -17,11 +18,13 @@ export default function VerifyEmailPage() {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const { setAuthLoading } = useAuthActions()
 
   async function handleResend(e: React.FormEvent) {
     e.preventDefault()
     setMessage(null)
     setLoading(true)
+    setAuthLoading()
     try {
       const res = await resendVerificationPlaceholder()
       setMessage(res.error || 'Verification email resent (if account exists and not yet verified).')

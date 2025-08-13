@@ -14,27 +14,41 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { OrDivider, SocialAuthButton } from '../_components/SocialAuth'
-import { signUpAction } from './sign-up-action'
+import { signUpAction } from '../auth-actions'
+import { useAuthActions } from '@/lib/state/user'
 
 export default function SignUpForm() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const { setAuthLoading, setAuthError, setUnauthenticated } = useAuthActions()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     setSuccess(false)
+    setAuthLoading()
     const formData = new FormData(e.currentTarget)
-    const result = await signUpAction(formData)
-    if (result?.success) {
-      toast('Sign up successful! Please check your email to verify your account.', {
-        description: 'A verification link has been sent to your email address.',
-        duration: 6000,
-      })
-      setSuccess(true)
-    } else {
-      console.log({ result })
-      setError(typeof result.error === 'string' ? result.error : JSON.stringify(result.error))
+    try {
+      const result = await signUpAction(formData)
+      if (result?.success) {
+        toast('Sign up successful! Please check your email to verify your account.', {
+          description: 'A verification link has been sent to your email address.',
+          duration: 6000,
+        })
+        setSuccess(true)
+        // Remain unauthenticated until email verification
+        setUnauthenticated()
+      } else {
+        const msg = typeof result.error === 'string' ? result.error : JSON.stringify(result.error)
+        setError(msg)
+        setAuthError(msg)
+        setUnauthenticated()
+      }
+    } catch (err: any) {
+      const msg = err.message || 'Sign up failed'
+      setError(msg)
+      setAuthError(msg)
+      setUnauthenticated()
     }
   }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useUser, useAuthActions } from '@/lib/state/user'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -17,17 +18,24 @@ import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 interface SignInFormProps {
-  onSubmit?: ({ email, password }: { email: string; password: string }) => Promise<{
-    success: boolean
-  }>
+  onSubmit?: ({
+    email,
+    password,
+  }: {
+    email: string
+    password: string
+  }) => Promise<{ success: boolean }>
+  collection?: 'customers' | 'users'
 }
 
-export default function SignInForm({ onSubmit }: SignInFormProps) {
+export default function SignInForm({ onSubmit, collection = 'customers' }: SignInFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { refetchUser } = useUser()
+  const { setAuthLoading, setAuthenticated, setUnauthenticated, setAuthError } = useAuthActions()
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
@@ -37,8 +45,14 @@ export default function SignInForm({ onSubmit }: SignInFormProps) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     try {
+      setAuthLoading()
       if (onSubmit) {
         await onSubmit({ email, password })
+        // After server action sets auth cookies, pull fresh user
+        await refetchUser()
+      } else {
+        // Legacy fallback removed: prefer server action. Keep minimal fallback if needed.
+        await refetchUser()
       }
       toast('Sign in successful!')
       setSuccess(true)
@@ -47,7 +61,10 @@ export default function SignInForm({ onSubmit }: SignInFormProps) {
       }
     } catch (err: any) {
       console.error('Sign in error:', err)
-      setError(err.message || 'Sign in failed')
+      const msg = err.message || 'Sign in failed'
+      setError(msg)
+      setAuthError(msg)
+      setUnauthenticated()
     } finally {
       setLoading(false)
     }

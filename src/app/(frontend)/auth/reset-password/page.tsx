@@ -14,7 +14,8 @@ import {
   CardFooter,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { resetPasswordAction } from './reset-password-action'
+import { resetPasswordAction } from '../auth-actions'
+import { useAuthActions } from '@/lib/state/user'
 
 export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
@@ -22,12 +23,14 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
   const token = searchParams.get('token') || ''
+  const { setAuthLoading, setAuthError } = useAuthActions()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     setSuccess(false)
     setLoading(true)
+    setAuthLoading()
     const formData = new FormData(e.currentTarget)
     formData.set('token', token)
     const result = await resetPasswordAction(formData)
@@ -39,7 +42,9 @@ export default function ResetPasswordPage() {
       })
       setSuccess(true)
     } else {
-      setError(typeof result.error === 'string' ? result.error : JSON.stringify(result.error))
+      const msg = typeof result.error === 'string' ? result.error : JSON.stringify(result.error)
+      setError(msg)
+      setAuthError(msg)
     }
   }
 

@@ -13,19 +13,22 @@ import {
 } from '@/components/ui/card'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { forgotPasswordAction } from './forgot-password-action'
+import { forgotPasswordAction } from '../auth-actions'
+import { useAuthActions } from '@/lib/state/user'
 
 export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const [fallbackLink, setFallbackLink] = useState<string | null>(null)
+  const { setAuthLoading, setAuthError } = useAuthActions()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     setSuccess(false)
     setLoading(true)
+    setAuthLoading()
     const formData = new FormData(e.currentTarget)
     const result = await forgotPasswordAction(formData)
     setLoading(false)
@@ -35,13 +38,16 @@ export default function ForgotPasswordPage() {
         duration: 6000,
       })
       setSuccess(true)
-      if (result.fallback && result.resetLink) {
+      // Only ForgotPasswordSuccess has fallback and resetLink
+      if ('fallback' in result && result.fallback && result.resetLink) {
         setFallbackLink(result.resetLink)
       } else {
         setFallbackLink(null)
       }
     } else {
-      setError(typeof result.error === 'string' ? result.error : JSON.stringify(result.error))
+      const msg = typeof result.error === 'string' ? result.error : JSON.stringify(result.error)
+      setError(msg)
+      setAuthError(msg)
     }
   }
 
