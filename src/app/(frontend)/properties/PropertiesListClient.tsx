@@ -1,12 +1,15 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Filters, { FilterBadges } from '@/components/marketing/Filters'
-import FiltersTrigger from './FiltersTrigger'
-import { Property } from '@/payload/payload-types'
+import { useFilterActions } from '@/components/marketing/FilterContext'
+import { FilterBadges } from '@/components/marketing/Filters'
 import { Media } from '@/components/Media'
+import { Button } from '@/components/ui/button'
+import { Property } from '@/payload/payload-types'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
+import FiltersTrigger from './FiltersTrigger'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 
 function PropertyCard({ property }: { property: Property }) {
   const cover = property.images?.find((i) => i?.isCover) ?? property.images?.[0]
@@ -55,38 +58,40 @@ function Pagination({
   hasPrevPage,
   hasNextPage,
   totalPages,
-  preserve,
 }: {
   page: number
   hasPrevPage: boolean
   hasNextPage: boolean
   totalPages: number
-  preserve: URLSearchParams
 }) {
-  const prevParams = new URLSearchParams(preserve)
-  prevParams.set('page', String(Math.max(1, page - 1)))
-  const nextParams = new URLSearchParams(preserve)
-  nextParams.set('page', String(page + 1))
-
+  const { setParams } = useFilterActions()
   return (
     <div className="mt-8 flex items-center justify-between">
-      <Link
+      <Button
+        variant="outline"
+        className={`text-primary ${!hasPrevPage ? 'pointer-events-none opacity-50' : ''}`}
+        onClick={() => hasPrevPage && setParams({ page: Math.max(1, page - 1) })}
         aria-disabled={!hasPrevPage}
-        className={`text-sm underline-offset-4 hover:underline ${!hasPrevPage ? 'pointer-events-none opacity-50' : ''}`}
-        href={`/properties?${prevParams.toString()}`}
       >
-        ← Prev
-      </Link>
+        <span className="sr-only">Previous</span>
+        <span>
+          <ArrowLeft className="size-5" />
+        </span>
+      </Button>
       <span className="text-sm text-muted-foreground">
         Page {page} of {Math.max(1, totalPages)}
       </span>
-      <Link
+      <Button
+        variant="outline"
+        className={`text-primary ${!hasNextPage ? 'pointer-events-none opacity-50' : ''}`}
+        onClick={() => hasNextPage && setParams({ page: page + 1 })}
         aria-disabled={!hasNextPage}
-        className={`text-sm underline-offset-4 hover:underline ${!hasNextPage ? 'pointer-events-none opacity-50' : ''}`}
-        href={`/properties?${nextParams.toString()}`}
       >
-        Next →
-      </Link>
+        <span className="sr-only">Next</span>
+        <span>
+          <ArrowRight className="size-5" />
+        </span>
+      </Button>
     </div>
   )
 }
@@ -102,7 +107,7 @@ export default function PropertiesListClient({
   const [data, setData] = useState(initialData)
   const [loading, setLoading] = useState(false)
 
-  // Build params from searchParams
+  // Build params from searchParams (URL is the source of truth for fetching)
   const params = useMemo(() => {
     const obj: any = {}
     for (const [key, value] of searchParams.entries()) {
@@ -111,39 +116,41 @@ export default function PropertiesListClient({
     return obj
   }, [searchParams])
 
-  // Build preserved params for pagination
-  const preserved = useMemo(() => {
-    const preserved = new URLSearchParams()
-    if (params.q) preserved.set('q', params.q)
-    if (params.city) preserved.set('city', params.city)
-    if (params.type) preserved.set('type', params.type)
-    if (params.sharing) preserved.set('sharing', params.sharing)
-    if (params.minPrice) preserved.set('minPrice', params.minPrice)
-    if (params.maxPrice) preserved.set('maxPrice', params.maxPrice)
-    if (params.roomType) preserved.set('roomType', params.roomType)
-    if (params.amenities) preserved.set('amenities', params.amenities)
-    if (params.sort) preserved.set('sort', params.sort)
-    return preserved
-  }, [params])
-
   // Refetch when params change
   useEffect(() => {
     // Only refetch if params differ from initialParams
     const isInitial = JSON.stringify(params) === JSON.stringify(initialParams)
     if (isInitial) return
     setLoading(true)
-    fetch('/api/public/properties?' + new URLSearchParams(params).toString())
-      .then((res) => res.json())
-      .then((json) => setData(json))
-      .finally(() => setLoading(false))
+
+    let cancelled = false
+
+    ;(async () => {
+      const body: any = {}
+      for (const k in params) body[k] = (params as any)[k]
+      body.page = Number(params.page) || 1
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/api/custom/properties`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const json = await res.json()
+      if (!cancelled) setData(json)
+      if (!cancelled) setLoading(false)
+    })()
+
+    return () => {
+      cancelled = true
+    }
   }, [params, initialParams])
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
+    <div className="mx-auto max-w-6xl w-full px-4 py-8 md:py-12">
       <h1 className="text-2xl font-bold">Browse Properties</h1>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-start mb-6 mt-2">
         <div className="">
-          <FilterBadges className="mt-2" />
+          <FilterBadges className="" />
         </div>
         <FiltersTrigger />
       </div>
@@ -152,7 +159,7 @@ export default function PropertiesListClient({
           <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
             Loading…
           </div>
-        ) : data.docs.length === 0 ? (
+        ) : data?.docs?.length === 0 ? (
           <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
             No properties found.
           </div>
@@ -168,7 +175,6 @@ export default function PropertiesListClient({
               hasPrevPage={data.hasPrevPage}
               hasNextPage={data.hasNextPage}
               totalPages={data.totalPages}
-              preserve={preserved}
             />
           </>
         )}

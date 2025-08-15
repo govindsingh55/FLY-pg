@@ -3,6 +3,7 @@
 import * as Lucide from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import { useFilterActions } from './FilterContext'
 
 export function BottomNav() {
   const { theme, setTheme } = useTheme()
@@ -21,7 +22,7 @@ export function BottomNav() {
     { key: 'user', label: 'Account', icon: Lucide.User, href: '#login' },
     { key: 'theme', label: 'Theme', icon: Lucide.Moon },
   ]
-
+  const actions = useFilterActions()
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur md:hidden">
@@ -31,7 +32,7 @@ export function BottomNav() {
               {it.key === 'search' ? (
                 <button
                   onClick={() => {
-                    document.dispatchEvent(new CustomEvent('open-filters'))
+                    actions.toggleFilterPanel(true)
                   }}
                   className="flex flex-col items-center gap-1 rounded-md px-2 py-1.5 hover:text-primary"
                 >

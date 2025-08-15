@@ -1,8 +1,10 @@
 'use client'
 
 import { Input } from '@/components/ui/input'
+import { useFilterActions } from './FilterContext'
 
 export function HeroSearch() {
+  const actions = useFilterActions()
   return (
     <section
       className="relative flex items-center justify-center px-4 py-24 md:py-32"
@@ -27,7 +29,7 @@ export function HeroSearch() {
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                document.dispatchEvent(new CustomEvent('open-filters'))
+                actions.toggleFilterPanel(true)
               }}
               placeholder="Search properties"
               className="bg-white/95 text-foreground placeholder:text-muted-foreground"

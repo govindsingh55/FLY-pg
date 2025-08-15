@@ -1,6 +1,4 @@
 import type { Metadata } from 'next'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import PropertiesListClient from './PropertiesListClient'
 
 type SearchParams = {
@@ -36,21 +34,17 @@ function mapSort(sort: 'price_asc' | 'price_desc' | 'newest') {
 }
 
 async function fetchProperties(params: SearchParams) {
-  // Use Payload local API
   const normalized = normalizeParams(params)
-  const payload = await getPayload({ config })
-  const query = await buildPostBody(normalized, payload)
-  console.log('Querying properties with:', JSON.stringify(query, null, 2))
-  // Query the properties collection
-  const data = await payload.find({
-    collection: 'properties',
-    where: query.where,
-    sort: query.sort,
-    page: query.page,
-    limit: query.limit,
-    depth: 2,
+  // Call internal API route to centralize filtering logic
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/api/custom/properties`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(normalized),
+    // Ensure this runs on the server without caching stale data
+    cache: 'no-store',
   })
-  return data
+  if (!res.ok) throw new Error('Failed to fetch properties')
+  return res.json()
 }
 
 async function buildPostBody(p: ReturnType<typeof normalizeParams>, payload: any) {
