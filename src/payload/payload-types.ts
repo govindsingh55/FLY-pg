@@ -519,7 +519,16 @@ export interface Customer {
  */
 export interface VisitBooking {
   id: string;
-  customer: string | Customer;
+  customer?: (string | null) | Customer;
+  guestUser?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   property: string | Property;
   visitDate: string;
   status?: ('pending' | 'confirmed' | 'cancelled') | null;
@@ -1059,6 +1068,7 @@ export interface CustomersSelect<T extends boolean = true> {
  */
 export interface VisitBookingsSelect<T extends boolean = true> {
   customer?: T;
+  guestUser?: T;
   property?: T;
   visitDate?: T;
   status?: T;

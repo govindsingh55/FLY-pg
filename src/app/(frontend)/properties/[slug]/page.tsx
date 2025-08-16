@@ -92,7 +92,7 @@ export default async function PropertyDetailPage({ params }: { params: Params })
             <NearbyLocations locations={nearby} />
           </div>
           <div className="sticky top-24 self-start mt-4">
-            <BookingCard rooms={prop.rooms} />
+            <BookingCard rooms={prop.rooms} propertyId={String((prop as any).id ?? '')} />
           </div>
         </div>
       </div>

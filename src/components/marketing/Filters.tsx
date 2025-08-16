@@ -279,7 +279,7 @@ export default function Filters() {
         </Drawer>
       ) : (
         <Sheet open={current.isFilterPanelOpen} onOpenChange={actions.toggleFilterPanel}>
-          <SheetContent side="left">
+          <SheetContent side="right">
             <SheetHeader className="flex items-center justify-between border-b px-4 py-4">
               <div className="flex items-center gap-2">
                 <Lucide.Funnel className="size-4" />

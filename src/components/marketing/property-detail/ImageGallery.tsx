@@ -7,6 +7,8 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import RichText from '@/components/RichText'
 import { Media } from '@/components/Media'
 import { Media as MediaType } from '@/payload/payload-types'
+import placeholder from '@/public/general-img-landscape.png'
+import Image from 'next/image'
 
 type ImageGalleryProps = {
   images: { image: MediaType; id: string; isCover: boolean }[]
@@ -17,7 +19,36 @@ type ImageGalleryProps = {
 export default function ImageGallery({ images, addressRich, localityLine }: ImageGalleryProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedIdx, setSelectedIdx] = useState(0)
-  if (!images?.length) return null
+  const hasImages = Array.isArray(images) && images.length > 0
+
+  // If there are no images, render a default placeholder from public/
+  if (!hasImages) {
+    return (
+      <section className="mx-auto max-w-6xl px-4 pl-0 pt-4 pb-2">
+        <div className="w-full overflow-hidden rounded-xl border bg-muted">
+          {/* Use a plain <img> for the placeholder to avoid the Next.js image optimizer route */}
+          <img
+            src={placeholder.src || '/general-img-landscape.png'}
+            className="w-full h-auto aspect-[16/9] object-cover"
+            alt="Placeholder"
+            width={640}
+            height={360}
+          />
+        </div>
+        {(addressRich || localityLine) && (
+          <div className="mt-2 text-sm text-muted-foreground">
+            {addressRich ? (
+              <div className="mt-2">
+                <RichText data={addressRich} enableGutter={false} enableProse={false} />
+              </div>
+            ) : null}
+            {localityLine ? <div className="mt-1">{localityLine}</div> : null}
+          </div>
+        )}
+      </section>
+    )
+  }
+
   const cover = images.find((i: any) => (i as any).isCover) || images[0]
   const rest = images.filter((i) => i !== cover).slice(0, 4)
   const allImages = [cover, ...rest]

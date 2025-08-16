@@ -1,27 +1,28 @@
 import type { AccessArgs, CollectionConfig } from 'payload'
 
 const visitBookingsAccess = {
-  create: ({ req }: AccessArgs) => {
-    const user = req.user as { role?: string } | undefined
-    return user?.role === 'customer' || user?.role === 'admin' || user?.role === 'manager'
+  // Allow anyone to create a booking (guests and authenticated users)
+  create: () => true,
+  update: ({ req, data }: AccessArgs) => {
+    const user = req.user as { role?: string; email?: string } | undefined
+    // Admins and managers can update
+    if (user?.role === 'manager' || user?.role === 'admin') return true
+    // Guest can update their own booking by matching email
+    if (data?.guestUser?.email && user?.email && data.guestUser.email === user.email) return true
+    return false
   },
-  update: ({ req }: AccessArgs) => {
-    const user = req.user as { role?: string } | undefined
-    return user?.role === 'manager' || user?.role === 'admin'
-  },
-  delete: ({ req }: AccessArgs) => {
-    const user = req.user as { role?: string } | undefined
-    return user?.role === 'admin' || user?.role === 'manager'
+  delete: ({ req, data }: AccessArgs) => {
+    const user = req.user as { role?: string; email?: string } | undefined
+    if (user?.role === 'admin' || user?.role === 'manager') return true
+    // Guest can delete their own booking by matching email
+    if (data?.guestUser?.email && user?.email && data.guestUser.email === user.email) return true
+    return false
   },
   read: ({ req }: AccessArgs) => {
-    const user = req.user as { role?: string; id?: string | number } | undefined
-    if (!user) return false
-    if (user.role === 'customer') {
-      return {
-        customer: { equals: user.id },
-      }
-    }
-    return true
+    const user = req.user as { role?: string; email?: string } | undefined
+    console.log('Reading visit booking:', { user })
+    if (user?.role === 'admin' || user?.role === 'manager') return true
+    return false
   },
 }
 
@@ -30,7 +31,13 @@ const VisitBookings: CollectionConfig = {
   admin: { useAsTitle: 'id' },
   access: visitBookingsAccess,
   fields: [
-    { name: 'customer', type: 'relationship', relationTo: 'customers', required: true },
+    { name: 'customer', type: 'relationship', relationTo: 'customers', required: false },
+    {
+      name: 'guestUser',
+      type: 'json',
+      label: 'Guest User',
+      required: false,
+    },
     { name: 'property', type: 'relationship', relationTo: 'properties', required: true },
     { name: 'visitDate', type: 'date', required: true },
     {
