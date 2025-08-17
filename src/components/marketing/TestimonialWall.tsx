@@ -5,7 +5,9 @@ import { testimonials } from '../../data'
 export function TestimonialWall() {
   return (
     <section id="community" className="mx-auto max-w-6xl px-4 py-10">
-      <h3 className="mb-6 text-center text-xl font-semibold">Let's hear it from our residents</h3>
+      <h3 className="mb-6 text-center text-xl font-semibold">
+        Let&apos;s hear it from our residents
+      </h3>
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {testimonials.map((t: any) => (
           <div key={t.id} className="rounded-xl border bg-card p-4">

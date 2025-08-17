@@ -5,7 +5,7 @@ import { gallery } from '../../data'
 export function Gallery() {
   return (
     <section className="mx-auto max-w-6xl px-4 py-10">
-      <h3 className="mb-4 text-xl font-semibold">It's all Happening…</h3>
+      <h3 className="mb-4 text-xl font-semibold">It&apos;s all Happening…</h3>
       <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         {gallery.map((g: any) => (
           <div key={g.id} className="group relative overflow-hidden rounded-2xl border bg-card">

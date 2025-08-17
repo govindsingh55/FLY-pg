@@ -21,7 +21,31 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
   const [selectedIdx, setSelectedIdx] = useState(0)
   const hasImages = Array.isArray(images) && images.length > 0
 
-  // If there are no images, render a default placeholder from public/
+  const cover = images.find((i: any) => (i as any).isCover) || images[0]
+  const rest = images.filter((i) => i !== cover).slice(0, 4)
+  const allImages = [cover, ...rest]
+  const openModal = (idx: number) => {
+    setSelectedIdx(idx)
+    setModalOpen(true)
+  }
+  const closeModal = () => setModalOpen(false)
+  const prevImg = () => setSelectedIdx((i) => (i === 0 ? allImages.length - 1 : i - 1))
+  const nextImg = () => setSelectedIdx((i) => (i === allImages.length - 1 ? 0 : i + 1))
+
+  // Keyboard navigation when modal is open
+  useEffect(() => {
+    if (!modalOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeModal()
+      if (e.key === 'ArrowLeft') prevImg()
+      if (e.key === 'ArrowRight') nextImg()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [modalOpen])
+
+  // If there are no images, render a default placeholder from public/.
+  // This is placed after hook calls so hooks are always invoked in the same order.
   if (!hasImages) {
     return (
       <section className="mx-auto max-w-6xl px-4 pl-0 pt-4 pb-2">
@@ -48,29 +72,6 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
       </section>
     )
   }
-
-  const cover = images.find((i: any) => (i as any).isCover) || images[0]
-  const rest = images.filter((i) => i !== cover).slice(0, 4)
-  const allImages = [cover, ...rest]
-  const openModal = (idx: number) => {
-    setSelectedIdx(idx)
-    setModalOpen(true)
-  }
-  const closeModal = () => setModalOpen(false)
-  const prevImg = () => setSelectedIdx((i) => (i === 0 ? allImages.length - 1 : i - 1))
-  const nextImg = () => setSelectedIdx((i) => (i === allImages.length - 1 ? 0 : i + 1))
-
-  // Keyboard navigation when modal is open
-  useEffect(() => {
-    if (!modalOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeModal()
-      if (e.key === 'ArrowLeft') prevImg()
-      if (e.key === 'ArrowRight') nextImg()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [modalOpen])
 
   return (
     <section className="mx-auto max-w-6xl px-4 pl-0 pt-4 pb-2">

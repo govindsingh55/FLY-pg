@@ -135,7 +135,7 @@ export default function SignInForm({ onSubmit, collection = 'customers' }: SignI
           )}
         </CardContent>
         <CardFooter className="justify-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/auth/sign-up" className="ml-1 text-primary hover:underline">
             Sign up
           </Link>

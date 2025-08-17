@@ -19,13 +19,13 @@ export function Navbar() {
       <div className="mx-auto hidden max-w-6xl grid-cols-3 items-center px-4 py-3 md:grid">
         {/* Left: Logo (left aligned) */}
         <div className="col-span-1 flex justify-start">
-          <a
+          <Link
             href="/"
             className="text-xl font-bold tracking-wide hover:text-primary"
             aria-label="Go to home"
           >
             FLY
-          </a>
+          </Link>
         </div>
 
         {/* Center: Primary nav */}
@@ -77,13 +77,13 @@ export function Navbar() {
 
       {/* Mobile single row (only logo centered) */}
       <div className="mx-auto flex max-w-6xl items-center justify-center px-4 py-3 md:hidden">
-        <a
+        <Link
           href="/"
           className="text-xl font-bold tracking-wide hover:text-primary"
           aria-label="Go to home"
         >
           FLY
-        </a>
+        </Link>
       </div>
     </header>
   )

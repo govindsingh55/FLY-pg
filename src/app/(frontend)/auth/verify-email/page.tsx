@@ -43,7 +43,7 @@ export default function VerifyEmailPage() {
       <CardContent className="space-y-4 text-sm text-muted-foreground">
         <p>
           Click the verification link in the email we just sent to complete your account setup. If
-          you don't see it, check your spam folder.
+          you don&apos;t see it, check your spam folder.
         </p>
         <form onSubmit={handleResend} className="flex flex-col sm:flex-row gap-3 items-stretch">
           <input

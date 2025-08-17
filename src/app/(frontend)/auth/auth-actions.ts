@@ -15,6 +15,24 @@ const signUpSchema = z.object({
     .refine((val) => !val || /^\+?[0-9]{10,15}$/.test(val), 'Invalid phone number format'),
 })
 
+/**
+ * Safely extract a message and optional status/code from an unknown error.
+ * Avoids using `any` in catch clauses to satisfy @typescript-eslint/no-explicit-any.
+ */
+function extractErrorInfo(err: unknown): { message: string; status?: number | string } {
+  if (err instanceof Error) return { message: err.message }
+  if (typeof err === 'object' && err !== null) {
+    const maybe = err as Record<string, unknown>
+    const status = maybe.status ?? maybe.code
+    const message = typeof maybe.message === 'string' ? maybe.message : String(maybe)
+    return {
+      message,
+      status: typeof status === 'number' || typeof status === 'string' ? status : undefined,
+    }
+  }
+  return { message: String(err) }
+}
+
 export async function signUpAction(formData: FormData) {
   const payload = await getPayload({ config })
   const data = Object.fromEntries(formData.entries())
@@ -33,14 +51,12 @@ export async function signUpAction(formData: FormData) {
       },
     })
     return { success: true }
-  } catch (err) {
-    if (err instanceof Error) {
-      if (/duplicate key/i.test(err.message) || /E11000/.test(err.message)) {
-        return { error: 'An account with that email already exists.' }
-      }
-      return { error: err.message }
+  } catch (err: unknown) {
+    const { message } = extractErrorInfo(err)
+    if (/duplicate key/i.test(message) || /E11000/.test(message)) {
+      return { error: 'An account with that email already exists.' }
     }
-    return { error: 'Unknown error' }
+    return { error: message || 'Unknown error' }
   }
 }
 
@@ -70,9 +86,10 @@ export async function signInAction({ email, password }: { email: string; passwor
     }
 
     return { success: true, user }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const { message } = extractErrorInfo(error)
     console.log('signin error : ', { error })
-    throw new Error(error.message || 'Sign in failed')
+    throw new Error(message || 'Sign in failed')
   }
 }
 
@@ -93,8 +110,9 @@ export async function resetPasswordAction(formData: FormData) {
       overrideAccess: false,
     })
     return { success: true }
-  } catch (error: any) {
-    return { error: error.message || 'Failed to reset password' }
+  } catch (error: unknown) {
+    const { message } = extractErrorInfo(error)
+    return { error: message || 'Failed to reset password' }
   }
 }
 
@@ -138,11 +156,11 @@ export async function forgotPasswordAction(formData: FormData): Promise<ForgotPa
       data: { email },
     })
     return { success: true }
-  } catch (err: any) {
-    const status = err?.status || err?.code
+  } catch (err: unknown) {
+    const { message, status } = extractErrorInfo(err)
 
     // 403 commonly means: invalid API key, unverified domain/from address, or plan restriction.
-    if (status === 403 || /403/.test(err?.message || '')) {
+    if (status === 403 || /403/.test(message || '')) {
       if (
         process.env.ALLOW_EMAIL_403_FALLBACK === 'true' &&
         process.env.NODE_ENV !== 'production'
