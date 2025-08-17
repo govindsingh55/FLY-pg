@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import './styles.css'
 import { ThemeProvider } from '../../components/theme-provider'
 import { UserProvider } from '@/lib/state/user'
@@ -28,18 +28,20 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           disableTransitionOnChange
         >
           <UserProvider>
-            <NuqsAdapter>
-              <FilterProvider>
-                <Navbar />
-                {/* Main site content: no vertical centering so pages can scroll naturally */}
-                <main className="flex-1 flex flex-col w-full justify-start items-stretch">
-                  {children}
-                </main>
-                <Footer />
-                <BottomNav />
-                <Filters />
-              </FilterProvider>
-            </NuqsAdapter>
+            <Suspense>
+              <NuqsAdapter>
+                <FilterProvider>
+                  <Navbar />
+                  {/* Main site content: no vertical centering so pages can scroll naturally */}
+                  <main className="flex-1 flex flex-col w-full justify-start items-stretch">
+                    {children}
+                  </main>
+                  <Footer />
+                  <BottomNav />
+                  <Filters />
+                </FilterProvider>
+              </NuqsAdapter>
+            </Suspense>
           </UserProvider>
           <Toaster />
         </ThemeProvider>

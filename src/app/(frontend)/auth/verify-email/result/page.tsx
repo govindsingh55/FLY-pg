@@ -11,11 +11,15 @@ import {
 } from '@/components/ui/card'
 
 interface Props {
-  searchParams: { token?: string }
+  // Next's generated types expect `searchParams` to be a Promise<any> in PageProps.
+  // Declare it as an optional Promise so the component's type satisfies Next's PageProps.
+  searchParams?: Promise<{ token?: string }>
 }
 
 export default async function VerifyEmailResultPage({ searchParams }: Props) {
-  const token = searchParams.token
+  const resolvedSearchParams = searchParams ? await searchParams : undefined
+
+  const token = resolvedSearchParams?.token
   const result = token ? await verifyEmailAction(token) : { error: 'Missing token' }
   const success = !!result.success
 

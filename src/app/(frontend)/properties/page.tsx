@@ -108,8 +108,12 @@ async function buildPostBody(p: ReturnType<typeof normalizeParams>, payload: any
   }
 }
 
-export default async function PropertiesPage({ searchParams }: { searchParams: SearchParams }) {
-  const searchParamsData = await searchParams
+export default async function PropertiesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<SearchParams>
+}) {
+  const searchParamsData = searchParams ? await searchParams : ({} as SearchParams)
   const data = await fetchProperties(searchParamsData)
   return <PropertiesListClient initialData={data} initialParams={searchParamsData} />
 }
