@@ -78,7 +78,7 @@ export default function VisitBookingForm({ propertyId, onClose }: Props) {
         }
       }
 
-      const res = await fetch(`${apiBase}/api/visit-bookings`, {
+      const res = await fetch(`${apiBase}/api/custom/visit-booking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
