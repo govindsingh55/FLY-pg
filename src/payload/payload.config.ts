@@ -17,6 +17,7 @@ import Bookings from './collections/Bookings'
 import FoodMenu from './collections/FoodMenu'
 import SupportTickets from './collections/SupportTickets'
 import SupportMedia from './collections/SupportMedia'
+import Payments from './collections/Payments'
 import { resendAdapter } from '@payloadcms/email-resend'
 
 const filename = fileURLToPath(import.meta.url)
@@ -40,6 +41,7 @@ export default buildConfig({
     Customers,
     VisitBookings,
     Bookings,
+    Payments,
     FoodMenu,
     SupportTickets,
     SupportMedia,

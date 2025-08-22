@@ -1,4 +1,5 @@
 import type { AccessArgs } from 'payload'
+import type { CollectionConfig } from 'payload'
 
 const bookingsAccess = {
   create: ({ req }: AccessArgs) => {
@@ -24,7 +25,6 @@ const bookingsAccess = {
     return true
   },
 }
-import type { CollectionConfig } from 'payload'
 
 const Bookings: CollectionConfig = {
   slug: 'bookings',
@@ -54,24 +54,6 @@ const Bookings: CollectionConfig = {
     { name: 'foodIncluded', type: 'checkbox', defaultValue: false },
     { name: 'price', type: 'number', required: true },
     {
-      name: 'startDate',
-      type: 'date',
-      required: true,
-    },
-    {
-      name: 'endDate',
-      type: 'date',
-      required: true,
-    },
-    {
-      name: 'periodInMonths',
-      type: 'number',
-      required: true,
-      min: 1,
-      max: 12,
-      admin: { readOnly: true },
-    },
-    {
       name: 'status',
       type: 'select',
       options: [
@@ -81,6 +63,7 @@ const Bookings: CollectionConfig = {
       ],
       defaultValue: 'pending',
     },
+    { name: 'roomSnapshot', type: 'json' },
   ],
 }
 

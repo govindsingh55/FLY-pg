@@ -25,8 +25,9 @@ export function BottomNav() {
   const actions = useFilterActions()
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur md:hidden">
-        <ul className="mx-auto grid max-w-6xl grid-cols-4 px-2 py-2 text-xs">
+      {/* Added overflow-x-hidden and explicit left/right to avoid tiny 100vw overflow causing horizontal scroll on mobile */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur md:hidden w-full overflow-x-hidden will-change-transform">
+        <ul className="w-full mx-auto grid max-w-6xl grid-cols-4 px-2 py-2 text-xs overflow-x-hidden [padding-bottom:env(safe-area-inset-bottom)]">
           {items.map((it) => (
             <li key={it.key} className="flex items-center justify-center">
               {it.key === 'search' ? (

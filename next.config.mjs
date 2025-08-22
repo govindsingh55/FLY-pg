@@ -12,6 +12,11 @@ const nextConfig = {
         port: '3000',
         pathname: '/api/media/file/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'mvtj24sm-3000.inc1.devtunnels.ms',
+        pathname: '/api/media/file/**',
+      },
     ],
   },
   webpack: (webpackConfig) => {

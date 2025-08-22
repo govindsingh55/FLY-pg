@@ -75,6 +75,7 @@ export interface Config {
     customers: Customer;
     'visit-bookings': VisitBooking;
     bookings: Booking;
+    payments: Payment;
     'food-menu': FoodMenu;
     'support-tickets': SupportTicket;
     'support-media': SupportMedia;
@@ -92,6 +93,7 @@ export interface Config {
     customers: CustomersSelect<false> | CustomersSelect<true>;
     'visit-bookings': VisitBookingsSelect<false> | VisitBookingsSelect<true>;
     bookings: BookingsSelect<false> | BookingsSelect<true>;
+    payments: PaymentsSelect<false> | PaymentsSelect<true>;
     'food-menu': FoodMenuSelect<false> | FoodMenuSelect<true>;
     'support-tickets': SupportTicketsSelect<false> | SupportTicketsSelect<true>;
     'support-media': SupportMediaSelect<false> | SupportMediaSelect<true>;
@@ -564,10 +566,55 @@ export interface Booking {
   room: string | Room;
   foodIncluded?: boolean | null;
   price: number;
-  startDate: string;
-  endDate: string;
-  periodInMonths: number;
   status?: ('pending' | 'confirmed' | 'cancelled') | null;
+  roomSnapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments".
+ */
+export interface Payment {
+  id: string;
+  amount: number;
+  status: 'pending' | 'completed' | 'failed';
+  customer: string | Customer;
+  payfor: string | Booking;
+  paymentForMonthAndYear: string;
+  paymentDate?: string | null;
+  bookingSnapshot:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  dueDate: string;
+  phonepeLastRaw?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  gateway?: string | null;
+  phonepeMerchantTransactionId?: string | null;
+  phonepeTransactionId?: string | null;
+  phonepeLastCode?: string | null;
+  phonepeLastState?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -760,6 +807,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'bookings';
         value: string | Booking;
+      } | null)
+    | ({
+        relationTo: 'payments';
+        value: string | Payment;
       } | null)
     | ({
         relationTo: 'food-menu';
@@ -1095,10 +1146,30 @@ export interface BookingsSelect<T extends boolean = true> {
   room?: T;
   foodIncluded?: T;
   price?: T;
-  startDate?: T;
-  endDate?: T;
-  periodInMonths?: T;
   status?: T;
+  roomSnapshot?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments_select".
+ */
+export interface PaymentsSelect<T extends boolean = true> {
+  amount?: T;
+  status?: T;
+  customer?: T;
+  payfor?: T;
+  paymentForMonthAndYear?: T;
+  paymentDate?: T;
+  bookingSnapshot?: T;
+  dueDate?: T;
+  phonepeLastRaw?: T;
+  gateway?: T;
+  phonepeMerchantTransactionId?: T;
+  phonepeTransactionId?: T;
+  phonepeLastCode?: T;
+  phonepeLastState?: T;
   updatedAt?: T;
   createdAt?: T;
 }

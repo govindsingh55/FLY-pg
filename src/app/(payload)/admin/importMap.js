@@ -22,6 +22,7 @@ import { RelationshipFeatureClient as RelationshipFeatureClient_e70f5e05f09f93e0
 import { BlockquoteFeatureClient as BlockquoteFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { UploadFeatureClient as UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { default as default_191432a3b4ef0c88eef4623991949765 } from '@/payload/components/PhonePeTools'
 import { default as default_50dc190388f256a5f8bac8f85c742c47 } from '@/payload/components/BeforeDashboard'
 
 export const importMap = {
@@ -49,5 +50,6 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BlockquoteFeatureClient": BlockquoteFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#UploadFeatureClient": UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/payload/components/PhonePeTools#default": default_191432a3b4ef0c88eef4623991949765,
   "@/payload/components/BeforeDashboard#default": default_50dc190388f256a5f8bac8f85c742c47
 }
