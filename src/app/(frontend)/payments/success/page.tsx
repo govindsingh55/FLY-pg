@@ -2,11 +2,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 
 // /payments/success?paymentId=...&bookingId=...
-export default async function PaymentSuccessPage({
-  searchParams,
-}: {
-  searchParams: { paymentId?: string; bookingId?: string }
-}) {
+export default async function PaymentSuccessPage({ searchParams }: any) {
   const payload = await getPayload({ config })
   const paymentId = searchParams.paymentId
   const bookingId = searchParams.bookingId

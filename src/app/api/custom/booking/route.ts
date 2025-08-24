@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Compute price. Note: If food has an additional cost, incorporate it here.
-    let price = Number(room.rent || 0)
+    const price = Number(room.rent || 0)
     const foodIncluded = !!body.foodIncluded
     // TODO(Payments): If there is an extra fee for food, add it here. e.g., price += FOOD_FEE
 

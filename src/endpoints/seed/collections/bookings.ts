@@ -18,10 +18,7 @@ export async function seedBookings(
         customer: rel?.customerId || 'mock-customer-id',
         room: rel?.roomId || 'mock-room-id',
         price: 1000 + i * 50,
-        startDate: new Date().toISOString(),
-        endDate: new Date(Date.now() + 86400000 * i).toISOString(),
         status: 'confirmed',
-        periodInMonths: 1,
       },
     })
     bookings.push(booking)
