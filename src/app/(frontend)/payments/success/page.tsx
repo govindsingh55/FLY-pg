@@ -1,9 +1,21 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
+// Force dynamic rendering to avoid build-time DB connection attempts in CI/CD
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 // /payments/success?paymentId=...&bookingId=...
 export default async function PaymentSuccessPage({ searchParams }: any) {
-  const payload = await getPayload({ config })
+  // Initialize as null; attempt connection only at runtime
+  let payload: any = null
+  try {
+    payload = await getPayload({ config })
+  } catch (e) {
+    // Swallow connection errors: page should still render basic info
+    console.error('[payments/success] Payload init failed (non-fatal):', (e as any)?.message)
+  }
   const paymentId = searchParams.paymentId
   const bookingId = searchParams.bookingId
 
@@ -11,7 +23,7 @@ export default async function PaymentSuccessPage({ searchParams }: any) {
   let payment: any = null
   let booking: any = null
   try {
-    if (paymentId) {
+    if (payload && paymentId) {
       const payRes: any = await (payload as any).find({
         collection: 'payments',
         where: { id: { equals: paymentId } },
@@ -22,7 +34,7 @@ export default async function PaymentSuccessPage({ searchParams }: any) {
     }
   } catch {}
   try {
-    if (bookingId) {
+    if (payload && bookingId) {
       const bookRes: any = await (payload as any).find({
         collection: 'bookings',
         where: { id: { equals: bookingId } },

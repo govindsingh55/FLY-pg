@@ -9,33 +9,41 @@ import type { Media as MediaType } from '@/payload/payload-types'
 import config from '@payload-config'
 import { getPayload } from 'payload'
 
+// Avoid static generation (which would attempt DB connection during build)
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 type Params = Promise<{ slug: string }>
 
 async function fetchProperty(slug: string) {
-  const payload = await getPayload({ config })
-  const res = await payload.find({
-    collection: 'properties',
-    where: { slug: { equals: slug } },
-    depth: 2,
-    limit: 1,
-  })
-  const doc = res.docs[0]
-  if (!doc) return null
-  // Normalize images
-  const images = Array.isArray(doc.images) ? doc.images : []
-  // Rooms
-  const rooms = Array.isArray(doc.rooms)
-    ? doc.rooms
-        .map((r: any) => ({
-          id: r.id,
-          name: r.name,
-          roomType: r.roomType,
-          rent: r.rent,
-          available: r.available,
-        }))
-        .filter(Boolean)
-    : []
-  return { ...doc, images, rooms }
+  try {
+    const payload = await getPayload({ config })
+    const res = await payload.find({
+      collection: 'properties',
+      where: { slug: { equals: slug } },
+      depth: 2,
+      limit: 1,
+    })
+    const doc = res.docs[0]
+    if (!doc) return null
+    const images = Array.isArray(doc.images) ? doc.images : []
+    const rooms = Array.isArray(doc.rooms)
+      ? doc.rooms
+          .map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            roomType: r.roomType,
+            rent: r.rent,
+            available: r.available,
+          }))
+          .filter(Boolean)
+      : []
+    return { ...doc, images, rooms }
+  } catch (e) {
+    console.error('[property detail] fetchProperty failed:', (e as any)?.message)
+    return null
+  }
 }
 
 export default async function PropertyDetailPage({ params }: { params: Params }) {
