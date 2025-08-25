@@ -36,8 +36,7 @@ export const features: FeatureTile[] = [
     ctaLabel: 'Explore',
     ctaHref: '#properties',
     variant: 'large',
-    imageUrl:
-      'https://images.unsplash.com/photo-1549187774-b4e9b0445b41?q=80&w=1000&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/find-easy/800/600',
     accent: 'peach',
   },
   {
@@ -48,8 +47,7 @@ export const features: FeatureTile[] = [
     ctaLabel: 'See Rooms',
     ctaHref: '#properties',
     variant: 'standard',
-    imageUrl:
-      'https://images.unsplash.com/photo-1505692794403-34d4982f88aa?q=80&w=900&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/stay-easy/600/400',
     accent: 'pink',
   },
   {
@@ -60,8 +58,7 @@ export const features: FeatureTile[] = [
     ctaLabel: 'Join',
     ctaHref: '#community',
     variant: 'standard',
-    imageUrl:
-      'https://images.unsplash.com/photo-1520975922284-7b683c72e22d?q=80&w=900&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/bond-easy/600/400',
     accent: 'mint',
   },
 ]
@@ -96,8 +93,7 @@ export const properties: Property[] = [
     name: 'Cedar Heights',
     area: 'HSR Layout',
     city: 'Bengaluru',
-    imageUrl:
-      'https://images.unsplash.com/photo-1460317442991-0ec209397118?q=80&w=1200&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/cedar-heights/800/600',
     badges: ['New', 'Popular'],
     rating: 4.6,
     priceFrom: 10999,
@@ -107,8 +103,7 @@ export const properties: Property[] = [
     name: 'Plum Court',
     area: 'Powai',
     city: 'Mumbai',
-    imageUrl:
-      'https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?q=80&w=1200&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/plum-court/800/600',
     badges: ['Women Only'],
     rating: 4.5,
     priceFrom: 13999,
@@ -118,8 +113,7 @@ export const properties: Property[] = [
     name: 'Sage Grove',
     area: 'Kondapur',
     city: 'Hyderabad',
-    imageUrl:
-      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=1200&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/sage-grove/800/600',
     badges: ['Budget'],
     rating: 4.2,
     priceFrom: 8999,
@@ -129,8 +123,7 @@ export const properties: Property[] = [
     name: 'Inky House',
     area: 'Indiranagar',
     city: 'Bengaluru',
-    imageUrl:
-      'https://images.unsplash.com/photo-1505691723518-36a5ac3b2d8d?q=80&w=1200&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/inky-house/800/600',
     badges: ['Pet Friendly'],
     rating: 4.8,
     priceFrom: 15999,
@@ -180,19 +173,20 @@ export const press: PressLogo[] = [
   {
     id: 'press1',
     name: 'BW Hotelier',
-    imageUrl: 'https://placehold.co/220x80/png?text=BW+HOTELIER',
+    imageUrl:
+      'https://fastly.picsum.photos/id/996/220/80.jpg?hmac=XxxBAfdvVAnTVc0G3bPuocAPCVMeEYwJRBlSpoB43uE',
     href: '#',
   },
   {
     id: 'press2',
     name: 'Economic Times',
-    imageUrl: 'https://placehold.co/220x80/png?text=ECONOMIC+TIMES',
+    imageUrl: 'https://picsum.photos/seed/economic-times/220/80',
     href: '#',
   },
   {
     id: 'press3',
     name: 'YourStory',
-    imageUrl: 'https://placehold.co/220x80/png?text=YOURSTORY',
+    imageUrl: 'https://picsum.photos/seed/yourstory/220/80',
     href: '#',
   },
 ]
@@ -207,28 +201,24 @@ export type GalleryItem = {
 export const gallery: GalleryItem[] = [
   {
     id: 'g1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1534082753658-1dcb40af0b1c?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/intern-pg/600/400',
     title: 'Intern PG',
     badge: 'New',
   },
   {
     id: 'g2',
-    imageUrl:
-      'https://images.unsplash.com/photo-1582582429416-0a3b9b28c0b9?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/events/600/400',
     title: 'Events',
     badge: 'Happening',
   },
   {
     id: 'g3',
-    imageUrl:
-      'https://images.unsplash.com/photo-1519710884009-87b1600c2df4?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/community/600/400',
     title: 'Community',
   },
   {
     id: 'g4',
-    imageUrl:
-      'https://images.unsplash.com/photo-1503602642458-232111445657?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/announcements/600/400',
     title: 'Announcements',
   },
 ]
@@ -246,10 +236,8 @@ export const appPromo: AppPromo = {
   id: 'promo',
   title: 'Install The App for Personalised Offers!',
   description: 'Scan the QR to download the app and get offers tailored to your preferences.',
-  qrImageUrl: 'https://placehold.co/120x120/png?text=QR',
-  appImages: [
-    'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?q=80&w=500&auto=format&fit=crop',
-  ],
+  qrImageUrl: 'https://picsum.photos/seed/qr-code/120/120',
+  appImages: ['https://picsum.photos/seed/app-phone/400/600'],
   ctas: [
     { label: 'App Store', href: '#' },
     { label: 'Google Play', href: '#' },

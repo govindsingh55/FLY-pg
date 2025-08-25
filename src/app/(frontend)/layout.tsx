@@ -13,6 +13,7 @@ import { FilterProvider } from '@/components/marketing/FilterContext'
 export const metadata = {
   description: 'A blank template using Payload in a Next.js app.',
   title: 'Payload Blank Template',
+  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -20,7 +21,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
 
   return (
     <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
-      <body className="min-h-screen flex flex-col bg-background text-foreground antialiased overflow-x-hidden">
+      <body className="min-h-screen relative flex flex-col bg-background text-foreground antialiased overflow-x-hidden">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

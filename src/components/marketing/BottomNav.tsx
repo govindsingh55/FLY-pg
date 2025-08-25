@@ -1,82 +1,96 @@
 'use client'
 
-import * as Lucide from 'lucide-react'
-import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
+import { Building2, Home, Search, User } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useFilterActions } from './FilterContext'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useUser } from '@/lib/state/user'
 
 export function BottomNav() {
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  const isDark = theme === 'dark'
-  const items: {
-    key: string
-    label: string
-    icon: React.ElementType
-    onClick?: () => void
-    href?: string
-  }[] = [
-    { key: 'home', label: 'Home', icon: Lucide.Home, href: '#top' },
-    { key: 'search', label: 'Search', icon: Lucide.Search },
-    { key: 'user', label: 'Account', icon: Lucide.User, href: '#login' },
-    { key: 'theme', label: 'Theme', icon: Lucide.Moon },
-  ]
+  const pathname = usePathname()
   const actions = useFilterActions()
+
   return (
-    <>
-      {/* Added overflow-x-hidden and explicit left/right to avoid tiny 100vw overflow causing horizontal scroll on mobile */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur md:hidden w-full overflow-x-hidden will-change-transform">
-        <ul className="w-full mx-auto grid max-w-6xl grid-cols-4 px-2 py-2 text-xs overflow-x-hidden [padding-bottom:env(safe-area-inset-bottom)]">
-          {items.map((it) => (
-            <li key={it.key} className="flex items-center justify-center">
-              {it.key === 'search' ? (
-                <button
-                  onClick={() => {
-                    actions.toggleFilterPanel(true)
-                  }}
-                  className="flex flex-col items-center gap-1 rounded-md px-2 py-1.5 hover:text-primary"
-                >
-                  <it.icon className="size-5" />
-                  <span>{it.label}</span>
-                </button>
-              ) : it.key === 'theme' ? (
-                <button
-                  onClick={() => {
-                    // Avoid SSR/CSR mismatch by only toggling after mount
-                    if (!mounted) return
-                    setTheme(isDark ? 'light' : 'dark')
-                  }}
-                  className="flex flex-col items-center gap-1 rounded-md px-2 py-1.5 hover:text-primary"
-                >
-                  <span aria-hidden suppressHydrationWarning>
-                    {mounted ? (
-                      isDark ? (
-                        <Lucide.Moon className="size-5" />
-                      ) : (
-                        <Lucide.Sun className="size-5" />
-                      )
-                    ) : (
-                      // Stable placeholder during SSR to prevent hydration mismatch
-                      <Lucide.Moon className="size-5" />
-                    )}
-                  </span>
-                  <span>{it.label}</span>
-                </button>
-              ) : (
-                <a
-                  href={it.href}
-                  className="flex flex-col items-center gap-1 rounded-md px-2 py-1.5 hover:text-primary"
-                >
-                  <it.icon className="size-5" />
-                  <span>{it.label}</span>
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </>
+    <nav className="fixed z-[100] inset-x-0 bottom-0 h-16 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+      <div className="container flex h-full items-center justify-center px-4">
+        <div className="flex w-full max-w-md items-center justify-around">
+          {pathname !== '/' ? (
+            <Link
+              href={'/'}
+              className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary"
+            >
+              <Home className="h-5 w-5" />
+              <span>Home</span>
+            </Link>
+          ) : null}
+          {pathname !== '/properties' ? (
+            <Link
+              href="/properties"
+              className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary"
+            >
+              <Building2 className="h-5 w-5" />
+              <span>Properties</span>
+            </Link>
+          ) : null}
+          <button
+            onClick={() => {
+              actions.toggleFilterPanel(true)
+            }}
+            className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary"
+          >
+            <Search className="h-5 w-5" />
+            <span>Search</span>
+          </button>
+          <Account />
+        </div>
+      </div>
+    </nav>
+  )
+}
+
+function Account() {
+  const { isAuthenticated, status, logout } = useUser()
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary">
+        <User className="h-5 w-5" />
+        <span>Account</span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="z-[200] gap-1">
+        {isAuthenticated ? (
+          <>
+            <DropdownMenuItem>
+              <Link href="/profile">Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link href="/settings">Settings</Link>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem>
+              <Link href="/auth/sign-in">Login</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link href="/auth/sign-up">Signup</Link>
+            </DropdownMenuItem>
+          </>
+        )}
+        {isAuthenticated && (
+          <DropdownMenuItem>
+            <button onClick={logout}>Logout</button>
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

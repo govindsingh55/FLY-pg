@@ -7,7 +7,7 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import RichText from '@/components/RichText'
 import { Media } from '@/components/Media'
 import { Media as MediaType } from '@/payload/payload-types'
-import placeholder from '@/public/general-img-landscape.png'
+// Using Picsum for placeholder images
 import Image from 'next/image'
 
 type ImageGalleryProps = {
@@ -50,13 +50,13 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
     return (
       <section className="mx-auto max-w-6xl px-4 pl-0 pt-4 pb-2">
         <div className="w-full overflow-hidden rounded-xl border bg-muted">
-          {/* Use a plain <img> for the placeholder to avoid the Next.js image optimizer route */}
+          {/* Use Picsum for placeholder images */}
           <img
-            src={placeholder.src || '/general-img-landscape.png'}
+            src="https://picsum.photos/seed/property-placeholder/800/450"
             className="w-full h-auto aspect-[16/9] object-cover"
-            alt="Placeholder"
-            width={640}
-            height={360}
+            alt="Property placeholder"
+            width={800}
+            height={450}
           />
         </div>
         {(addressRich || localityLine) && (

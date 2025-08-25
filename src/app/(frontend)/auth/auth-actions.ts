@@ -3,7 +3,7 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
 import { cookies } from 'next/headers'
-import { z } from 'zod'
+import { success, z } from 'zod'
 
 const signUpSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -89,7 +89,11 @@ export async function signInAction({ email, password }: { email: string; passwor
   } catch (error: unknown) {
     const { message } = extractErrorInfo(error)
     console.log('signin error : ', { error })
-    throw new Error(message || 'Sign in failed')
+    return {
+      success: false,
+      error: message,
+      errors: error,
+    }
   }
 }
 

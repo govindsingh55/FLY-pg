@@ -17,6 +17,14 @@ const nextConfig = {
         hostname: 'mvtj24sm-3000.inc1.devtunnels.ms',
         pathname: '/api/media/file/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
     ],
   },
   webpack: (webpackConfig) => {

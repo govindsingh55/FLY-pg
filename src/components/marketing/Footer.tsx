@@ -8,11 +8,9 @@ export function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-8">
         <div className="grid gap-6 grid-cols-3 md:grid-cols-4 justify-center items-center text-center">
           <div className="col-span-3 md:col-span-1">
-            <div className="flex items-center gap-2 justify-center">
-              <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <span className="text-primary font-bold">PG</span>
-              </div>
-              <span className="text-lg font-semibold">FLY</span>
+            <div className="flex items-end gap-2 justify-center">
+              <span className="text-2xl font-bold tracking-wide hover:text-primary">FLY</span>
+              <span className="text-sm font-medium text-accent">colive</span>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
               Flexible, community-first living across major cities.
@@ -62,7 +60,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 border-t pt-4 text-xs text-muted-foreground sm:flex-row">
-          <span>© {new Date().getFullYear()} FLY PG</span>
+          <span>© {new Date().getFullYear()} FLY colive</span>
         </div>
       </div>
     </footer>

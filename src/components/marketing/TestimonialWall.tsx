@@ -15,7 +15,7 @@ export function TestimonialWall() {
             <div className="text-xs text-muted-foreground">{t.role}</div>
             <p className="mt-2 text-sm">{t.text}</p>
             {t.tag ? (
-              <span className="mt-3 inline-block rounded-full bg-cream px-2 py-0.5 text-xs text-foreground">
+              <span className="mt-3 inline-block rounded-full bg-cream dark:bg-cream/50 dark:text-foreground px-2 py-0.5 text-xs text-foreground">
                 {t.tag}
               </span>
             ) : null}

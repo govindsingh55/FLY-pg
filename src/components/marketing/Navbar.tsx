@@ -21,10 +21,10 @@ export function Navbar() {
         <div className="col-span-1 flex justify-start">
           <Link
             href="/"
-            className="text-xl font-bold tracking-wide hover:text-primary"
+            className="text-2xl font-bold tracking-wide hover:text-primary"
             aria-label="Go to home"
           >
-            FLY
+            FLY <span className="text-sm font-medium text-accent">colive</span>
           </Link>
         </div>
 
@@ -76,14 +76,15 @@ export function Navbar() {
       </div>
 
       {/* Mobile single row (only logo centered) */}
-      <div className="mx-auto flex max-w-6xl items-center justify-center px-4 py-3 md:hidden">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:hidden">
         <Link
           href="/"
-          className="text-xl font-bold tracking-wide hover:text-primary"
+          className="text-2xl font-bold tracking-wide hover:text-primary"
           aria-label="Go to home"
         >
-          FLY
+          FLY <span className="text-sm font-medium text-accent">colive</span>
         </Link>
+        <ThemeToggleBtn />
       </div>
     </header>
   )
