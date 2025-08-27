@@ -16,6 +16,7 @@ import { OrDivider, SocialAuthButton } from '../_components/SocialAuth'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { Eye, EyeOff } from 'lucide-react'
 
 interface SignInFormProps {
   onSubmit?: ({
@@ -24,7 +25,7 @@ interface SignInFormProps {
   }: {
     email: string
     password: string
-  }) => Promise<{ success: boolean }>
+  }) => Promise<{ success: boolean; user?: any; error?: string }>
   collection?: 'customers' | 'users'
 }
 
@@ -32,9 +33,10 @@ export default function SignInForm({ onSubmit, collection = 'customers' }: SignI
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { refetchUser } = useUser()
+  const { refetchUser, updateAuthAfterLogin } = useUser()
   const { setAuthLoading, setAuthenticated, setUnauthenticated, setAuthError } = useAuthActions()
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -47,17 +49,21 @@ export default function SignInForm({ onSubmit, collection = 'customers' }: SignI
     try {
       setAuthLoading()
       if (onSubmit) {
-        await onSubmit({ email, password })
-        // After server action sets auth cookies, pull fresh user
-        await refetchUser()
+        const result = await onSubmit({ email, password })
+        if (result.success && result.user) {
+          // Immediately update the auth state with the user data from the server action
+          updateAuthAfterLogin(result.user)
+          toast('Sign in successful!')
+          setSuccess(true)
+          if (searchParams.get('redirect')) {
+            router.replace(searchParams.get('redirect') as string)
+          }
+        } else {
+          throw new Error(result.error || 'Sign in failed')
+        }
       } else {
         // Legacy fallback removed: prefer server action. Keep minimal fallback if needed.
         await refetchUser()
-      }
-      toast('Sign in successful!')
-      setSuccess(true)
-      if (searchParams.get('redirect')) {
-        router.replace(searchParams.get('redirect') as string)
       }
     } catch (err: any) {
       console.error('Sign in error:', err)
@@ -116,13 +122,23 @@ export default function SignInForm({ onSubmit, collection = 'customers' }: SignI
                       Forgot password?
                     </Link>
                   </div>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="••••••••"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      required
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
                 {error && <div className="text-red-500 text-sm">{error}</div>}
                 <Button type="submit" className="w-full" disabled={loading}>

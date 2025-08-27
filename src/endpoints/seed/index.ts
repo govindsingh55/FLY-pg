@@ -90,6 +90,7 @@ export const seed = async ({
     payload.logger.info(`— Seeding support tickets...`)
     const supportTickets = await seedSupportTickets(payload, req, {
       customerIds: collectionData['customers'] as string[],
+      propertyIds: collectionData['properties'] as string[],
     })
     collectionData['supporttickets'] = supportTickets.map((s: any) => s.id)
     payload.logger.info(`— SupportTickets seeded successfully!`)

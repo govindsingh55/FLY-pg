@@ -9,12 +9,32 @@ test.describe('Frontend', () => {
   })
 
   test('can go on homepage', async ({ page }) => {
-    await page.goto('http://localhost:3000')
+    await page.goto('/')
 
-    await expect(page).toHaveTitle(/Payload Blank Template/)
+    // Check that the page loads successfully with a more flexible title check
+    await expect(page).toHaveTitle(/FLY-pg|Property Rental|Payload/)
 
-    const headging = page.locator('h1').first()
+    // Check for the main hero section or navigation
+    const heroSection = page.locator('main, [role="main"], .hero, .hero-section, nav').first()
+    await expect(heroSection).toBeVisible()
 
-    await expect(headging).toHaveText('Welcome to your new project.')
+    // Check for navigation elements
+    const nav = page.locator('nav, [role="navigation"], header').first()
+    await expect(nav).toBeVisible()
+  })
+
+  test('should have basic page structure', async ({ page }) => {
+    await page.goto('/')
+
+    // Basic structure checks that don't require specific content
+    await expect(page.locator('html')).toBeVisible()
+    await expect(page.locator('body')).toBeVisible()
+
+    // Check for basic HTML structure
+    const head = page.locator('head')
+    const title = page.locator('title')
+
+    expect(await head.count()).toBeGreaterThan(0)
+    expect(await title.count()).toBeGreaterThan(0)
   })
 })

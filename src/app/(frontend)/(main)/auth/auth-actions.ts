@@ -139,6 +139,22 @@ interface ForgotPasswordError extends ForgotPasswordResultBase {
 
 export type ForgotPasswordResult = ForgotPasswordSuccess | ForgotPasswordError
 
+export async function logoutAction() {
+  try {
+    const payload = await getPayload({ config })
+    const cookieStore = await cookies()
+    const cookieName = `${payload.config.cookiePrefix || 'payload'}-token`
+
+    // Clear the auth cookie
+    cookieStore.delete(cookieName)
+
+    return { success: true }
+  } catch (error: unknown) {
+    const { message } = extractErrorInfo(error)
+    return { success: false, error: message || 'Failed to logout' }
+  }
+}
+
 // Server action: triggers Payload's built-in forgotPassword for the 'customers' collection.
 // Relies on Customers collection auth.forgotPassword.generateEmailHTML for email content.
 export async function forgotPasswordAction(formData: FormData): Promise<ForgotPasswordResult> {

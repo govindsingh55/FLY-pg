@@ -212,6 +212,80 @@ const Properties: CollectionConfig = {
               ],
             },
             { name: 'manager', type: 'relationship', relationTo: 'users', required: true },
+            // Security Deposit Configuration
+            {
+              name: 'securityDepositConfig',
+              type: 'group',
+              label: 'Security Deposit Settings',
+              admin: {
+                description: 'Configure security deposit requirements for this property',
+              },
+              fields: [
+                {
+                  name: 'enabled',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Enable security deposit requirement for this property',
+                  },
+                },
+                {
+                  name: 'amount',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    description: 'Default security deposit amount (can be overridden per booking)',
+                    condition: (data) => data?.securityDepositConfig?.enabled,
+                  },
+                },
+                {
+                  name: 'type',
+                  type: 'select',
+                  options: [
+                    { label: 'Fixed Amount', value: 'fixed' },
+                    { label: 'Multiple of Monthly Rent', value: 'multiplier' },
+                  ],
+                  defaultValue: 'fixed',
+                  admin: {
+                    description: 'How to calculate security deposit',
+                    condition: (data) => data?.securityDepositConfig?.enabled,
+                  },
+                },
+                {
+                  name: 'multiplier',
+                  type: 'number',
+                  min: 0.5,
+                  max: 12,
+                  defaultValue: 2,
+                  admin: {
+                    description:
+                      'Number of months rent as security deposit (if type is multiplier)',
+                    condition: (data) =>
+                      data?.securityDepositConfig?.enabled &&
+                      data?.securityDepositConfig?.type === 'multiplier',
+                  },
+                },
+                {
+                  name: 'refundable',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Is the security deposit refundable?',
+                    condition: (data) => data?.securityDepositConfig?.enabled,
+                  },
+                },
+                {
+                  name: 'refundConditions',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Conditions for security deposit refund',
+                    condition: (data) =>
+                      data?.securityDepositConfig?.enabled &&
+                      data?.securityDepositConfig?.refundable,
+                  },
+                },
+              ],
+            },
           ],
         },
         {

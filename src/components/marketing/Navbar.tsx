@@ -68,9 +68,16 @@ export function Navbar() {
             </>
           )}
           {status !== 'loading' && isAuthenticated && (
-            <Button asChild variant="ghost" onClick={logout}>
-              <span>Logout</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm">
+                  <span>Dashboard</span>
+                </Button>
+              </Link>
+              <Button asChild variant="ghost" onClick={logout}>
+                <span>Logout</span>
+              </Button>
+            </div>
           )}
         </div>
       </div>

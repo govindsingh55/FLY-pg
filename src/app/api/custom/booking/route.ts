@@ -55,12 +55,20 @@ export async function POST(req: NextRequest) {
     // TODO(Payments): If there is an extra fee for food, add it here. e.g., price += FOOD_FEE
 
     // Create booking
+    const now = new Date()
+    const startDate = body.startDate ? new Date(body.startDate) : now
+    const endDate = body.endDate
+      ? new Date(body.endDate)
+      : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // Default to 30 days from now
+
     const booking: any = await payload.create({
       collection: 'bookings',
       data: {
         customer: customerId,
         property: body.property,
         room: body.room,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
         foodIncluded,
         price,
         status: 'pending',

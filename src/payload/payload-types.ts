@@ -79,6 +79,7 @@ export interface Config {
     'food-menu': FoodMenu;
     'support-tickets': SupportTicket;
     'support-media': SupportMedia;
+    notifications: Notification;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -97,6 +98,7 @@ export interface Config {
     'food-menu': FoodMenuSelect<false> | FoodMenuSelect<true>;
     'support-tickets': SupportTicketsSelect<false> | SupportTicketsSelect<true>;
     'support-media': SupportMediaSelect<false> | SupportMediaSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -290,6 +292,35 @@ export interface Property {
       }[]
     | null;
   manager: string | User;
+  /**
+   * Configure security deposit requirements for this property
+   */
+  securityDepositConfig?: {
+    /**
+     * Enable security deposit requirement for this property
+     */
+    enabled?: boolean | null;
+    /**
+     * Default security deposit amount (can be overridden per booking)
+     */
+    amount?: number | null;
+    /**
+     * How to calculate security deposit
+     */
+    type?: ('fixed' | 'multiplier') | null;
+    /**
+     * Number of months rent as security deposit (if type is multiplier)
+     */
+    multiplier?: number | null;
+    /**
+     * Is the security deposit refundable?
+     */
+    refundable?: boolean | null;
+    /**
+     * Conditions for security deposit refund
+     */
+    refundConditions?: string | null;
+  };
   rooms?: (string | Room)[] | null;
   roomRentPriceRange?: {
     min?: number | null;
@@ -489,6 +520,8 @@ export interface Room {
   createdAt: string;
 }
 /**
+ * Manage customer accounts and profiles
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "customers".
  */
@@ -497,6 +530,109 @@ export interface Customer {
   name: string;
   phone?: string | null;
   status?: ('active' | 'inactive') | null;
+  /**
+   * Profile picture for the customer
+   */
+  profilePicture?: (string | null) | Media;
+  /**
+   * Customer date of birth
+   */
+  dateOfBirth?: string | null;
+  gender?: ('male' | 'female' | 'other' | 'prefer-not-to-say') | null;
+  /**
+   * Customer occupation or job title
+   */
+  occupation?: string | null;
+  /**
+   * Company or institution name
+   */
+  company?: string | null;
+  address?: {
+    /**
+     * Street address
+     */
+    street?: string | null;
+    /**
+     * City
+     */
+    city?: string | null;
+    /**
+     * State or province
+     */
+    state?: string | null;
+    /**
+     * Postal/ZIP code
+     */
+    pincode?: string | null;
+    /**
+     * Country
+     */
+    country?: string | null;
+  };
+  emergencyContact?: {
+    /**
+     * Emergency contact name
+     */
+    name?: string | null;
+    /**
+     * Emergency contact phone number
+     */
+    phone?: string | null;
+    /**
+     * Relationship to customer
+     */
+    relationship?: string | null;
+  };
+  notificationPreferences?: {
+    /**
+     * Receive email notifications
+     */
+    emailNotifications?: boolean | null;
+    /**
+     * Receive SMS notifications
+     */
+    smsNotifications?: boolean | null;
+    /**
+     * Receive push notifications
+     */
+    pushNotifications?: boolean | null;
+    /**
+     * Receive booking reminders
+     */
+    bookingReminders?: boolean | null;
+    /**
+     * Receive payment reminders
+     */
+    paymentReminders?: boolean | null;
+    /**
+     * Receive maintenance updates
+     */
+    maintenanceUpdates?: boolean | null;
+  };
+  /**
+   * Enable automatic rent payments
+   */
+  autoPayEnabled?: boolean | null;
+  /**
+   * Payment method ID for auto-pay
+   */
+  autoPayPaymentMethod?: string | null;
+  /**
+   * Day of month for auto-pay (1-28)
+   */
+  autoPayDay?: number | null;
+  /**
+   * Maximum amount for auto-pay
+   */
+  autoPayMaxAmount?: number | null;
+  /**
+   * Receive notifications for auto-pay
+   */
+  autoPayNotifications?: boolean | null;
+  /**
+   * Last time auto-pay settings were updated
+   */
+  autoPayLastUpdated?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -566,7 +702,33 @@ export interface Booking {
   room: string | Room;
   foodIncluded?: boolean | null;
   price: number;
-  status?: ('pending' | 'confirmed' | 'cancelled') | null;
+  /**
+   * Security deposit details for this booking
+   */
+  securityDeposit?: {
+    /**
+     * Security deposit amount (0 if not required)
+     */
+    amount?: number | null;
+    status?: ('not-required' | 'pending' | 'paid' | 'refunded' | 'partially-refunded' | 'forfeited') | null;
+    /**
+     * Date when security deposit was paid
+     */
+    paidDate?: string | null;
+    /**
+     * Date when security deposit was refunded
+     */
+    refundedDate?: string | null;
+    /**
+     * Amount refunded (if different from original amount)
+     */
+    refundAmount?: number | null;
+    /**
+     * Additional notes about security deposit
+     */
+    notes?: string | null;
+  };
+  status?: ('pending' | 'confirmed' | 'cancelled' | 'completed' | 'extended') | null;
   roomSnapshot?:
     | {
         [k: string]: unknown;
@@ -576,6 +738,57 @@ export interface Booking {
     | number
     | boolean
     | null;
+  startDate: string;
+  endDate: string;
+  periodInMonths?: number | null;
+  checkInDate?: string | null;
+  checkOutDate?: string | null;
+  cancellationReason?: string | null;
+  cancelledAt?: string | null;
+  cancelledBy?: (string | null) | Customer;
+  extensionRequests?:
+    | {
+        requestedEndDate: string;
+        reason: string;
+        status?: ('pending' | 'approved' | 'rejected') | null;
+        requestedAt?: string | null;
+        respondedAt?: string | null;
+        responseNote?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  maintenanceRequests?:
+    | {
+        title: string;
+        description: string;
+        priority?: ('low' | 'medium' | 'high' | 'urgent') | null;
+        status?: ('open' | 'in-progress' | 'resolved' | 'closed') | null;
+        requestedAt?: string | null;
+        resolvedAt?: string | null;
+        resolutionNote?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  bookingDocuments?:
+    | {
+        document: string | Media;
+        type: 'agreement' | 'id-proof' | 'address-proof' | 'other';
+        description?: string | null;
+        uploadedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  rating?: number | null;
+  review?: string | null;
+  reviewedAt?: string | null;
+  specialRequests?: string | null;
+  notes?: string | null;
+  totalNights?: number | null;
+  averageDailyRate?: number | null;
+  lastModified?: string | null;
+  modificationCount?: number | null;
+  customerSatisfactionScore?: number | null;
+  bookingSource?: ('website' | 'mobile-app' | 'phone' | 'walk-in' | 'referral') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -586,7 +799,10 @@ export interface Booking {
 export interface Payment {
   id: string;
   amount: number;
-  status: 'pending' | 'completed' | 'failed';
+  /**
+   * Current status of the payment
+   */
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'refunded' | 'partially-refunded';
   customer: string | Customer;
   payfor: string | Booking;
   paymentForMonthAndYear: string;
@@ -615,6 +831,97 @@ export interface Payment {
   phonepeTransactionId?: string | null;
   phonepeLastCode?: string | null;
   phonepeLastState?: string | null;
+  paymentMethod?: ('credit-card' | 'debit-card' | 'upi' | 'net-banking' | 'wallet' | 'cash') | null;
+  /**
+   * Enable automatic payment for future months
+   */
+  autoPayEnabled?: boolean | null;
+  /**
+   * Late fees applied to this payment
+   */
+  lateFees?: number | null;
+  /**
+   * Utility charges included in this payment
+   */
+  utilityCharges?: number | null;
+  /**
+   * Payment receipt document
+   */
+  paymentReceipt?: (string | null) | Media;
+  paymentMethodDetails?: {
+    /**
+     * Last 4 digits of card (if applicable)
+     */
+    cardLast4?: string | null;
+    /**
+     * Type of card (Visa, MasterCard, etc.)
+     */
+    cardType?: string | null;
+    /**
+     * UPI ID used for payment
+     */
+    upiId?: string | null;
+    /**
+     * Bank name for net banking
+     */
+    bankName?: string | null;
+  };
+  reminderSettings?: {
+    /**
+     * Send payment reminders
+     */
+    sendReminders?: boolean | null;
+    /**
+     * Days before due date to send reminder
+     */
+    reminderDays?: number | null;
+    /**
+     * When the last reminder was sent
+     */
+    reminderSentAt?: string | null;
+  };
+  /**
+   * Additional notes about this payment
+   */
+  notes?: string | null;
+  /**
+   * Admin user who processed this payment
+   */
+  processedBy?: (string | null) | User;
+  /**
+   * Time taken to process payment (in seconds)
+   */
+  processingTime?: number | null;
+  /**
+   * Number of times payment was retried
+   */
+  retryCount?: number | null;
+  /**
+   * Last time payment was retried
+   */
+  lastRetryAt?: string | null;
+  /**
+   * Customer satisfaction rating for payment experience
+   */
+  customerSatisfactionScore?: number | null;
+  /**
+   * Source through which payment was initiated
+   */
+  paymentSource?: ('web-dashboard' | 'mobile-app' | 'admin-panel' | 'auto-pay' | 'phone-call' | 'walk-in') | null;
+  deviceInfo?: {
+    /**
+     * User agent string
+     */
+    userAgent?: string | null;
+    /**
+     * IP address of payment initiator
+     */
+    ipAddress?: string | null;
+    /**
+     * Type of device used for payment
+     */
+    deviceType?: ('desktop' | 'mobile' | 'tablet' | 'unknown') | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -680,6 +987,81 @@ export interface SupportMedia {
       filename?: string | null;
     };
   };
+}
+/**
+ * Manage customer notifications and alerts
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: string;
+  /**
+   * The customer who will receive this notification
+   */
+  customer: string | Customer;
+  /**
+   * Notification title or subject
+   */
+  title: string;
+  /**
+   * Notification message content
+   */
+  message: string;
+  /**
+   * Type of notification
+   */
+  type: 'booking' | 'payment' | 'support' | 'general' | 'maintenance' | 'security' | 'food' | 'cleaning';
+  /**
+   * Category for filtering notifications
+   */
+  category?:
+    | ('all' | 'booking' | 'payment' | 'support' | 'system' | 'maintenance' | 'security' | 'food' | 'cleaning')
+    | null;
+  /**
+   * Priority level of the notification
+   */
+  priority?: ('low' | 'medium' | 'high' | 'urgent') | null;
+  /**
+   * Whether the customer has read this notification
+   */
+  isRead?: boolean | null;
+  /**
+   * When the notification was read
+   */
+  readAt?: string | null;
+  /**
+   * Optional URL for notification action (e.g., link to booking details)
+   */
+  actionUrl?: string | null;
+  /**
+   * Text for the action button (e.g., "View Booking", "Pay Now")
+   */
+  actionText?: string | null;
+  /**
+   * When the notification expires (optional)
+   */
+  expiresAt?: string | null;
+  /**
+   * Related booking (if this notification is about a booking)
+   */
+  relatedBooking?: (string | null) | Booking;
+  /**
+   * Related payment (if this notification is about a payment)
+   */
+  relatedPayment?: (string | null) | Payment;
+  /**
+   * Related support ticket (if this notification is about support)
+   */
+  relatedSupportTicket?: (string | null) | SupportTicket;
+  /**
+   * When the notification was created
+   */
+  createdAt: string;
+  /**
+   * When the notification was last updated
+   */
+  updatedAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -823,6 +1205,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'support-media';
         value: string | SupportMedia;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: string | Notification;
       } | null)
     | ({
         relationTo: 'payload-jobs';
@@ -1043,6 +1429,16 @@ export interface PropertiesSelect<T extends boolean = true> {
         id?: T;
       };
   manager?: T;
+  securityDepositConfig?:
+    | T
+    | {
+        enabled?: T;
+        amount?: T;
+        type?: T;
+        multiplier?: T;
+        refundable?: T;
+        refundConditions?: T;
+      };
   rooms?: T;
   roomRentPriceRange?:
     | T
@@ -1096,6 +1492,43 @@ export interface CustomersSelect<T extends boolean = true> {
   name?: T;
   phone?: T;
   status?: T;
+  profilePicture?: T;
+  dateOfBirth?: T;
+  gender?: T;
+  occupation?: T;
+  company?: T;
+  address?:
+    | T
+    | {
+        street?: T;
+        city?: T;
+        state?: T;
+        pincode?: T;
+        country?: T;
+      };
+  emergencyContact?:
+    | T
+    | {
+        name?: T;
+        phone?: T;
+        relationship?: T;
+      };
+  notificationPreferences?:
+    | T
+    | {
+        emailNotifications?: T;
+        smsNotifications?: T;
+        pushNotifications?: T;
+        bookingReminders?: T;
+        paymentReminders?: T;
+        maintenanceUpdates?: T;
+      };
+  autoPayEnabled?: T;
+  autoPayPaymentMethod?: T;
+  autoPayDay?: T;
+  autoPayMaxAmount?: T;
+  autoPayNotifications?: T;
+  autoPayLastUpdated?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1146,8 +1579,69 @@ export interface BookingsSelect<T extends boolean = true> {
   room?: T;
   foodIncluded?: T;
   price?: T;
+  securityDeposit?:
+    | T
+    | {
+        amount?: T;
+        status?: T;
+        paidDate?: T;
+        refundedDate?: T;
+        refundAmount?: T;
+        notes?: T;
+      };
   status?: T;
   roomSnapshot?: T;
+  startDate?: T;
+  endDate?: T;
+  periodInMonths?: T;
+  checkInDate?: T;
+  checkOutDate?: T;
+  cancellationReason?: T;
+  cancelledAt?: T;
+  cancelledBy?: T;
+  extensionRequests?:
+    | T
+    | {
+        requestedEndDate?: T;
+        reason?: T;
+        status?: T;
+        requestedAt?: T;
+        respondedAt?: T;
+        responseNote?: T;
+        id?: T;
+      };
+  maintenanceRequests?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        priority?: T;
+        status?: T;
+        requestedAt?: T;
+        resolvedAt?: T;
+        resolutionNote?: T;
+        id?: T;
+      };
+  bookingDocuments?:
+    | T
+    | {
+        document?: T;
+        type?: T;
+        description?: T;
+        uploadedAt?: T;
+        id?: T;
+      };
+  rating?: T;
+  review?: T;
+  reviewedAt?: T;
+  specialRequests?: T;
+  notes?: T;
+  totalNights?: T;
+  averageDailyRate?: T;
+  lastModified?: T;
+  modificationCount?: T;
+  customerSatisfactionScore?: T;
+  bookingSource?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1170,6 +1664,40 @@ export interface PaymentsSelect<T extends boolean = true> {
   phonepeTransactionId?: T;
   phonepeLastCode?: T;
   phonepeLastState?: T;
+  paymentMethod?: T;
+  autoPayEnabled?: T;
+  lateFees?: T;
+  utilityCharges?: T;
+  paymentReceipt?: T;
+  paymentMethodDetails?:
+    | T
+    | {
+        cardLast4?: T;
+        cardType?: T;
+        upiId?: T;
+        bankName?: T;
+      };
+  reminderSettings?:
+    | T
+    | {
+        sendReminders?: T;
+        reminderDays?: T;
+        reminderSentAt?: T;
+      };
+  notes?: T;
+  processedBy?: T;
+  processingTime?: T;
+  retryCount?: T;
+  lastRetryAt?: T;
+  customerSatisfactionScore?: T;
+  paymentSource?: T;
+  deviceInfo?:
+    | T
+    | {
+        userAgent?: T;
+        ipAddress?: T;
+        deviceType?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1247,6 +1775,28 @@ export interface SupportMediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  customer?: T;
+  title?: T;
+  message?: T;
+  type?: T;
+  category?: T;
+  priority?: T;
+  isRead?: T;
+  readAt?: T;
+  actionUrl?: T;
+  actionText?: T;
+  expiresAt?: T;
+  relatedBooking?: T;
+  relatedPayment?: T;
+  relatedSupportTicket?: T;
+  createdAt?: T;
+  updatedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

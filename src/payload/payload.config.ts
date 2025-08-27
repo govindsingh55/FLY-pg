@@ -18,6 +18,7 @@ import FoodMenu from './collections/FoodMenu'
 import SupportTickets from './collections/SupportTickets'
 import SupportMedia from './collections/SupportMedia'
 import Payments from './collections/Payments'
+import Notifications from './collections/Notifications'
 import { resendAdapter } from '@payloadcms/email-resend'
 
 const filename = fileURLToPath(import.meta.url)
@@ -45,6 +46,7 @@ export default buildConfig({
     FoodMenu,
     SupportTickets,
     SupportMedia,
+    Notifications,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

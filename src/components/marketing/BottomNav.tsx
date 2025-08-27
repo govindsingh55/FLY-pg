@@ -17,6 +17,7 @@ import { useUser } from '@/lib/state/user'
 export function BottomNav() {
   const pathname = usePathname()
   const actions = useFilterActions()
+  const { isAuthenticated } = useUser()
 
   return (
     <nav className="fixed z-[100] inset-x-0 bottom-0 h-16 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
@@ -68,10 +69,10 @@ function Account() {
         {isAuthenticated ? (
           <>
             <DropdownMenuItem>
-              <Link href="/profile">Profile</Link>
+              <Link href="/dashboard">Dashboard</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/settings">Settings</Link>
+              <Link href="/dashboard/profile">Profile</Link>
             </DropdownMenuItem>
           </>
         ) : (

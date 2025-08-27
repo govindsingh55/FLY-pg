@@ -89,6 +89,18 @@ export async function seedProperties(
         genderType: 'Male',
         foodMenu: rel?.foodMenuId,
         rooms: rel?.roomIds,
+        // Security Deposit Configuration
+        securityDepositConfig: {
+          enabled: i % 2 === 0, // Enable for even-numbered properties
+          amount: i % 2 === 0 ? 5000 + i * 500 : 0,
+          type: i % 3 === 0 ? 'multiplier' : 'fixed',
+          multiplier: i % 3 === 0 ? 2 : 2,
+          refundable: true,
+          refundConditions:
+            i % 2 === 0
+              ? 'Security deposit will be refunded within 30 days of check-out if no damages are found.'
+              : '',
+        },
       },
     })
     properties.push(property)

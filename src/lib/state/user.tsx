@@ -9,6 +9,7 @@ import React, {
   useRef,
   useReducer,
 } from 'react'
+import { useRouter } from 'next/navigation'
 
 type AuthCollection = 'users' | 'customers'
 
@@ -51,12 +52,14 @@ interface UserContextValue {
   // ...existing code...
   logout: () => Promise<void>
   refresh: () => Promise<boolean>
-  refetchUser: () => Promise<void>
+  refetchUser: () => Promise<boolean>
   // New fine-grained action setters for server-action based flows
   setAuthLoading: () => void
   setAuthenticated: (user: AuthUserBase) => void
   setUnauthenticated: () => void
   setAuthError: (error: string) => void
+  // Manual authentication update for server actions
+  updateAuthAfterLogin: (user: AuthUserBase) => void
 }
 
 const UserCtx = createContext<UserContextValue | null>(null)
@@ -118,17 +121,28 @@ export function UserProvider({
           const data = await res.json()
           if (data?.user) {
             dispatch({ type: 'SET_AUTHENTICATED', user: { ...data.user, collection: 'customers' } })
-            return
+            return true
           } else {
-            // If ok but user is null, treat as unauthenticated and set error for debugging
-            dispatch({ type: 'SET_ERROR', error: `No user found: ${data?.message || 'Unknown'}` })
-            setUnauthenticated()
-            return
+            // Session expired - user is null but response is ok
+            dispatch({ type: 'SET_UNAUTHENTICATED' })
+            // Show session expired notification
+            if (typeof window !== 'undefined') {
+              import('sonner').then(({ toast }) => {
+                toast.error('Session expired. Please log in again.')
+              })
+            }
+            return false
           }
         }
         if (res.status === 401) {
+          // Unauthorized - clear session
           setUnauthenticated()
-          return
+          if (typeof window !== 'undefined') {
+            import('sonner').then(({ toast }) => {
+              toast.error('Session expired. Please log in again.')
+            })
+          }
+          return false
         }
         // Other error statuses
         let txt = ''
@@ -137,10 +151,12 @@ export function UserProvider({
         } catch {}
         dispatch({ type: 'SET_ERROR', error: `Error fetching customers/me: ${res.status} ${txt}` })
         setUnauthenticated()
+        return false
       } catch (err: any) {
-        if (err?.name === 'AbortError') return
+        if (err?.name === 'AbortError') return false
         dispatch({ type: 'SET_ERROR', error: err.message || 'Failed to load user' })
         setUnauthenticated()
+        return false
       }
     },
     [apiBase, setUnauthenticated],
@@ -156,13 +172,24 @@ export function UserProvider({
           headers: { 'Content-Type': 'application/json' },
         })
         if (res.ok) {
-          await fetchMe()
-          return true
+          const success = await fetchMe()
+          return success
         }
+        // Refresh token failed - session expired
         setUnauthenticated()
+        if (typeof window !== 'undefined') {
+          import('sonner').then(({ toast }) => {
+            toast.error('Session expired. Please log in again.')
+          })
+        }
         return false
       } catch {
         setUnauthenticated()
+        if (typeof window !== 'undefined') {
+          import('sonner').then(({ toast }) => {
+            toast.error('Session expired. Please log in again.')
+          })
+        }
         return false
       } finally {
         globalRefreshPromise = null
@@ -185,7 +212,8 @@ export function UserProvider({
 
   const refetchUser = useCallback(async () => {
     dispatch({ type: 'SET_LOADING' })
-    await fetchMe()
+    const success = await fetchMe()
+    return success
   }, [fetchMe])
 
   useEffect(() => {
@@ -221,6 +249,10 @@ export function UserProvider({
     return () => document.removeEventListener('visibilitychange', handler)
   }, [refresh, state.status])
 
+  const updateAuthAfterLogin = useCallback((user: AuthUserBase) => {
+    dispatch({ type: 'SET_AUTHENTICATED', user: { ...user, collection: 'customers' } })
+  }, [])
+
   const value: UserContextValue = useMemo(
     () => ({
       user: state.user,
@@ -234,8 +266,9 @@ export function UserProvider({
       setAuthenticated: (user: AuthUserBase) => dispatch({ type: 'SET_AUTHENTICATED', user }),
       setUnauthenticated: () => dispatch({ type: 'SET_UNAUTHENTICATED' }),
       setAuthError: (error: string) => dispatch({ type: 'SET_ERROR', error }),
+      updateAuthAfterLogin,
     }),
-    [state, logout, refresh, refetchUser],
+    [state, logout, refresh, refetchUser, updateAuthAfterLogin],
   )
 
   return <UserCtx.Provider value={value}>{children}</UserCtx.Provider>
@@ -279,9 +312,31 @@ export function useRequireAuth({ redirectTo }: { redirectTo?: string } = {}) {
 
 export const RequireAuth: React.FC<{ children: React.ReactNode; redirectTo?: string }> = ({
   children,
+  redirectTo = '/auth/sign-in',
 }) => {
   const { status } = useUser()
-  if (status === 'loading' || status === 'idle') return null
-  if (status !== 'authenticated') return null
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      // Use window.location for navigation to avoid SSR issues
+      window.location.href = redirectTo
+    }
+  }, [status, redirectTo])
+
+  if (status === 'loading' || status === 'idle') {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (status !== 'authenticated') {
+    return null
+  }
+
   return <>{children}</>
 }
