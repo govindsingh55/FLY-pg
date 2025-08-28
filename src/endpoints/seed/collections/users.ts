@@ -1,10 +1,23 @@
 import { Payload, PayloadRequest } from 'payload'
 
 export async function seedUsers(payload: Payload, req: PayloadRequest) {
+  // Find the first registered user (earliest createdAt) to preserve for admin onboarding
+  const firstUser = await payload.find({
+    collection: 'users',
+    sort: 'createdAt',
+    limit: 1,
+  })
+
+  const firstUserId = firstUser.docs.length > 0 ? firstUser.docs[0].id : null
+
+  // Delete all users except the first registered user and admin@example.com
   await payload.delete({
     collection: 'users',
     where: {
-      email: { not_equals: 'admin@example.com' },
+      and: [
+        { email: { not_equals: 'admin@example.com' } },
+        ...(firstUserId ? [{ id: { not_equals: firstUserId } }] : []),
+      ],
     },
   })
   const users = []
