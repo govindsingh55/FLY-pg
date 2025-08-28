@@ -1,189 +1,265 @@
-# Payload Blank Template
+# FLY-pg - Property Management System
 
-This template comes configured with the bare minimum to get started on anything you need.
+A comprehensive property management system built with Next.js, Payload CMS, and PhonePe payment integration for PG (Paying Guest) accommodations.
 
-## Quick start
+## 🚀 Quick Start
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+### Prerequisites
+- Node.js 18+ 
+- MongoDB
+- PhonePe UAT credentials (for testing)
 
-## Quick Start - local setup
+### Installation
 
-To spin up this template locally, follow these steps:
+1. **Clone and setup**
+   ```bash
+   git clone <repository-url>
+   cd FLY-pg
+   cp .env.example .env
+   ```
 
-### Clone
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+3. **Configure environment**
+   ```bash
+   # Database
+   DATABASE_URI=mongodb://localhost:27017/fly-pg
+   
+   # PhonePe (UAT Testing)
+   PHONEPE_MERCHANT_ID=PGTESTPAYUAT
+   PHONEPE_SALT_KEY=099eb0cd-02cf-4e2a-8aca-3e6c6aff0399
+   PHONEPE_KEY_INDEX=1
+   PHONEPE_BASE_URL=https://api-uat.phonepe.com/apis/hermes
+   ```
 
-### Development
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URI` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+5. **Access the application**
+   - Frontend: http://localhost:3000
+   - Admin Panel: http://localhost:3000/admin
+   - Seed Database: Use the "Seed Test Data" button in admin dashboard
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+## 🏗️ Architecture
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+### Tech Stack
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Payload CMS, MongoDB
+- **Payments**: PhonePe SDK
+- **Testing**: Playwright, Vitest
+- **Deployment**: Docker support
 
-#### Docker (Optional)
-
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
-
-To do so, follow these steps:
-
-- Modify the `MONGODB_URI` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URI` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
-
-## How it works
-
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
-
-### Collections
-
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
-
-- #### Users (Authentication)
-
-  Users are auth-enabled collections that have access to the admin panel.
-
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/main/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
-
-- #### Media
-
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
-
-### Docker
-
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
-
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
-
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
-
-## Property booking feature plan
-
-This section tracks the implementation plan for room booking and payments from the Property Details page.
-
-- [x] Replace room list with selectable room UI on the property page (in `BookingCard.tsx`).
-- [x] Enable the Book button only when a room is selected.
-- [x] On Book, open Drawer/Sheet similar to Schedule a visit.
-- [x] Prevent guests from booking; show a modal prompting Sign in / Sign up.
-- [x] Booking form to capture minimal inputs (foodIncluded) and submit to API.
-- [x] Create endpoint POST `/api/custom/booking` to create a booking.
-- [x] Compute price server-side from the selected room; store `roomSnapshot`.
-- [x] Seed payment handling: create a pending Payment tied to the booking with due date.
-- [ ] Extend price rules (e.g., add food plan cost, discounts, taxes).
-- [ ] Payment UI flow (choose method, pay now, handle callbacks) and success page.
-- [ ] Wire PhonePe env vars and signature verification utilities.
-- [ ] Implement PhonePe initiation, redirect/instrument handling, callback + webhook.
-- [ ] Update Payment and Booking status transitions automatically.
-
-## PhonePe Payment Gateway Integration
-
-The application now uses the official PhonePe Node.js SDK for payment processing. To configure PhonePe integration, you need to set the following environment variables:
-
-### Required Environment Variables
-
-```bash
-# PhonePe SDK Configuration
-PHONEPE_CLIENT_ID=your_client_id_here
-PHONEPE_CLIENT_SECRET=your_client_secret_here
-PHONEPE_CLIENT_VERSION=1
-PHONEPE_ENV=UAT  # or PRODUCTION for live environment
-
-# Legacy variables (still used for merchant ID)
-PHONEPE_MERCHANT_ID=your_merchant_id_here
-
-# UAT Sandbox Testing (for development)
-PHONEPE_BASE_URL=https://api-preprod.phonepe.com/apis/pgsandbox
+### Project Structure
+```
+src/
+├── app/                    # Next.js app router
+│   ├── (frontend)/        # Public frontend routes
+│   ├── (payload)/         # Payload CMS admin
+│   └── api/               # API routes
+├── components/            # React components
+│   ├── dashboard/         # Customer dashboard
+│   ├── marketing/         # Public marketing pages
+│   └── ui/               # Reusable UI components
+├── payload/              # Payload CMS configuration
+│   ├── collections/      # Data models
+│   └── components/       # Admin components
+└── lib/                  # Utilities and services
 ```
 
-### Getting PhonePe Credentials
+## 📊 Features
 
-1. **For UAT/Testing**: Contact PhonePe integration team to get your UAT credentials
-2. **For Production**: Get your credentials from the PhonePe business dashboard
+### Customer Dashboard
+- **Profile Management**: Complete profile with address, emergency contacts
+- **Booking Management**: View, cancel, extend bookings
+- **Payment Management**: Rent payments, auto-pay, payment history
+- **Support System**: Ticket management with real-time chat
+- **Notifications**: Real-time notifications and preferences
 
-### Environment Configuration
+### Admin Panel
+- **Property Management**: Properties, rooms, amenities
+- **User Management**: Customers, staff, roles
+- **Booking Management**: Booking lifecycle, status updates
+- **Payment Management**: Payment tracking, refunds
+- **Support Management**: Ticket resolution, customer support
 
-- **UAT Environment**: Use `PHONEPE_ENV=UAT` for testing
-- **Production Environment**: Use `PHONEPE_ENV=PRODUCTION` for live payments
+### Payment Integration
+- **PhonePe Integration**: UPI, cards, net banking
+- **Auto-pay**: Automated rent payments
+- **Payment History**: Complete transaction records
+- **Receipts**: Downloadable payment receipts
 
-### UAT Sandbox Testing Setup
+## 💳 PhonePe Payment Setup
 
-For comprehensive testing, follow the [PhonePe UAT Sandbox Setup Guide](PHONEPE_UAT_SETUP.md) which includes:
+### UAT Testing
+The application is pre-configured for PhonePe UAT testing:
 
-1. **PhonePe Test App Installation**
-2. **Template Configuration** for success/failure scenarios
-3. **Test VPAs and Card Details**
-4. **Step-by-step Testing Workflow**
+```bash
+# Test VPAs (for UPI testing)
+Success: success@ybl
+Failure: failed@ybl  
+Pending: pending@ybl
+```
 
-### Quick Testing with VPAs
-
-For immediate UPI testing, use these predefined VPAs:
-- **Success**: `success@ybl` (redirects within 5 seconds)
-- **Failure**: `failed@ybl` (redirects within 5 seconds)  
-- **Pending**: `pending@ybl` (redirects within 60 seconds)
-
-### SDK Features
-
-The integration includes:
-- Payment initiation using the official SDK
-- Order status checking
-- Callback signature verification
-- Comprehensive error handling and logging
+### Production Setup
+1. Get production credentials from PhonePe
+2. Update environment variables:
+   ```bash
+   PHONEPE_ENV=PRODUCTION
+   PHONEPE_MERCHANT_ID=your_production_merchant_id
+   PHONEPE_SALT_KEY=your_production_salt_key
+   ```
 
 ### Callback Configuration
+Contact PhonePe integration team to configure:
+- **Callback URL**: `https://yourdomain.com/api/custom/payments/phonepe/callback`
+- **Webhook URL**: Same as callback URL
 
-**Important**: PhonePe callbacks (webhooks) are configured on the PhonePe merchant dashboard, not through the SDK. You need to:
+## 🧪 Testing
 
-1. **Contact PhonePe Integration Team** to set up your callback URL
-2. **Provide your callback endpoint**: `https://yourdomain.com/api/custom/payments/phonepe/callback`
-3. **Ensure the endpoint is accessible** from PhonePe servers
+### Database Seeding
+Use the admin dashboard "Seed Test Data" button to populate:
+- 12 sample customers (login: customer1@example.com, password: password1)
+- Sample properties and rooms
+- Test bookings and payments
+- Support tickets and media
 
-The SDK handles payment initiation and status checking, while callbacks are managed separately by PhonePe.
+### Test Credentials
+```
+Customer Login:
+- Email: customer1@example.com
+- Password: password1
 
-### Testing
+Admin Login:
+- Email: admin1@example.com  
+- Password: password123
+```
 
-For testing purposes, you can use PhonePe's UAT environment which provides test payment flows without actual money transactions.
+### Test Payment Flow
+1. Create a booking on property page
+2. Proceed to payment
+3. Use test VPAs for UPI testing
+4. Verify payment status in admin panel
 
-### End-to-End Payment Flow ✅
+## 🚀 Deployment
 
-1. ✅ Create booking + pending payment via POST `/api/custom/booking`
-2. ✅ Initiate PhonePe payment via POST `/api/custom/payments/phonepe/initiate`
-3. ✅ Client redirects to PhonePe payment page
-4. ✅ PhonePe callback/webhook via POST `/api/custom/payments/phonepe/callback`
-5. ✅ Payment status check via GET `/api/custom/payments/phonepe/status`
-6. ✅ Success page at `/payments/success`
+### Docker Deployment
+```bash
+# Build and run with Docker
+docker-compose up -d
 
-### Key Files
+# Or build production image
+docker build -t fly-pg .
+docker run -p 3000:3000 fly-pg
+```
 
-- `src/lib/payments/phonepe.ts` — Core PhonePe integration with signature verification
-- `src/app/api/custom/payments/phonepe/` — Payment API endpoints
-- `src/components/marketing/property-detail/RoomBookingForm.tsx` — Booking and payment UI
-- `src/components/dashboard/PhonePeTestPanel.tsx` — Testing utilities
-- `src/payload/components/PhonePeTools.tsx` — Admin panel tools
+### Environment Variables
+```bash
+# Production
+NODE_ENV=production
+DATABASE_URI=mongodb://your-mongodb-uri
+PAYLOAD_SECRET=your-secret-key
+PHONEPE_ENV=PRODUCTION
+```
 
-### Testing Tools
+## 📚 API Documentation
 
-- **PhonePe Test Panel**: Development testing interface
-- **Admin Tools**: Payment status management in admin dashboard
-- **Success Page**: Enhanced payment result display
-- **Callback Verification**: Secure signature validation
+### Key Endpoints
+- `POST /api/custom/booking` - Create booking
+- `POST /api/custom/payments/phonepe/initiate` - Initiate payment
+- `GET /api/custom/customers/profile` - Get customer profile
+- `POST /api/custom/customers/support/tickets` - Create support ticket
 
-### Documentation
+### Authentication
+- Customer authentication via JWT tokens
+- Admin authentication via Payload CMS
+- Session management with httpOnly cookies
 
-- 📖 [PhonePe Testing Guide](PHONEPE_TESTING.md) - Complete testing instructions
-- 🔗 [PhonePe Documentation](https://developer.phonepe.com/payment-gateway) - Official API docs
+## 🔧 Development
 
-- [ ] Booking lifecycle updates (confirm, cancel) and admin workflows.
+### Available Scripts
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run test         # Run unit tests
+npm run test:e2e     # Run E2E tests
+npm run lint         # Run ESLint
+```
 
-Notes
-- Guests can still schedule a visit, but must sign in or sign up to book.
-- Payments are created as `pending` by the API to prepare for the actual payment flow hookup.
-- When the real payment gateway is integrated, update the API to create payment intents/sessions and redirect the user accordingly.
+### Database Seeding
+```bash
+# Seed via API
+curl -X POST http://localhost:3000/api/seed
+
+# Or use admin dashboard button
+```
+
+## 💳 PhonePe Payment Integration
+
+### Environment Setup
+```bash
+# PhonePe UAT (Testing) Environment
+PHONEPE_MERCHANT_ID=PGTESTPAYUAT
+PHONEPE_SALT_KEY=099eb0cd-02cf-4e2a-8aca-3e6c6aff0399
+PHONEPE_KEY_INDEX=1
+PHONEPE_BASE_URL=https://api-uat.phonepe.com/apis/hermes
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+### Testing Setup
+1. **Install PhonePe Test App**: `com.phonepe.simulator`
+2. **Configure Test Templates**: Use "Paypage" templates for Standard Checkout V2
+3. **Test VPAs**:
+   - Success: `success@ybl` (redirects within 5 seconds)
+   - Failure: `failed@ybl` (redirects within 5 seconds)
+   - Pending: `pending@ybl` (redirects within 60 seconds)
+
+### Test Card Details
+- **Credit Card**: `4208 5851 9011 6667` (Expiry: 06/2027, CVV: 508)
+- **Debit Card**: `4242 4242 4242 4242` (Expiry: 12/2023, CVV: 936)
+- **Simulation OTP**: `123456`
+
+### Webhook Configuration
+**Important**: Webhooks must be configured through PhonePe support team:
+1. Contact PhonePe Integration Team
+2. Provide callback URL: `https://yourdomain.com/api/custom/payments/phonepe/callback`
+3. Request webhook authentication credentials
+4. Configure event types: `CHECKOUT_ORDER_COMPLETED`, `CHECKOUT_ORDER_FAILED`
+
+### Testing Workflow
+1. Create booking → Initiate payment → Complete on PhonePe → Verify callback
+2. Use admin tools for manual status updates
+3. Monitor webhook delivery and signature verification
+
+### Production Setup
+- Update environment variables for production
+- Configure production webhooks with PhonePe
+- Implement proper monitoring and error handling
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Check the documentation files
+- Review the PhonePe integration guides
+
+---
+
+**Built with ❤️ using Next.js, Payload CMS, and PhonePe**
