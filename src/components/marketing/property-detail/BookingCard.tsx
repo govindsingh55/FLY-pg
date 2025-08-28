@@ -1,19 +1,6 @@
 'use client'
 
-import * as React from 'react'
-import * as Lucide from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { usePropertyDetail } from '@/lib/state/propertyDetail'
-import VisitBookingForm from './VisitBookingForm'
-import RoomBookingForm from './RoomBookingForm'
-import {
-  Drawer,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer'
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import {
   Dialog,
   DialogContent,
@@ -22,8 +9,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import Link from 'next/link'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { usePropertyDetail } from '@/lib/state/propertyDetail'
 import { useUser } from '@/lib/state/user'
+import * as Lucide from 'lucide-react'
+import Link from 'next/link'
+import * as React from 'react'
+import RoomBookingForm from './RoomBookingForm'
+import VisitBookingForm from './VisitBookingForm'
 
 export type Room = {
   id: string

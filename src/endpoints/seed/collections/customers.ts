@@ -12,7 +12,7 @@ export async function seedCustomers(payload: Payload, req: PayloadRequest) {
       data: {
         name: `Customer ${i}`,
         email: `customer${i}@example.com`,
-        phone: `12345678${i.toString().padStart(2, '0')}`,
+        phone: `9876543${i.toString().padStart(3, '0')}`,
         password: `password${i}`,
       },
     })

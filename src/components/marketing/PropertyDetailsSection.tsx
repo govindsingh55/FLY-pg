@@ -26,7 +26,7 @@ interface PropertyDetailsSectionProps {
     name: string
     description?: any
     amenities?: string[]
-    foodMenu?: { description?: any }
+    foodMenu?: { menu?: { description?: any }; price?: number }
     nearby?: NearbyLocation[]
     rooms?: Room[]
     images?: Array<{ image: any; id: string; isCover: boolean }>
@@ -102,18 +102,25 @@ export default function PropertyDetailsSection({
             )}
 
             {/* Food Menu */}
-            {property.foodMenu?.description && (
+            {property.foodMenu?.menu?.description && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Lucide.UtensilsCrossed className="h-5 w-5 text-primary" />
                     Food Menu
                   </CardTitle>
-                  <CardDescription>Delicious meals prepared fresh daily</CardDescription>
+                  <CardDescription>
+                    Delicious meals prepared fresh daily
+                    {property.foodMenu.price && (
+                      <span className="block text-green-600 font-medium">
+                        Monthly Food Charge: ₹{property.foodMenu.price.toLocaleString()}
+                      </span>
+                    )}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <RichText
-                    data={property.foodMenu.description}
+                    data={property.foodMenu.menu.description}
                     enableGutter={false}
                     enableProse={true}
                   />

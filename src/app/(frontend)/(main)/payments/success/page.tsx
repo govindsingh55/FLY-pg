@@ -1,80 +1,163 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import Link from 'next/link'
+import { RefreshStatusButton } from './RefreshStatusButton'
 
-// Force dynamic rendering to avoid build-time DB connection attempts in CI/CD
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-export const fetchCache = 'force-no-store'
+// Payment success/failure page - handles PhonePe redirects
+export default async function PaymentSuccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  // Await searchParams to fix Next.js async issue
+  const params = await searchParams
 
-// /payments/success?paymentId=...&bookingId=...
-export default async function PaymentSuccessPage({ searchParams }: any) {
-  // Initialize as null; attempt connection only at runtime
-  let payload: any = null
-  try {
-    payload = await getPayload({ config })
-  } catch (e) {
-    // Swallow connection errors: page should still render basic info
-    console.error('[payments/success] Payload init failed (non-fatal):', (e as any)?.message)
+  // Initialize payload (optional - for fetching payment details)
+  const payload = await getPayload({ config })
+
+  const paymentId = params.paymentId as string
+
+  let payment = await payload.findByID({
+    collection: 'payments',
+    id: paymentId,
+  })
+
+  if (!payment || payment.status === 'failed') {
+    return <div>Payment failed</div>
   }
-  const paymentId = searchParams.paymentId
-  const bookingId = searchParams.bookingId
 
-  // Optional fetch of latest payment/booking for display; safe to fail.
-  let payment: any = null
-  let booking: any = null
-  try {
-    if (payload && paymentId) {
-      const payRes: any = await (payload as any).find({
-        collection: 'payments',
-        where: { id: { equals: paymentId } },
-        depth: 0,
-        limit: 1,
-      })
-      payment = payRes?.docs?.[0] || null
+  if (payment.status === 'initiated') {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL}/api/custom/payments/phonepe/status?paymentId=${paymentId}`,
+      {
+        cache: 'no-store',
+      },
+    )
+    const data = await res.json()
+    if (data.success) {
+      payment = data.payment
     }
-  } catch {}
-  try {
-    if (payload && bookingId) {
-      const bookRes: any = await (payload as any).find({
-        collection: 'bookings',
-        where: { id: { equals: bookingId } },
-        depth: 0,
-        limit: 1,
-      })
-      booking = bookRes?.docs?.[0] || null
-    }
-  } catch {}
-
+  }
+  const isSuccess = payment.status === 'completed'
+  const isFailed = payment.status === 'failed'
+  const isProcessing = payment.status === 'processing'
+  const isInitiated = payment.status === 'initiated'
+  const isPending = payment.status === 'pending'
+  const isCancelled = payment.status === 'cancelled'
+  const isRefunded = payment.status === 'refunded'
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
-      <h1 className="text-2xl font-semibold text-green-600">Payment successful</h1>
-      <p className="mt-2 text-muted-foreground">
-        Thanks for your payment. Your booking is recorded.
-      </p>
-      <div className="mt-6 rounded-md border p-4 text-sm">
-        <div className="font-medium mb-2">Details</div>
-        <div>
-          Payment ID:{' '}
-          <span className="text-muted-foreground">{paymentId || payment?.id || '-'}</span>
-        </div>
-        <div>
-          Booking ID:{' '}
-          <span className="text-muted-foreground">{bookingId || booking?.id || '-'}</span>
-        </div>
-        <div>
-          Status: <span className="text-muted-foreground">{payment?.status || 'completed'}</span>
-        </div>
-        <div>
-          Amount:{' '}
-          <span className="text-muted-foreground">
-            ₹{Number(payment?.amount || booking?.price || 0).toLocaleString()}
-          </span>
-        </div>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-2xl px-4 py-16">
+        {isSuccess ? (
+          <>
+            <h1 className="text-2xl font-semibold text-green-600">Payment Successful!</h1>
+            <p className="mt-2 text-muted-foreground">
+              Thanks for your payment. Your booking has been confirmed.
+            </p>
+
+            <div className="mt-6 rounded-md border p-4 text-sm">
+              <div className="font-medium mb-2">Payment Details</div>
+              <div>
+                Payment ID:{' '}
+                <span className="text-muted-foreground">{paymentId || payment?.id || '-'}</span>
+              </div>
+              <div>
+                Status:{' '}
+                <span className="text-muted-foreground">{payment?.status || 'completed'}</span>
+              </div>
+              <div>
+                Amount:{' '}
+                <span className="text-muted-foreground">
+                  ₹{Number(payment?.amount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Link
+                href="/dashboard/bookings"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                View My Bookings
+              </Link>
+            </div>
+          </>
+        ) : isFailed ? (
+          <>
+            <h1 className="text-2xl font-semibold text-red-600">Payment Failed</h1>
+            <p className="mt-2 text-muted-foreground">
+              Unfortunately, your payment could not be processed. Please try again.
+            </p>
+
+            <div className="mt-6 rounded-md border p-4 text-sm">
+              <div className="font-medium mb-2">Payment Details</div>
+              <div>
+                Payment ID:{' '}
+                <span className="text-muted-foreground">{paymentId || payment?.id || '-'}</span>
+              </div>
+              <div>
+                Status: <span className="text-muted-foreground">{payment?.status || 'failed'}</span>
+              </div>
+              <div>
+                Amount:{' '}
+                <span className="text-muted-foreground">
+                  ₹{Number(payment?.amount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Link
+                href="/properties"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Try Again
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl font-semibold text-yellow-600">Payment Processing</h1>
+            <p className="mt-2 text-muted-foreground">
+              Your payment is being processed. Please wait while we confirm your booking.
+            </p>
+
+            <div className="mt-6 rounded-md border p-4 text-sm">
+              <div className="font-medium mb-2">Payment Details</div>
+              <div>
+                Payment ID:{' '}
+                <span className="text-muted-foreground">{paymentId || payment?.id || '-'}</span>
+              </div>
+              <div>
+                Status:{' '}
+                <span className="text-muted-foreground">{payment?.status || 'processing'}</span>
+              </div>
+              <div>
+                Amount:{' '}
+                <span className="text-muted-foreground">
+                  ₹{Number(payment?.amount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-2">
+              <RefreshStatusButton paymentId={paymentId || ''} />
+              <Link
+                href="/dashboard/bookings"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
+              >
+                Check Bookings
+              </Link>
+              <Link
+                href="/properties"
+                className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              >
+                Browse Properties
+              </Link>
+            </div>
+          </>
+        )}
       </div>
-      {/*
-        This page is for development.
-        In production, you should validate signatures (PhonePe) and show an authoritative status.
-      */}
     </div>
   )
 }

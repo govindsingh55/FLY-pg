@@ -60,8 +60,13 @@ export default async function PropertyDetailPage({ params }: { params: Params })
     distance: l?.distance ?? '',
   }))
   const foodMenuDesc =
-    prop.foodMenu && typeof prop.foodMenu === 'object' && 'description' in prop.foodMenu
-      ? (prop.foodMenu as any).description
+    prop.foodMenu &&
+    typeof prop.foodMenu === 'object' &&
+    'menu' in prop.foodMenu &&
+    prop.foodMenu.menu &&
+    typeof prop.foodMenu.menu === 'object' &&
+    'description' in prop.foodMenu.menu
+      ? (prop.foodMenu.menu as any).description
       : undefined
 
   return (

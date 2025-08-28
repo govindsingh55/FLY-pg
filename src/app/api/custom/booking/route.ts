@@ -49,17 +49,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid room' }, { status: 400 })
     }
 
-    // Compute price. Note: If food has an additional cost, incorporate it here.
-    const price = Number(room.rent || 0)
-    const foodIncluded = !!body.foodIncluded
-    // TODO(Payments): If there is an extra fee for food, add it here. e.g., price += FOOD_FEE
-
-    // Create booking
-    const now = new Date()
-    const startDate = body.startDate ? new Date(body.startDate) : now
+    // Compute price based on room rent and booking period
+    const startDate = body.startDate ? new Date(body.startDate) : new Date()
     const endDate = body.endDate
       ? new Date(body.endDate)
-      : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // Default to 30 days from now
+      : new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000) // Default to 30 days from start date
+
+    // Calculate period in months (same logic as in Bookings collection hook)
+    let months =
+      (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+      (endDate.getMonth() - startDate.getMonth())
+    if (endDate.getDate() >= startDate.getDate()) {
+      months += 1
+    }
+    const periodInMonths = Math.max(1, months)
+
+    // Base price is room rent multiplied by number of months
+    let price = Number(room.rent || 0) * periodInMonths
+    const foodIncluded = !!body.foodIncluded
+
+    // Add food charges if food is included
+    if (foodIncluded) {
+      // Fetch property to get food menu pricing
+      const propertyRes: any = await payload.find({
+        collection: 'properties',
+        where: { id: body.property },
+        depth: 1, // Include food menu details
+        limit: 1,
+      })
+      const property = propertyRes?.docs?.[0]
+
+      if (
+        property?.foodMenu &&
+        typeof property.foodMenu === 'object' &&
+        'price' in property.foodMenu &&
+        property.foodMenu.price > 0
+      ) {
+        const foodMenuPrice = Number(property.foodMenu.price || 0)
+        const foodCharge = foodMenuPrice * periodInMonths
+        price += foodCharge
+      }
+    }
+
+    // Create booking
 
     const booking: any = await payload.create({
       collection: 'bookings',
@@ -71,6 +103,7 @@ export async function POST(req: NextRequest) {
         endDate: endDate.toISOString(),
         foodIncluded,
         price,
+        periodInMonths,
         status: 'pending',
         roomSnapshot: {
           id: room.id,

@@ -10,8 +10,7 @@ const Payments: CollectionConfig = {
       'amount',
       'customer',
       'payfor',
-      'phonepeMerchantTransactionId',
-      'phonepeTransactionId',
+      'merchantOrderId',
       'updatedAt',
     ],
   },
@@ -26,6 +25,7 @@ const Payments: CollectionConfig = {
       name: 'status',
       type: 'select',
       options: [
+        { label: 'Initiated', value: 'initiated' },
         { label: 'Pending', value: 'pending' },
         { label: 'Processing', value: 'processing' },
         { label: 'Completed', value: 'completed' },
@@ -97,13 +97,7 @@ const Payments: CollectionConfig = {
       admin: { readOnly: true },
     },
     {
-      name: 'phonepeMerchantTransactionId',
-      type: 'text',
-      admin: { readOnly: true },
-      index: true,
-    },
-    {
-      name: 'phonepeTransactionId',
+      name: 'merchantOrderId',
       type: 'text',
       admin: { readOnly: true },
       index: true,

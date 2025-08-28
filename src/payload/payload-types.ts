@@ -283,7 +283,19 @@ export interface Property {
         | 'WiFi'
       )[]
     | null;
-  foodMenu?: (string | null) | FoodMenu;
+  /**
+   * Configure food menu and pricing for this property
+   */
+  foodMenu?: {
+    /**
+     * Select the food menu for this property
+     */
+    menu?: (string | null) | FoodMenu;
+    /**
+     * Monthly food charge per person for this property (city-specific pricing)
+     */
+    price?: number | null;
+  };
   nearbyLocations?:
     | {
         name?: string | null;
@@ -802,7 +814,15 @@ export interface Payment {
   /**
    * Current status of the payment
    */
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'refunded' | 'partially-refunded';
+  status:
+    | 'initiated'
+    | 'pending'
+    | 'processing'
+    | 'completed'
+    | 'failed'
+    | 'cancelled'
+    | 'refunded'
+    | 'partially-refunded';
   customer: string | Customer;
   payfor: string | Booking;
   paymentForMonthAndYear: string;
@@ -827,8 +847,7 @@ export interface Payment {
     | boolean
     | null;
   gateway?: string | null;
-  phonepeMerchantTransactionId?: string | null;
-  phonepeTransactionId?: string | null;
+  merchantOrderId?: string | null;
   phonepeLastCode?: string | null;
   phonepeLastState?: string | null;
   paymentMethod?: ('credit-card' | 'debit-card' | 'upi' | 'net-banking' | 'wallet' | 'cash') | null;
@@ -1420,7 +1439,12 @@ export interface PropertiesSelect<T extends boolean = true> {
   status?: T;
   featured?: T;
   amenities?: T;
-  foodMenu?: T;
+  foodMenu?:
+    | T
+    | {
+        menu?: T;
+        price?: T;
+      };
   nearbyLocations?:
     | T
     | {
@@ -1660,8 +1684,7 @@ export interface PaymentsSelect<T extends boolean = true> {
   dueDate?: T;
   phonepeLastRaw?: T;
   gateway?: T;
-  phonepeMerchantTransactionId?: T;
-  phonepeTransactionId?: T;
+  merchantOrderId?: T;
   phonepeLastCode?: T;
   phonepeLastState?: T;
   paymentMethod?: T;

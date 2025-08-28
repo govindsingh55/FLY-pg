@@ -84,39 +84,102 @@ This section tracks the implementation plan for room booking and payments from t
 - [ ] Implement PhonePe initiation, redirect/instrument handling, callback + webhook.
 - [ ] Update Payment and Booking status transitions automatically.
 
-## PhonePe integration (planned steps)
+## PhonePe Payment Gateway Integration
 
-Environment variables (example)
-- PHONEPE_MERCHANT_ID=
-- PHONEPE_SALT_KEY=
-- PHONEPE_KEY_INDEX=1
-- PHONEPE_BASE_URL=https://api.phonepe.com/apis/hermes
-- NEXT_PUBLIC_SITE_URL=https://your-site.example
-  # For local/dev with Next.js default
-  # NEXT_PUBLIC_SITE_URL can be http://localhost:3000
+The application now uses the official PhonePe Node.js SDK for payment processing. To configure PhonePe integration, you need to set the following environment variables:
 
-End-to-end flow
-1) Create booking + pending payment (done) via POST `/api/custom/booking`.
-2) Initiate PhonePe (stubbed now): POST `/api/custom/payments/phonepe/initiate`.
-  - Build payload, base64 encode, compute checksum (see `src/lib/payments/phonepe.ts`).
-  - Send to PhonePe create endpoint; persist transaction/orderId.
-  - Return redirectUrl/instrument for client.
-3) Client redirects to PhonePe or opens app intent.
-4) Redirect/Callback on return (add a client route to read query, optional):
-  - Server callback: POST `/api/custom/payments/phonepe/callback` validates signature and updates DB.
-  - Optional status poll: GET `/api/custom/payments/phonepe/status?paymentId=...` (done).
-5) Mark payment completed and booking confirmed.
-6) Redirect to `/payments/success?paymentId=...&bookingId=...` (page added).
+### Required Environment Variables
 
-Files
-- `src/components/marketing/property-detail/RoomBookingForm.tsx` — multi-step booking/payment UI.
-- `src/app/api/custom/booking/route.ts` — creates booking + pending payment.
-- `src/app/api/custom/payments/phonepe/initiate/route.ts` — start transaction (stub export).
-- `src/app/api/custom/payments/phonepe/complete/route.ts` — dev-only to mark success (export).
-- `src/app/api/custom/payments/phonepe/status/route.ts` — status lookup (export).
-- `src/app/api/custom/payments/phonepe/callback/route.ts` — server callback/webhook (export).
-- `src/app/(frontend)/payments/success/page.tsx` — success view for QA.
-- `src/lib/payments/phonepe.ts` — checksum/base64 helpers.
+```bash
+# PhonePe SDK Configuration
+PHONEPE_CLIENT_ID=your_client_id_here
+PHONEPE_CLIENT_SECRET=your_client_secret_here
+PHONEPE_CLIENT_VERSION=1
+PHONEPE_ENV=UAT  # or PRODUCTION for live environment
+
+# Legacy variables (still used for merchant ID)
+PHONEPE_MERCHANT_ID=your_merchant_id_here
+
+# UAT Sandbox Testing (for development)
+PHONEPE_BASE_URL=https://api-preprod.phonepe.com/apis/pgsandbox
+```
+
+### Getting PhonePe Credentials
+
+1. **For UAT/Testing**: Contact PhonePe integration team to get your UAT credentials
+2. **For Production**: Get your credentials from the PhonePe business dashboard
+
+### Environment Configuration
+
+- **UAT Environment**: Use `PHONEPE_ENV=UAT` for testing
+- **Production Environment**: Use `PHONEPE_ENV=PRODUCTION` for live payments
+
+### UAT Sandbox Testing Setup
+
+For comprehensive testing, follow the [PhonePe UAT Sandbox Setup Guide](PHONEPE_UAT_SETUP.md) which includes:
+
+1. **PhonePe Test App Installation**
+2. **Template Configuration** for success/failure scenarios
+3. **Test VPAs and Card Details**
+4. **Step-by-step Testing Workflow**
+
+### Quick Testing with VPAs
+
+For immediate UPI testing, use these predefined VPAs:
+- **Success**: `success@ybl` (redirects within 5 seconds)
+- **Failure**: `failed@ybl` (redirects within 5 seconds)  
+- **Pending**: `pending@ybl` (redirects within 60 seconds)
+
+### SDK Features
+
+The integration includes:
+- Payment initiation using the official SDK
+- Order status checking
+- Callback signature verification
+- Comprehensive error handling and logging
+
+### Callback Configuration
+
+**Important**: PhonePe callbacks (webhooks) are configured on the PhonePe merchant dashboard, not through the SDK. You need to:
+
+1. **Contact PhonePe Integration Team** to set up your callback URL
+2. **Provide your callback endpoint**: `https://yourdomain.com/api/custom/payments/phonepe/callback`
+3. **Ensure the endpoint is accessible** from PhonePe servers
+
+The SDK handles payment initiation and status checking, while callbacks are managed separately by PhonePe.
+
+### Testing
+
+For testing purposes, you can use PhonePe's UAT environment which provides test payment flows without actual money transactions.
+
+### End-to-End Payment Flow ✅
+
+1. ✅ Create booking + pending payment via POST `/api/custom/booking`
+2. ✅ Initiate PhonePe payment via POST `/api/custom/payments/phonepe/initiate`
+3. ✅ Client redirects to PhonePe payment page
+4. ✅ PhonePe callback/webhook via POST `/api/custom/payments/phonepe/callback`
+5. ✅ Payment status check via GET `/api/custom/payments/phonepe/status`
+6. ✅ Success page at `/payments/success`
+
+### Key Files
+
+- `src/lib/payments/phonepe.ts` — Core PhonePe integration with signature verification
+- `src/app/api/custom/payments/phonepe/` — Payment API endpoints
+- `src/components/marketing/property-detail/RoomBookingForm.tsx` — Booking and payment UI
+- `src/components/dashboard/PhonePeTestPanel.tsx` — Testing utilities
+- `src/payload/components/PhonePeTools.tsx` — Admin panel tools
+
+### Testing Tools
+
+- **PhonePe Test Panel**: Development testing interface
+- **Admin Tools**: Payment status management in admin dashboard
+- **Success Page**: Enhanced payment result display
+- **Callback Verification**: Secure signature validation
+
+### Documentation
+
+- 📖 [PhonePe Testing Guide](PHONEPE_TESTING.md) - Complete testing instructions
+- 🔗 [PhonePe Documentation](https://developer.phonepe.com/payment-gateway) - Official API docs
 
 - [ ] Booking lifecycle updates (confirm, cancel) and admin workflows.
 

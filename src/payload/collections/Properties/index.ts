@@ -199,9 +199,32 @@ const Properties: CollectionConfig = {
             },
             {
               name: 'foodMenu',
-              type: 'relationship',
-              relationTo: 'food-menu',
-              required: false,
+              type: 'group',
+              label: 'Food Menu Configuration',
+              admin: {
+                description: 'Configure food menu and pricing for this property',
+              },
+              fields: [
+                {
+                  name: 'menu',
+                  type: 'relationship',
+                  relationTo: 'food-menu',
+                  required: false,
+                  admin: {
+                    description: 'Select the food menu for this property',
+                  },
+                },
+                {
+                  name: 'price',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    description:
+                      'Monthly food charge per person for this property (city-specific pricing)',
+                    condition: (data) => data?.foodMenu?.menu,
+                  },
+                },
+              ],
             },
             {
               name: 'nearbyLocations',

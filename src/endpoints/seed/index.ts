@@ -16,6 +16,9 @@ import { Media } from '@/payload/payload-types'
 // The app is not running to revalidate the pages and so the API routes are not available
 // These error messages can be ignored: `Error hitting revalidate route for...`
 
+// Helper function to add delay between operations
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 export const seed = async ({
   payload,
   req,
@@ -33,26 +36,31 @@ export const seed = async ({
     const users = await seedUsers(payload, req)
     collectionData['users'] = users.map((u: any) => u.id)
     payload.logger.info(`— Users seeded successfully!`)
+    await delay(1000) // 1 second delay
 
     payload.logger.info(`— Seeding customers...`)
     const customers = await seedCustomers(payload, req)
     collectionData['customers'] = customers.map((c: any) => c.id)
     payload.logger.info(`— Customers seeded successfully!`)
+    await delay(1000) // 1 second delay
 
     payload.logger.info(`— Seeding food menu...`)
     const foodMenu = await seedFoodMenu(payload, req)
     collectionData['foodmenu'] = foodMenu.map((f: any) => f.id)
     payload.logger.info(`— FoodMenu seeded successfully!`)
+    await delay(1000) // 1 second delay
 
     payload.logger.info(`— Seeding rooms...`)
     const rooms = await seedRooms(payload, req)
     collectionData['rooms'] = rooms.map((r: any) => r._id || r.id)
     payload.logger.info(`— Rooms seeded successfully!`)
+    await delay(1000) // 1 second delay
 
     payload.logger.info(`— Seeding media...`)
     const medias = await seedMedias(payload, req)
     collectionData['media'] = medias.map((media: Media) => media.id)
     payload.logger.info(`— Media seeded successfully!`)
+    await delay(2000) // 2 second delay (media operations can be heavy)
 
     // Seed dependent collections
     console.log('DEBUG: collectionData["rooms"]:', collectionData['rooms'])
@@ -64,6 +72,7 @@ export const seed = async ({
     })
     collectionData['properties'] = properties.map((p: any) => p.id)
     payload.logger.info(`— Properties seeded successfully!`)
+    await delay(2000) // 2 second delay (properties can be complex)
 
     payload.logger.info(`— Seeding bookings...`)
     const bookings = await seedBookings(payload, req, {
@@ -73,6 +82,7 @@ export const seed = async ({
     })
     collectionData['bookings'] = bookings.map((b: any) => b.id)
     payload.logger.info(`— Bookings seeded successfully!`)
+    await delay(1500) // 1.5 second delay
 
     payload.logger.info(`— Seeding visit bookings...`)
     const visitBookings = await seedVisitBookings(payload, req, {
@@ -81,11 +91,13 @@ export const seed = async ({
     })
     collectionData['visitbookings'] = visitBookings.map((v: any) => v.id)
     payload.logger.info(`— VisitBookings seeded successfully!`)
+    await delay(1000) // 1 second delay
 
     payload.logger.info(`— Seeding support media...`)
     const supportMedia = await seedSupportMedia(payload, req)
     collectionData['supportmedia'] = supportMedia.map((s: any) => s.id)
     payload.logger.info(`— SupportMedia seeded successfully!`)
+    await delay(1000) // 1 second delay
 
     payload.logger.info(`— Seeding support tickets...`)
     const supportTickets = await seedSupportTickets(payload, req, {

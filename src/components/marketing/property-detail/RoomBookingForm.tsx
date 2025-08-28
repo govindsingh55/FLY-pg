@@ -92,41 +92,23 @@ export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
         toast.error(errorMsg)
         return
       }
-      // TODO(PhonePe): open redirectUrl / instrument as per gateway flow.
-      // For now, show a button to simulate success.
-      toast.success('Payment initiated. For dev, click "Simulate success" to complete.')
-    } catch (err: any) {
-      const errorMsg = err?.message || 'Failed to initiate payment.'
-      setApiError(errorMsg)
-      toast.error(errorMsg)
-    } finally {
-      setLoading(false)
-    }
-  }
 
-  async function simulateComplete() {
-    if (!payment?.id) return
-    setLoading(true)
-    setApiError(null)
-    try {
-      const res = await fetch(`${apiBase}/api/custom/payments/phonepe/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ paymentId: payment.id }),
-      })
-      const data = await res.json().catch(() => null)
-      if (!res.ok || data?.error) {
-        const errorMsg = data?.error || `Failed with ${res.status}`
-        setApiError(errorMsg)
-        toast.error(errorMsg)
+      // Handle PhonePe redirect
+      if (data.redirectUrl) {
+        // Store payment info in sessionStorage for callback handling
+        sessionStorage.setItem('phonepe_payment_id', payment.id)
+        sessionStorage.setItem('phonepe_booking_id', booking?.id || '')
+
+        // Redirect to PhonePe payment page
+        window.location.href = data.redirectUrl
         return
       }
-      setPayment(data.payment)
-      setStep(3)
-      toast.success('Payment completed!')
+
+      // If no redirect URL, show error
+      setApiError('Failed to get payment URL from PhonePe')
+      toast.error('Failed to initiate payment')
     } catch (err: any) {
-      const errorMsg = err?.message || 'Failed to complete payment.'
+      const errorMsg = err?.message || 'Failed to initiate payment.'
       setApiError(errorMsg)
       toast.error(errorMsg)
     } finally {
@@ -178,7 +160,8 @@ export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
             </div>
 
             <div className="text-xs text-muted-foreground">
-              Note: Price is derived from room rent on the server. Food pricing can be added later.
+              Note: Price is calculated as (room rent × months) + (food charge × months if
+              included).
             </div>
           </>
         )}
@@ -200,18 +183,9 @@ export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
                 <Button onClick={initiatePhonePe} disabled={loading}>
                   {loading ? 'Starting PhonePe…' : 'PhonePe'}
                 </Button>
-                {/* Dev helper to simulate success; replace with gateway callback handling */}
-                <Button
-                  variant="outline"
-                  onClick={simulateComplete}
-                  disabled={loading || !payment?.id}
-                >
-                  Simulate success
-                </Button>
               </div>
               <div className="text-xs text-muted-foreground">
-                This is a development flow. In production, redirect to PhonePe and handle
-                callback/webhook to update payment status.
+                You will be redirected to PhonePe to complete your payment securely.
               </div>
             </div>
           </>

@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 const Customers: CollectionConfig = {
   slug: 'customers',
   auth: {
+    tokenExpiration: 7200, // 2 hours
     forgotPassword: {
       generateEmailHTML: (args) => {
         const token = (args as any)?.token

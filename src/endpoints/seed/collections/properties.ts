@@ -87,7 +87,12 @@ export async function seedProperties(
         amenities: ['WiFi', 'Parking'],
         manager: rel?.managerId || 'mock-manager-id',
         genderType: 'Male',
-        foodMenu: rel?.foodMenuId,
+        foodMenu: rel?.foodMenuId
+          ? {
+              menu: rel.foodMenuId,
+              price: 1200 + i * 200, // City-specific pricing: 1200, 1400, 1600, etc.
+            }
+          : undefined,
         rooms: rel?.roomIds,
         // Security Deposit Configuration
         securityDepositConfig: {
