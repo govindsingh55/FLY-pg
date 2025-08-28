@@ -206,9 +206,11 @@ export function verifyCallbackSignature({
 export function verifyCallbackSignatureRaw({
   rawJsonText,
   headerXVerify,
+  endpointPath,
 }: {
   rawJsonText: string
   headerXVerify?: string | null
+  endpointPath?: string
 }) {
   try {
     const body = JSON.parse(rawJsonText)
