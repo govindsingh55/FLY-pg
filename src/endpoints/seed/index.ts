@@ -57,9 +57,16 @@ export const seed = async ({
     await delay(1000) // 1 second delay
 
     payload.logger.info(`— Seeding media...`)
-    const medias = await seedMedias(payload, req)
-    collectionData['media'] = medias.map((media: Media) => media.id)
-    payload.logger.info(`— Media seeded successfully!`)
+    try {
+      const medias = await seedMedias(payload, req)
+      collectionData['media'] = medias.map((media: Media) => media.id)
+      payload.logger.info(`— Media seeded successfully!`)
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      payload.logger.warn(`— Media seeding encountered issues: ${errorMsg}`)
+      // Continue with empty media array if seeding fails
+      collectionData['media'] = []
+    }
     await delay(2000) // 2 second delay (media operations can be heavy)
 
     // Seed dependent collections
