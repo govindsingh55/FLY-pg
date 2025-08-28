@@ -79,7 +79,7 @@ export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
     setLoading(true)
     setApiError(null)
     try {
-      const res = await fetch(`${apiBase}/api/custom/payments/phonepe/initiate`, {
+      const res = await fetch(`${apiBase}/api/custom/customers/payments/phonepe/initiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

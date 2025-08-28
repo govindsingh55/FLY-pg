@@ -29,7 +29,7 @@ export default function PhonePeTestPanel({ paymentId, bookingId }: PhonePeTestPa
     setLoading(true)
     try {
       const res = await fetch(
-        `${apiBase}/api/custom/payments/phonepe/status?paymentId=${encodeURIComponent(pid)}`,
+        `${apiBase}/api/custom/customers/payments/${encodeURIComponent(pid)}/status`,
       )
       const data = await res.json()
 
@@ -55,11 +55,14 @@ export default function PhonePeTestPanel({ paymentId, bookingId }: PhonePeTestPa
 
     setLoading(true)
     try {
-      const res = await fetch(`${apiBase}/api/custom/payments/admin/mark-completed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId: pid }),
-      })
+      const res = await fetch(
+        `${apiBase}/api/custom/customers/payments/${encodeURIComponent(pid)}/admin`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'mark-completed' }),
+        },
+      )
       const data = await res.json()
 
       if (!res.ok) {
@@ -84,11 +87,14 @@ export default function PhonePeTestPanel({ paymentId, bookingId }: PhonePeTestPa
 
     setLoading(true)
     try {
-      const res = await fetch(`${apiBase}/api/custom/payments/admin/mark-failed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId: pid }),
-      })
+      const res = await fetch(
+        `${apiBase}/api/custom/customers/payments/${encodeURIComponent(pid)}/admin`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'mark-failed' }),
+        },
+      )
       const data = await res.json()
 
       if (!res.ok) {
@@ -127,7 +133,7 @@ export default function PhonePeTestPanel({ paymentId, bookingId }: PhonePeTestPa
         },
       }
 
-      const res = await fetch(`${apiBase}/api/custom/payments/phonepe/callback`, {
+      const res = await fetch(`${apiBase}/api/custom/customers/payments/phonepe/callback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -205,4 +211,3 @@ export default function PhonePeTestPanel({ paymentId, bookingId }: PhonePeTestPa
     </Card>
   )
 }
-

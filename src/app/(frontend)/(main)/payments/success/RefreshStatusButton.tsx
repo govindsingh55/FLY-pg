@@ -13,7 +13,7 @@ export function RefreshStatusButton({ paymentId }: RefreshStatusButtonProps) {
     setIsLoading(true)
     try {
       const response = await fetch(
-        `${window.location.origin}/api/custom/payments/phonepe/status?paymentId=${paymentId}`,
+        `${window.location.origin}/api/custom/customers/payments/${paymentId}/status`,
         { cache: 'no-store' },
       )
       if (response.ok) {

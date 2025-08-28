@@ -152,15 +152,18 @@ export function RentSummary({ className }: RentSummaryProps) {
 
       const { payment } = await response.json()
 
-      // Initiate PhonePe payment
-      const phonePeResponse = await fetch('/api/custom/customers/payments/phonepe/initiate', {
+      // Initiate PhonePe payment using the general payments route
+      const phonePeResponse = await fetch('/api/custom/customers/payments/initiate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          paymentId: payment.id,
           amount: summaryData.currentMonth.pendingAmount + summaryData.currentMonth.lateFees,
+          bookingId: summaryData.properties[0]?.id, // Use the first active property's booking ID
+          paymentMethod: 'upi',
+          paymentForMonthAndYear: new Date().toISOString().slice(0, 7), // YYYY-MM format
+          description: `Rent payment for ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`,
         }),
       })
 

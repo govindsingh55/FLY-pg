@@ -113,21 +113,13 @@ export async function POST(req: NextRequest) {
     })
 
     // Generate unique transaction ID
-    const merchantTransactionId = `FLY_${payment.id}_${Date.now()}`
+    const merchantOrderId = `FLY_${payment.id}_${Date.now()}`
 
     // Prepare PhonePe payment request
     const phonePeRequest = {
-      merchantId: process.env.PHONEPE_MERCHANT_ID || 'PGTESTPAYUAT',
-      merchantTransactionId,
+      merchantOrderId,
       amountPaise: amount * 100, // Convert to paise
       redirectUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard/rent/payments/${payment.id}`,
-      redirectMode: 'POST',
-      callbackUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/custom/payments/phonepe/callback`,
-      merchantUserId: customer.id,
-      mobileNumber: customer.phone || '',
-      paymentInstrument: {
-        type: paymentMethod === 'upi' ? 'UPI' : 'PAY_PAGE',
-      },
     }
 
     // Initiate PhonePe payment
@@ -155,8 +147,7 @@ export async function POST(req: NextRequest) {
       collection: 'payments',
       id: payment.id,
       data: {
-        phonepeMerchantTransactionId: merchantTransactionId,
-        phonepeTransactionId: phonePeResponse.raw?.data?.transactionId,
+        merchantOrderId,
         phonepeLastRaw: phonePeResponse,
         phonepeLastCode: phonePeResponse.raw?.code,
         phonepeLastState: phonePeResponse.raw?.data?.state,
@@ -168,7 +159,7 @@ export async function POST(req: NextRequest) {
         id: payment.id,
         amount,
         status: 'pending',
-        merchantTransactionId,
+        merchantOrderId,
       },
       phonePe: {
         redirectUrl: phonePeResponse.raw?.data?.instrumentResponse?.redirectInfo?.url,

@@ -106,8 +106,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             }
           : null,
       // PhonePe specific fields
-      phonepeMerchantTransactionId: payment.phonepeMerchantTransactionId,
-      phonepeTransactionId: payment.phonepeTransactionId,
+      phonepeMerchantTransactionId: payment.merchantOrderId,
+      phonepeTransactionId: (payment.phonepeLastRaw as any)?.transactionId || null,
       gateway: payment.gateway,
       // Analytics fields
       processingTime: payment.processingTime,

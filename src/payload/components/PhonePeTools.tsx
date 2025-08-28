@@ -22,7 +22,7 @@ export default function PhonePeTools() {
     setMsg('')
     try {
       const res = await fetch(
-        `/api/custom/payments/phonepe/status?paymentId=${encodeURIComponent(paymentId)}`,
+        `/api/custom/customers/payments/${encodeURIComponent(paymentId)}/status`,
         { method: 'GET' },
       )
       const data = await res.json()
@@ -37,10 +37,7 @@ export default function PhonePeTools() {
 
   function openStatusJson() {
     if (!paymentId) return
-    window.open(
-      `/api/custom/payments/phonepe/status?paymentId=${encodeURIComponent(paymentId)}`,
-      '_blank',
-    )
+    window.open(`/api/custom/customers/payments/${encodeURIComponent(paymentId)}/status`, '_blank')
   }
 
   async function markCompleted() {
@@ -48,11 +45,14 @@ export default function PhonePeTools() {
     setLoading(true)
     setMsg('')
     try {
-      const res = await fetch('/api/custom/payments/admin/mark-completed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId }),
-      })
+      const res = await fetch(
+        `/api/custom/customers/payments/${encodeURIComponent(paymentId)}/admin`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'mark-completed' }),
+        },
+      )
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || `Failed: ${res.status}`)
       setMsg('Marked completed')
@@ -68,11 +68,14 @@ export default function PhonePeTools() {
     setLoading(true)
     setMsg('')
     try {
-      const res = await fetch('/api/custom/payments/admin/mark-failed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId }),
-      })
+      const res = await fetch(
+        `/api/custom/customers/payments/${encodeURIComponent(paymentId)}/admin`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'mark-failed' }),
+        },
+      )
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || `Failed: ${res.status}`)
       setMsg('Marked failed')

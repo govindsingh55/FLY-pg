@@ -28,7 +28,7 @@ export default async function PaymentSuccessPage({
 
   if (payment.status === 'initiated') {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/custom/payments/phonepe/status?paymentId=${paymentId}`,
+      `${process.env.NEXT_PUBLIC_SITE_URL}/api/custom/customers/payments/${paymentId}/status`,
       {
         cache: 'no-store',
       },
