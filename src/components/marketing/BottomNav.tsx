@@ -63,19 +63,28 @@ function Account() {
         <User className="h-5 w-5" />
         <span>Account</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="z-[200] gap-1">
+      <DropdownMenuContent className="z-[200] gap-2 p-2">
         {isAuthenticated ? (
           <>
-            <DropdownMenuItem>
-              <Link href="/dashboard">Dashboard</Link>
+            <DropdownMenuItem className="border-b rounded-none">
+              <Link href="/dashboard" className="text-lg">
+                Dashboard
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="border-b rounded-none">
+              <Link href="/dashboard/profile" className="text-lg">
+                Profile
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/dashboard/profile">Profile</Link>
+              <button onClick={logout} className="text-lg">
+                Logout
+              </button>
             </DropdownMenuItem>
           </>
         ) : (
           <>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="border-b rounded-none">
               <Link
                 href={`/auth/sign-in${!pathname.startsWith('/auth') ? '?redirect=' + pathname : ''}`}
               >
@@ -83,14 +92,11 @@ function Account() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/auth/sign-up">Signup</Link>
+              <Link href="/auth/sign-up" className="text-lg">
+                Signup
+              </Link>
             </DropdownMenuItem>
           </>
-        )}
-        {isAuthenticated && (
-          <DropdownMenuItem>
-            <button onClick={logout}>Logout</button>
-          </DropdownMenuItem>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
