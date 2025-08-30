@@ -6,21 +6,27 @@ export const getServerSideURL = () => {
     return process.env.NEXT_PUBLIC_SITE_URL
   }
 
-  // In production, avoid localhost fallback
-  if (process.env.NODE_ENV === 'production') {
-    // Try to get from Vercel environment variables
-    if (process.env.VERCEL_URL) {
-      return `https://${process.env.VERCEL_URL}`
-    }
+  // Try to get from Vercel environment variables (works in production)
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
 
-    // Try to get from other common deployment environment variables
-    if (process.env.SITE_URL) {
-      return process.env.SITE_URL
-    }
+  // Try to get from other common deployment environment variables
+  if (process.env.SITE_URL) {
+    return process.env.SITE_URL
+  }
 
+  // If we're in a production-like environment (not localhost), avoid localhost fallback
+  const isProduction = process.env.NODE_ENV === 'production' || 
+                      process.env.VERCEL || 
+                      process.env.RAILWAY_ENVIRONMENT ||
+                      process.env.RENDER ||
+                      !process.env.NODE_ENV?.includes('dev')
+
+  if (isProduction) {
     // Last resort: log warning and return empty string to force dynamic resolution
     console.warn(
-      'No site URL configured for production. Set NEXT_PUBLIC_SITE_URL environment variable.',
+      'No site URL configured for production environment. Set NEXT_PUBLIC_SITE_URL environment variable.',
     )
     return ''
   }

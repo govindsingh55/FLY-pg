@@ -14,6 +14,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'flycolive.com',
+        pathname: '/api/media/file/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'picsum.photos',
       },
       {
