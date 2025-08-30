@@ -43,15 +43,20 @@ const Properties: CollectionConfig = {
           req,
         })
 
-        return path
+        // Return empty string if path generation failed (prevents localhost URLs in production)
+        return path || ''
       },
     },
-    preview: (data, { req }) =>
-      generatePreviewPath({
+    preview: (data, { req }) => {
+      const path = generatePreviewPath({
         slug: typeof data?.slug === 'string' ? data.slug : '',
         collection: 'properties',
         req,
-      }),
+      })
+
+      // Return empty string if path generation failed (prevents localhost URLs in production)
+      return path || ''
+    },
   },
   access: propertiesAccess,
 

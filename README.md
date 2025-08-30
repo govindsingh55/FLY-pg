@@ -164,6 +164,16 @@ NODE_ENV=production
 DATABASE_URI=mongodb://your-mongodb-uri
 PAYLOAD_SECRET=your-secret-key
 PHONEPE_ENV=PRODUCTION
+
+# IMPORTANT: Site URL Configuration
+# Set this to your production domain to prevent localhost URLs in preview links
+NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+
+# For Vercel deployments, this is automatically set as:
+# VERCEL_URL=your-vercel-deployment-url.vercel.app
+
+# Preview secret for admin preview functionality
+PREVIEW_SECRET=your-secure-preview-secret
 ```
 
 ## 📚 API Documentation
@@ -180,6 +190,16 @@ PHONEPE_ENV=PRODUCTION
 - Session management with httpOnly cookies
 
 ## 🔧 Development
+
+### Preview URL Configuration
+The admin preview functionality automatically detects the correct domain:
+
+1. **Development**: Uses `http://localhost:3000`
+2. **Production**: Requires `NEXT_PUBLIC_SITE_URL` environment variable
+3. **Vercel**: Automatically uses `VERCEL_URL` if available
+4. **Dynamic Detection**: Falls back to request headers if no env vars are set
+
+**Important**: Always set `NEXT_PUBLIC_SITE_URL` in production to prevent localhost URLs.
 
 ### Available Scripts
 ```bash
