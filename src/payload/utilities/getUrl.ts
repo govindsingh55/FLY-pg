@@ -17,11 +17,12 @@ export const getServerSideURL = () => {
   }
 
   // If we're in a production-like environment (not localhost), avoid localhost fallback
-  const isProduction = process.env.NODE_ENV === 'production' || 
-                      process.env.VERCEL || 
-                      process.env.RAILWAY_ENVIRONMENT ||
-                      process.env.RENDER ||
-                      !process.env.NODE_ENV?.includes('dev')
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    process.env.VERCEL ||
+    process.env.RAILWAY_ENVIRONMENT ||
+    process.env.RENDER ||
+    !process.env.NODE_ENV?.includes('dev')
 
   if (isProduction) {
     // Last resort: log warning and return empty string to force dynamic resolution

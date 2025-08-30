@@ -11,8 +11,10 @@ console.log('PREVIEW_SECRET:', process.env.PREVIEW_SECRET ? '[SET]' : '[NOT SET]
 console.log('===================================')
 
 // Import and test our functions
-import('./src/payload/utilities/getUrl.js').then(({ getServerSideURL }) => {
-  console.log('getServerSideURL() returns:', getServerSideURL())
-}).catch(err => {
-  console.log('Error importing getUrl:', err.message)
-})
+import('./src/payload/utilities/getUrl.js')
+  .then(({ getServerSideURL }) => {
+    console.log('getServerSideURL() returns:', getServerSideURL())
+  })
+  .catch((err) => {
+    console.log('Error importing getUrl:', err.message)
+  })
