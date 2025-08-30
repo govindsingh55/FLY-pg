@@ -1,4 +1,5 @@
 import { PayloadRequest, CollectionSlug } from 'payload'
+import { getServerSideURL } from './getUrl'
 
 const collectionPrefixMap: Partial<Record<CollectionSlug, string>> = {
   properties: '/properties',
@@ -25,5 +26,6 @@ export const generatePreviewPath = ({ collection, slug, req }: Props) => {
     previewSecret,
   })
 
-  return `/next/preview?${encodedParams.toString()}`
+  const baseUrl = getServerSideURL()
+  return `${baseUrl}/next/preview?${encodedParams.toString()}`
 }
