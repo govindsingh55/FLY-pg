@@ -1,23 +1,20 @@
 'use client'
 
-import { Building2, Home, Search, User } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useFilterActions } from './FilterContext'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useUser } from '@/lib/state/user'
+import { Building2, Home, Search, User } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useFilterActions } from './FilterContext'
 
 export function BottomNav() {
   const pathname = usePathname()
   const actions = useFilterActions()
-  const { isAuthenticated } = useUser()
 
   return (
     <nav className="fixed z-[100] inset-x-0 bottom-0 h-16 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
@@ -58,7 +55,8 @@ export function BottomNav() {
 }
 
 function Account() {
-  const { isAuthenticated, status, logout } = useUser()
+  const { isAuthenticated, logout } = useUser()
+  const pathname = usePathname()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary">
@@ -78,7 +76,11 @@ function Account() {
         ) : (
           <>
             <DropdownMenuItem>
-              <Link href="/auth/sign-in">Login</Link>
+              <Link
+                href={`/auth/sign-in${!pathname.startsWith('/auth') ? '?redirect=' + pathname : ''}`}
+              >
+                Login
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Link href="/auth/sign-up">Signup</Link>

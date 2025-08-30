@@ -26,10 +26,9 @@ interface SignInFormProps {
     email: string
     password: string
   }) => Promise<{ success: boolean; user?: any; error?: string }>
-  collection?: 'customers' | 'users'
 }
 
-export default function SignInForm({ onSubmit, collection = 'customers' }: SignInFormProps) {
+export default function SignInForm({ onSubmit }: SignInFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -37,7 +36,7 @@ export default function SignInForm({ onSubmit, collection = 'customers' }: SignI
   const searchParams = useSearchParams()
   const router = useRouter()
   const { refetchUser, updateAuthAfterLogin } = useUser()
-  const { setAuthLoading, setAuthenticated, setUnauthenticated, setAuthError } = useAuthActions()
+  const { setAuthLoading, setUnauthenticated, setAuthError } = useAuthActions()
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)

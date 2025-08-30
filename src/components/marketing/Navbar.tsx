@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/button'
 import { Loader2 } from 'lucide-react'
 import ThemeToggleBtn from './ThemeToggleBtn'
 import { useUser } from '@/lib/state/user'
+import { usePathname } from 'next/navigation'
 
 /**
  * Navbar layout rules:
@@ -12,6 +13,7 @@ import { useUser } from '@/lib/state/user'
  * - Mobile (<md): single row with centered logo only. No hidden overlay row (prevents duplicate/tucked logo).
  */
 export function Navbar() {
+  const pathname = usePathname()
   const { isAuthenticated, status, logout } = useUser()
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur">
@@ -55,7 +57,9 @@ export function Navbar() {
           )}
           {status !== 'loading' && !isAuthenticated && (
             <>
-              <Link href="/auth/sign-in">
+              <Link
+                href={`/auth/sign-in${!pathname.startsWith('/auth') ? '?redirect=' + pathname : ''}`}
+              >
                 <Button asChild variant="ghost">
                   <span>Sign in</span>
                 </Button>
