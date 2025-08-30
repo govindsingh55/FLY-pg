@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import RichText from '@/components/RichText'
@@ -29,8 +29,14 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
     setModalOpen(true)
   }
   const closeModal = () => setModalOpen(false)
-  const prevImg = () => setSelectedIdx((i) => (i === 0 ? allImages.length - 1 : i - 1))
-  const nextImg = () => setSelectedIdx((i) => (i === allImages.length - 1 ? 0 : i + 1))
+  const prevImg = useCallback(
+    () => setSelectedIdx((i) => (i === 0 ? allImages.length - 1 : i - 1)),
+    [allImages.length],
+  )
+  const nextImg = useCallback(
+    () => setSelectedIdx((i) => (i === allImages.length - 1 ? 0 : i + 1)),
+    [allImages.length],
+  )
 
   // Keyboard navigation when modal is open
   useEffect(() => {
@@ -42,7 +48,7 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [modalOpen])
+  }, [modalOpen, prevImg, nextImg])
 
   // If there are no images, render a default placeholder from public/.
   // This is placed after hook calls so hooks are always invoked in the same order.
@@ -51,9 +57,9 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
       <section className="mx-auto max-w-6xl px-4 pl-0 pt-4 pb-2">
         <div className="w-full overflow-hidden rounded-xl border bg-muted">
           {/* Use Picsum for placeholder images */}
-          <img
+          <Image
             src="https://picsum.photos/seed/property-placeholder/800/450"
-            className="w-full h-auto aspect-[16/9] object-cover"
+            className="w-full aspect-[4/5] md:aspect-[16/9] object-cover"
             alt="Property placeholder"
             width={800}
             height={450}
@@ -74,14 +80,12 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
   }
 
   return (
-    <section className="mx-auto max-w-6xl px-4 pl-0 pt-4 pb-2">
+    <section className="mx-auto max-w-6xl md:px-4 pl-0 pt-4 pb-2">
       <div
-        className="w-full overflow-hidden rounded-xl border bg-muted cursor-pointer"
+        className="w-full overflow-hidden rounded-sm md:rounded-md border bg-muted cursor-pointer"
         onClick={() => openModal(0)}
       >
-        {cover && (
-          <Media resource={cover.image} className="w-full h-auto aspect-[16/9] object-cover" />
-        )}
+        {cover && <Media resource={cover.image} className="w-full aspect-[16/9] object-cover" />}
       </div>
       {rest.length > 0 && (
         <div className="mt-3 flex gap-3 overflow-x-auto">
@@ -130,7 +134,7 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
               <div className="relative flex items-center justify-center w-full p-2">
                 {allImages.length > 1 && (
                   <button
-                    onClick={prevImg}
+                    onClick={() => prevImg()}
                     className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full size-10 flex items-center justify-center hover:bg-black/70"
                     aria-label="Previous image"
                   >
