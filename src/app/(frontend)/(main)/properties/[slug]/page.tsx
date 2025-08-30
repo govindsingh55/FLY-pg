@@ -8,6 +8,7 @@ import { PropertyDetailProvider } from '@/lib/state/propertyDetail'
 import type { Media as MediaType } from '@/payload/payload-types'
 import config from '@payload-config'
 import { getPayload } from 'payload'
+import { cookies } from 'next/headers'
 
 // Avoid static generation (which would attempt DB connection during build)
 export const dynamic = 'force-dynamic'
@@ -16,17 +17,40 @@ export const fetchCache = 'force-no-store'
 
 type Params = Promise<{ slug: string }>
 
-async function fetchProperty(slug: string) {
+async function fetchProperty(slug: string, isPreview = false) {
   try {
     const payload = await getPayload({ config })
-    const res = await payload.find({
-      collection: 'properties',
-      where: { slug: { equals: slug } },
-      depth: 2,
-      limit: 1,
-    })
+
+    // Check if we're in preview mode
+    const cookieStore = await cookies()
+    const isPreviewMode = isPreview || cookieStore.get('payload-preview')?.value === 'true'
+
+    let res
+    if (isPreviewMode) {
+      // In preview mode, fetch draft content
+      res = await payload.find({
+        collection: 'properties',
+        where: { slug: { equals: slug } },
+        depth: 2,
+        limit: 1,
+        draft: true, // This will fetch draft content
+      })
+    } else {
+      // Normal mode, fetch published content
+      res = await payload.find({
+        collection: 'properties',
+        where: {
+          slug: { equals: slug },
+          _status: { equals: 'published' }, // Only published content
+        },
+        depth: 2,
+        limit: 1,
+      })
+    }
+
     const doc = res.docs[0]
     if (!doc) return null
+
     const images = Array.isArray(doc.images) ? doc.images : []
     const rooms = Array.isArray(doc.rooms)
       ? doc.rooms
@@ -39,7 +63,7 @@ async function fetchProperty(slug: string) {
           }))
           .filter(Boolean)
       : []
-    return { ...doc, images, rooms }
+    return { ...doc, images, rooms, isPreview: isPreviewMode }
   } catch (e) {
     console.error('[property detail] fetchProperty failed:', (e as any)?.message)
     return null
@@ -72,6 +96,12 @@ export default async function PropertyDetailPage({ params }: { params: Params })
   return (
     <PropertyDetailProvider>
       <div className="mx-auto max-w-6xl">
+        {/* Preview Banner */}
+        {prop.isPreview && (
+          <div className="bg-yellow-500 text-black px-4 py-2 text-center font-semibold">
+            🔍 Preview Mode - This is a draft version
+          </div>
+        )}
         <PropertyHeader
           name={prop.name}
           propertyType={prop.propertyType}
