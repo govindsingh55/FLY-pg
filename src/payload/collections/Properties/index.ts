@@ -36,7 +36,7 @@ const Properties: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     preview: (data, { req }) => {
-      return `${process.env.NEXT_PUBLIC_SITE_URL}/properties/${data.slug}`
+      return `${req.host}/properties/${data.slug}`
     },
   },
   access: propertiesAccess,
