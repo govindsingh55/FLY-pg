@@ -26,6 +26,24 @@ export const generatePreviewPath = ({ collection, slug, req }: Props) => {
     previewSecret,
   })
 
-  const baseUrl = getServerSideURL()
+  // Get the base URL from environment variable or request headers
+  let baseUrl = getServerSideURL()
+
+  // If we have request headers and no NEXT_PUBLIC_SITE_URL is set, try to construct URL from headers
+  if (baseUrl.includes('localhost') && req?.headers) {
+    const host = req.headers.get?.('host') || (req.headers as any)?.host
+    const protocol =
+      req.headers.get?.('x-forwarded-proto') ||
+      (req.headers as any)?.['x-forwarded-proto'] ||
+      (req.headers.get?.('x-forwarded-ssl') === 'on' ||
+      (req.headers as any)?.['x-forwarded-ssl'] === 'on'
+        ? 'https'
+        : 'http')
+
+    if (host) {
+      baseUrl = `${protocol}://${host}`
+    }
+  }
+
   return `${baseUrl}/next/preview?${encodedParams.toString()}`
 }
