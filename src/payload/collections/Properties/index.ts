@@ -35,27 +35,8 @@ const Properties: CollectionConfig = {
   slug: 'properties',
   admin: {
     useAsTitle: 'name',
-    livePreview: {
-      url: ({ data, req }) => {
-        const path = generatePreviewPath({
-          slug: typeof data?.slug === 'string' ? data.slug : '',
-          collection: 'properties',
-          req,
-        })
-
-        // Return empty string if path generation failed (prevents localhost URLs in production)
-        return path || ''
-      },
-    },
     preview: (data, { req }) => {
-      const path = generatePreviewPath({
-        slug: typeof data?.slug === 'string' ? data.slug : '',
-        collection: 'properties',
-        req,
-      })
-
-      // Return empty string if path generation failed (prevents localhost URLs in production)
-      return path || ''
+      return `${process.env.NEXT_PUBLIC_SITE_URL}/properties/${data.slug}`
     },
   },
   access: propertiesAccess,

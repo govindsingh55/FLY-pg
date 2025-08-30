@@ -118,6 +118,8 @@ export default async function PropertiesPage({
 }: {
   searchParams?: Promise<SearchParams>
 }) {
+  console.log('Rendering HomePage', process.env.NODE_ENV)
+
   const searchParamsData = searchParams ? await searchParams : ({} as SearchParams)
   const data = await fetchProperties(searchParamsData)
   return <PropertiesListClient initialData={data} initialParams={searchParamsData} />
