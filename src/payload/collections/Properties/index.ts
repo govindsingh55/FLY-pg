@@ -35,8 +35,8 @@ const Properties: CollectionConfig = {
   slug: 'properties',
   admin: {
     useAsTitle: 'name',
-    preview: (data, { req }) => {
-      return `${req.host}/properties/${data.slug}`
+    preview: (doc, { req }) => {
+      return `/properties/${doc.slug}`
     },
   },
   access: propertiesAccess,
