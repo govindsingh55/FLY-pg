@@ -36,7 +36,7 @@ const Properties: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     preview: (doc, { req }) => {
-      return `/properties/${doc.slug}`
+      return `/api/draft?slug=${doc.slug}&secret=${process.env.PREVIEW_SECRET}`
     },
   },
   access: propertiesAccess,

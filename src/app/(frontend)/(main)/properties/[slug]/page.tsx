@@ -7,8 +7,8 @@ import RichText from '@/components/RichText'
 import { PropertyDetailProvider } from '@/lib/state/propertyDetail'
 import type { Media as MediaType } from '@/payload/payload-types'
 import config from '@payload-config'
+import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
-import { cookies } from 'next/headers'
 
 // Avoid static generation (which would attempt DB connection during build)
 export const dynamic = 'force-dynamic'
@@ -17,16 +17,13 @@ export const fetchCache = 'force-no-store'
 
 type Params = Promise<{ slug: string }>
 
-async function fetchProperty(slug: string, isPreview = false) {
+async function fetchProperty(slug: string) {
   try {
+    const { isEnabled } = await draftMode()
     const payload = await getPayload({ config })
 
-    // Check if we're in preview mode
-    const cookieStore = await cookies()
-    const isPreviewMode = isPreview || cookieStore.get('payload-preview')?.value === 'true'
-
     let res
-    if (isPreviewMode) {
+    if (isEnabled) {
       // In preview mode, fetch draft content
       res = await payload.find({
         collection: 'properties',
@@ -63,9 +60,9 @@ async function fetchProperty(slug: string, isPreview = false) {
           }))
           .filter(Boolean)
       : []
-    return { ...doc, images, rooms, isPreview: isPreviewMode }
+    return { ...doc, images, rooms, isPreview: isEnabled }
   } catch (e) {
-    console.error('[property detail] fetchProperty failed:', (e as any)?.message)
+    console.error('[property detail] fetchProperty failed:', (e as Error)?.message)
     return null
   }
 }
