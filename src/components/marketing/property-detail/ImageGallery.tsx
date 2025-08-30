@@ -80,7 +80,7 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
   }
 
   return (
-    <section className="mx-auto max-w-6xl md:px-4 pl-0 pt-4 pb-2">
+    <section className="mx-auto max-w-6xl pt-4 pb-2">
       <div
         className="w-full overflow-hidden rounded-sm md:rounded-md border bg-muted cursor-pointer"
         onClick={() => openModal(0)}
