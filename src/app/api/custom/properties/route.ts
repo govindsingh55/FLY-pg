@@ -30,7 +30,7 @@ function mapSort(sort: 'price_asc' | 'price_desc' | 'newest') {
 }
 
 async function buildQuery(p: ReturnType<typeof normalizeParams>, payload: any) {
-  const and: any[] = []
+  const and: any[] = [{ _status: { equals: 'published' } }]
 
   if (p.q && p.q.trim()) {
     const q = p.q.trim()

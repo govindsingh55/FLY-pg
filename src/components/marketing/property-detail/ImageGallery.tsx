@@ -7,7 +7,6 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import RichText from '@/components/RichText'
 import { Media } from '@/components/Media'
 import { Media as MediaType } from '@/payload/payload-types'
-// Using Picsum for placeholder images
 import Image from 'next/image'
 
 type ImageGalleryProps = {
@@ -21,7 +20,7 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
   const [selectedIdx, setSelectedIdx] = useState(0)
   const hasImages = Array.isArray(images) && images.length > 0
 
-  const cover = images.find((i: any) => (i as any).isCover) || images[0]
+  const cover = images.find((i) => i.isCover) || images[0]
   const rest = images.filter((i) => i !== cover).slice(0, 4)
   const allImages = [cover, ...rest]
   const openModal = (idx: number) => {
@@ -63,6 +62,11 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
             alt="Property placeholder"
             width={800}
             height={450}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+            priority={true}
+            quality={85}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
           />
         </div>
         {(addressRich || localityLine) && (
@@ -82,10 +86,17 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
   return (
     <section className="mx-auto max-w-6xl pt-4 pb-2">
       <div
-        className="w-full overflow-hidden rounded-sm md:rounded-md border bg-muted cursor-pointer"
+        className="w-full overflow-hidden aspect-[16/9] max-h-[450px] max-w-[800px] mx-auto rounded-sm md:rounded-md border bg-muted cursor-pointer"
         onClick={() => openModal(0)}
       >
-        {cover && <Media resource={cover.image} className="w-full aspect-[16/9] object-cover" />}
+        {cover && (
+          <Media
+            resource={cover.image}
+            className="w-full aspect-[16/9] object-cover"
+            priority={true}
+            size="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+          />
+        )}
       </div>
       {rest.length > 0 && (
         <div className="mt-3 flex gap-3 overflow-x-auto">
@@ -95,7 +106,14 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
               className="overflow-hidden rounded-xl border bg-muted w-32 flex-shrink-0 cursor-pointer aspect-[16/9]"
               onClick={() => openModal(idx + 1)}
             >
-              {img && <Media resource={img.image} className="w-full h-full object-cover" />}
+              {img && (
+                <Media
+                  resource={img.image}
+                  className="w-full h-full object-cover"
+                  size="(max-width: 768px) 128px, 128px"
+                  loading="lazy"
+                />
+              )}
             </div>
           ))}
         </div>
@@ -145,6 +163,8 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
                   <Media
                     resource={allImages[selectedIdx].image}
                     className="max-h-[75vh] w-auto rounded-xl border bg-muted max-w-[85vw]"
+                    size="(max-width: 768px) 85vw, (max-width: 1200px) 70vw, 60vw"
+                    priority={selectedIdx === 0}
                   />
                 )}
                 {allImages.length > 1 && (
@@ -169,7 +189,14 @@ export default function ImageGallery({ images, addressRich, localityLine }: Imag
                         onClick={() => setSelectedIdx(idx)}
                         aria-label={`Image ${idx + 1}`}
                       >
-                        {img && <Media resource={img.image} className="w-20 h-14 object-cover" />}
+                        {img && (
+                          <Media
+                            resource={img.image}
+                            className="w-20 h-14 object-cover"
+                            size="80px"
+                            loading="lazy"
+                          />
+                        )}
                       </button>
                     ))}
                   </div>

@@ -38,7 +38,7 @@ async function fetchProperty(slug: string) {
         collection: 'properties',
         where: {
           slug: { equals: slug },
-          _status: { equals: 'published' }, // Only published content
+          _status: { equals: 'published' },
         },
         depth: 2,
         limit: 1,
@@ -70,6 +70,7 @@ async function fetchProperty(slug: string) {
 export default async function PropertyDetailPage({ params }: { params: Params }) {
   const { slug } = await params
   const prop = await fetchProperty(slug)
+  console.log({ prop, slug })
   if (!prop) return <div className="mx-auto max-w-6xl px-4 py-8">Property not found.</div>
   const sector =
     typeof prop.address?.location?.sector === 'string' ? prop.address.location.sector : undefined
