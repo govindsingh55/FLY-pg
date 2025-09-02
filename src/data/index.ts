@@ -24,42 +24,45 @@ export type FeatureTile = {
   ctaHref?: string
   variant: 'large' | 'tall' | 'wide' | 'standard'
   imageUrl: string
-  accent?: 'peach' | 'pink' | 'mint' | 'blue'
+  accent?: 'sage' | 'plum' | 'rust' | 'taupe' | 'cream' | 'inky'
 }
 
 export const features: FeatureTile[] = [
   {
     id: 'find-easy',
     title: 'Find Easy',
-    subtitle: 'Hassle-free stays',
-    description: 'Discover curated coliving stays across top cities.',
-    ctaLabel: 'Explore',
+    subtitle: 'Hassle-free Discovery',
+    description:
+      'Discover curated coliving stays across top cities with seamless booking, transparent pricing, and verified properties that match your lifestyle.',
+    ctaLabel: 'Explore Properties',
     ctaHref: '#properties',
     variant: 'large',
     imageUrl: 'https://picsum.photos/seed/find-easy/800/600',
-    accent: 'peach',
+    accent: 'sage',
   },
   {
     id: 'stay-easy',
     title: 'Stay Easy',
-    subtitle: 'Comfort first',
-    description: 'Move-in ready rooms designed for comfort.',
+    subtitle: 'Premium Comfort',
+    description:
+      'Move-in ready rooms designed for modern living with premium amenities, thoughtful details, and everything you need for a comfortable stay.',
     ctaLabel: 'See Rooms',
     ctaHref: '#properties',
     variant: 'standard',
     imageUrl: 'https://picsum.photos/seed/stay-easy/600/400',
-    accent: 'pink',
+    accent: 'plum',
   },
   {
     id: 'bond-easy',
     title: 'Bond Easy',
-    subtitle: 'Vibrant community',
-    description: 'Make friends and memories that last.',
-    ctaLabel: 'Join',
+    subtitle: 'Vibrant Community',
+    description:
+      'Connect with like-minded people through curated events, shared experiences, and community spaces that foster lasting friendships.',
+    ctaLabel: 'Join Community',
     ctaHref: '#community',
     variant: 'standard',
     imageUrl: 'https://picsum.photos/seed/bond-easy/600/400',
-    accent: 'mint',
+    accent: 'rust',
   },
 ]
 
