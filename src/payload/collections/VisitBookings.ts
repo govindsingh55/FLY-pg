@@ -37,6 +37,12 @@ const VisitBookings: CollectionConfig = {
       type: 'json',
       label: 'Guest User',
       required: false,
+      admin: {
+        description: 'Guest user information (click to expand)',
+        components: {
+          Field: '@/payload/components/CollapsibleJsonField',
+        },
+      },
     },
     { name: 'property', type: 'relationship', relationTo: 'properties', required: true },
     { name: 'visitDate', type: 'date', required: true },

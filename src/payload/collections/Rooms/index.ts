@@ -36,28 +36,15 @@ const Rooms: CollectionConfig = {
     { name: 'rent', type: 'number', required: true },
     {
       name: 'amenities',
-      type: 'array',
-      fields: [
-        {
-          name: 'amenity',
-          type: 'select',
-          options: [
-            'AC',
-            'Bed Sheet',
-            'Security',
-            'Pillow',
-            'Wash',
-            'Refrigerator',
-            'Power Backup',
-            'CCTV',
-            'House Keeping',
-            'Reception',
-            'Drinking Water',
-            'Almira',
-            'Bathroom',
-          ],
-        },
-      ],
+      type: 'relationship',
+      relationTo: 'amenities',
+      hasMany: true,
+      filterOptions: {
+        status: { equals: 'active' },
+      },
+      admin: {
+        description: 'Select amenities available in this room',
+      },
     },
     { name: 'description', type: 'richText' },
     { name: 'status', type: 'select', options: ['active', 'inactive'], defaultValue: 'active' },

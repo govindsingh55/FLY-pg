@@ -43,7 +43,12 @@ function PropertyCard({ property }: { property: Property }) {
           </p>
           {amenities.length ? (
             <p className="text-xs text-muted-foreground truncate">
-              {amenities.slice(0, 5).join(', ')}
+              {amenities
+                .slice(0, 5)
+                .map((amenity) =>
+                  typeof amenity === 'string' ? amenity : amenity.name || 'Unknown',
+                )
+                .join(', ')}
               {amenities.length > 5 ? '…' : ''}
             </p>
           ) : null}

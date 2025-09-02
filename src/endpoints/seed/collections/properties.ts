@@ -7,12 +7,33 @@ export async function seedProperties(
     foodMenuId?: string
     roomIds?: string[]
     managerId?: string
+    amenityIds?: string[]
   },
 ) {
   await payload.delete({
     collection: 'properties',
     where: {},
   })
+
+  // Get some amenity IDs to use for properties
+  let amenityIds: string[] = []
+  if (rel?.amenityIds && rel.amenityIds.length > 0) {
+    amenityIds = rel.amenityIds
+  } else {
+    // Fallback: get first few amenities from the collection
+    try {
+      const amenitiesResponse = await payload.find({
+        collection: 'amenities',
+        where: { status: { equals: 'active' } },
+        limit: 4,
+      })
+      amenityIds = amenitiesResponse.docs.map((a: any) => a.id)
+    } catch (error) {
+      console.warn('Could not fetch amenities for properties, using empty array')
+      amenityIds = []
+    }
+  }
+
   const properties = []
   for (let i = 1; i <= 12; i++) {
     const property = await payload.create({
@@ -84,7 +105,7 @@ export async function seedProperties(
             version: 1,
           },
         },
-        amenities: ['WiFi', 'Parking'],
+        amenities: amenityIds.length > 0 ? amenityIds.slice(0, 2) : [],
         manager: rel?.managerId || 'mock-manager-id',
         genderType: 'Male',
         foodMenu: rel?.foodMenuId

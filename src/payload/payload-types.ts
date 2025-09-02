@@ -80,6 +80,7 @@ export interface Config {
     'support-tickets': SupportTicket;
     'support-media': SupportMedia;
     notifications: Notification;
+    amenities: Amenity;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -99,6 +100,7 @@ export interface Config {
     'support-tickets': SupportTicketsSelect<false> | SupportTicketsSelect<true>;
     'support-media': SupportMediaSelect<false> | SupportMediaSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    amenities: AmenitiesSelect<false> | AmenitiesSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -267,22 +269,10 @@ export interface Property {
   genderType: 'Unisex' | 'Male' | 'Female';
   status?: ('active' | 'inactive') | null;
   featured?: boolean | null;
-  amenities?:
-    | (
-        | 'AC'
-        | 'Bed Sheet'
-        | 'Security'
-        | 'Pillow'
-        | 'Wash'
-        | 'Refrigerator'
-        | 'Power Backup'
-        | 'CCTV'
-        | 'House Keeping'
-        | 'Reception'
-        | 'Parking'
-        | 'WiFi'
-      )[]
-    | null;
+  /**
+   * Select amenities available at this property
+   */
+  amenities?: (string | Amenity)[] | null;
   /**
    * Configure food menu and pricing for this property
    */
@@ -449,6 +439,41 @@ export interface Media {
   };
 }
 /**
+ * Manage property amenities and features
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "amenities".
+ */
+export interface Amenity {
+  id: string;
+  /**
+   * Name of the amenity (e.g., WiFi, Laundry, Gym)
+   */
+  name: string;
+  /**
+   * Detailed description of the amenity
+   */
+  description?: string | null;
+  /**
+   * Icon/logo for the amenity (recommended: SVG or PNG)
+   */
+  logo?: (string | null) | Media;
+  /**
+   * Featured image for the amenity
+   */
+  image?: (string | null) | Media;
+  /**
+   * Current status of the amenity
+   */
+  status: 'active' | 'draft' | 'deleted';
+  /**
+   * Lucide React icon name for fallback (e.g., Wifi, Dumbbell)
+   */
+  iconName?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "food-menu".
  */
@@ -482,28 +507,10 @@ export interface Room {
   name: string;
   roomType: 'single' | 'two_sharing' | 'three_sharing';
   rent: number;
-  amenities?:
-    | {
-        amenity?:
-          | (
-              | 'AC'
-              | 'Bed Sheet'
-              | 'Security'
-              | 'Pillow'
-              | 'Wash'
-              | 'Refrigerator'
-              | 'Power Backup'
-              | 'CCTV'
-              | 'House Keeping'
-              | 'Reception'
-              | 'Drinking Water'
-              | 'Almira'
-              | 'Bathroom'
-            )
-          | null;
-        id?: string | null;
-      }[]
-    | null;
+  /**
+   * Select amenities available in this room
+   */
+  amenities?: (string | Amenity)[] | null;
   description?: {
     root: {
       type: string;
@@ -670,6 +677,9 @@ export interface Customer {
 export interface VisitBooking {
   id: string;
   customer?: (string | null) | Customer;
+  /**
+   * Guest user information (click to expand)
+   */
   guestUser?:
     | {
         [k: string]: unknown;
@@ -827,7 +837,10 @@ export interface Payment {
   payfor: string | Booking;
   paymentForMonthAndYear: string;
   paymentDate?: string | null;
-  bookingSnapshot:
+  /**
+   * Snapshot of booking data at time of payment (click to expand)
+   */
+  bookingSnapshot?:
     | {
         [k: string]: unknown;
       }
@@ -837,6 +850,9 @@ export interface Payment {
     | boolean
     | null;
   dueDate: string;
+  /**
+   * Last raw response from PhonePe (click to expand)
+   */
   phonepeLastRaw?:
     | {
         [k: string]: unknown;
@@ -1230,6 +1246,10 @@ export interface PayloadLockedDocument {
         value: string | Notification;
       } | null)
     | ({
+        relationTo: 'amenities';
+        value: string | Amenity;
+      } | null)
+    | ({
         relationTo: 'payload-jobs';
         value: string | PayloadJob;
       } | null);
@@ -1489,12 +1509,7 @@ export interface RoomsSelect<T extends boolean = true> {
   name?: T;
   roomType?: T;
   rent?: T;
-  amenities?:
-    | T
-    | {
-        amenity?: T;
-        id?: T;
-      };
+  amenities?: T;
   description?: T;
   status?: T;
   available?: T;
@@ -1820,6 +1835,20 @@ export interface NotificationsSelect<T extends boolean = true> {
   relatedSupportTicket?: T;
   createdAt?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "amenities_select".
+ */
+export interface AmenitiesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  logo?: T;
+  image?: T;
+  status?: T;
+  iconName?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -35,7 +35,7 @@ const Properties: CollectionConfig = {
   slug: 'properties',
   admin: {
     useAsTitle: 'name',
-    preview: (doc, { req }) => {
+    preview: (doc) => {
       return `/api/draft?slug=${doc.slug}&secret=${process.env.PREVIEW_SECRET}`
     },
   },
@@ -130,58 +130,15 @@ const Properties: CollectionConfig = {
             { name: 'featured', type: 'checkbox', defaultValue: false },
             {
               name: 'amenities',
-              type: 'select',
+              type: 'relationship',
+              relationTo: 'amenities',
               hasMany: true,
-              options: [
-                {
-                  label: 'AC',
-                  value: 'AC',
-                },
-                {
-                  label: 'Bed Sheet',
-                  value: 'Bed Sheet',
-                },
-                {
-                  label: 'Security',
-                  value: 'Security',
-                },
-                {
-                  label: 'Pillow',
-                  value: 'Pillow',
-                },
-                {
-                  label: 'Wash',
-                  value: 'Wash',
-                },
-                {
-                  label: 'Refrigerator',
-                  value: 'Refrigerator',
-                },
-                {
-                  label: 'Power Backup',
-                  value: 'Power Backup',
-                },
-                {
-                  label: 'CCTV',
-                  value: 'CCTV',
-                },
-                {
-                  label: 'House Keeping',
-                  value: 'House Keeping',
-                },
-                {
-                  label: 'Reception',
-                  value: 'Reception',
-                },
-                {
-                  label: 'Parking',
-                  value: 'Parking',
-                },
-                {
-                  label: 'WiFi',
-                  value: 'WiFi',
-                },
-              ],
+              filterOptions: {
+                status: { equals: 'active' },
+              },
+              admin: {
+                description: 'Select amenities available at this property',
+              },
             },
             {
               name: 'foodMenu',

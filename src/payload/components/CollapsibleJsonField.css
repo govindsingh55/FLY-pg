@@ -1,0 +1,180 @@
+/* CollapsibleJsonField Component Styles */
+
+.json-field-container {
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--theme-elevation-0);
+}
+
+.json-content {
+  margin: 0;
+  padding: 12px;
+  background: var(--theme-elevation-50);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--theme-elevation-800);
+  position: relative;
+  max-height: none;
+  overflow: visible;
+}
+
+/* Expanded JSON content with scroll */
+.json-content.expanded {
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+/* Scrollbar styling */
+.json-content.expanded::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.json-content.expanded::-webkit-scrollbar-track {
+  background: var(--theme-elevation-100);
+  border-radius: 4px;
+}
+
+.json-content.expanded::-webkit-scrollbar-thumb {
+  background: var(--theme-elevation-300);
+  border-radius: 4px;
+}
+
+.json-content.expanded::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-elevation-400);
+}
+
+/* Firefox scrollbar */
+.json-content.expanded {
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-elevation-300) var(--theme-elevation-100);
+}
+
+.json-content code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* JSON Syntax Highlighting */
+.json-content .json-key {
+  color: #9cdcfe;
+}
+
+.json-content .json-string {
+  color: #ce9178;
+}
+
+.json-content .json-number {
+  color: #b5cea8;
+}
+
+.json-content .json-boolean {
+  color: #569cd6;
+}
+
+.json-content .json-null {
+  color: #569cd6;
+  font-style: italic;
+}
+
+.json-preview-overlay {
+  position: relative;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--theme-elevation-200);
+  text-align: center;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--theme-elevation-50) 20%
+  );
+}
+
+.json-toggle-btn {
+  background: var(--theme-elevation-100) !important;
+  border: 1px solid var(--theme-elevation-200) !important;
+  border-radius: 4px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  margin-top: 8px !important;
+  color: var(--theme-elevation-800) !important;
+  transition: all 0.2s ease !important;
+}
+
+.json-toggle-btn:hover {
+  background: var(--theme-elevation-200) !important;
+  border-color: var(--theme-elevation-300) !important;
+}
+
+/* JSON Controls Container */
+.json-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Line Count Display */
+.json-line-count {
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+/* Copy Button */
+.json-copy-btn {
+  background: var(--theme-elevation-100) !important;
+  border: 1px solid var(--theme-elevation-200) !important;
+  border-radius: 4px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  color: var(--theme-elevation-800) !important;
+  transition: all 0.2s ease !important;
+}
+
+.json-copy-btn:hover {
+  background: var(--theme-elevation-200) !important;
+  border-color: var(--theme-elevation-300) !important;
+}
+
+.json-field-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--theme-elevation-500);
+  font-style: italic;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .json-content {
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-200);
+}
+
+[data-theme="dark"] .json-toggle-btn {
+  background: var(--theme-elevation-200) !important;
+  border-color: var(--theme-elevation-300) !important;
+  color: var(--theme-elevation-100) !important;
+}
+
+[data-theme="dark"] .json-toggle-btn:hover {
+  background: var(--theme-elevation-300) !important;
+  border-color: var(--theme-elevation-400) !important;
+}
+
+[data-theme="dark"] .json-copy-btn {
+  background: var(--theme-elevation-200) !important;
+  border-color: var(--theme-elevation-300) !important;
+  color: var(--theme-elevation-100) !important;
+}
+
+[data-theme="dark"] .json-copy-btn:hover {
+  background: var(--theme-elevation-300) !important;
+  border-color: var(--theme-elevation-400) !important;
+}

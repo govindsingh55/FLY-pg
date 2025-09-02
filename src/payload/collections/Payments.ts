@@ -65,8 +65,18 @@ const Payments: CollectionConfig = {
     },
     {
       name: 'bookingSnapshot',
+      label: 'Booking Snapshot',
       type: 'json',
       required: true,
+      admin: {
+        readOnly: true,
+        description: 'Snapshot of booking data at time of payment (click to expand)',
+        condition: (data) => data.bookingSnapshot, // Only show if data exists
+        // Use a custom component for better JSON display
+        components: {
+          Field: '@/payload/components/CollapsibleJsonField',
+        },
+      },
     },
     {
       name: 'dueDate',
@@ -77,7 +87,13 @@ const Payments: CollectionConfig = {
       name: 'phonepeLastRaw',
       label: 'PhonePe Last Raw',
       type: 'json',
-      admin: { readOnly: true },
+      admin: {
+        readOnly: true,
+        description: 'Last raw response from PhonePe (click to expand)',
+        components: {
+          Field: '@/payload/components/CollapsibleJsonField',
+        },
+      },
     },
     {
       name: 'phonepeTools',

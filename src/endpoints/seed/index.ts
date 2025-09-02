@@ -10,6 +10,7 @@ import { seedVisitBookings } from './collections/visitBookings'
 import { seedProperties } from './collections/properties'
 import { seedRooms } from './collections/rooms'
 import { Media } from '@/payload/payload-types'
+import { seedAmenities } from './amenities'
 
 // Next.js revalidation errors are normal when seeding the database without a server running
 // i.e. running `yarn seed` locally instead of using the admin UI within an active app
@@ -50,8 +51,14 @@ export const seed = async ({
     payload.logger.info(`— FoodMenu seeded successfully!`)
     await delay(1000) // 1 second delay
 
+    payload.logger.info(`— Seeding amenities...`)
+    const amenities = await seedAmenities(payload)
+    collectionData['amenities'] = amenities || []
+    payload.logger.info(`— Amenities seeded successfully!`)
+    await delay(1000) // 1 second delay
+
     payload.logger.info(`— Seeding rooms...`)
-    const rooms = await seedRooms(payload, req)
+    const rooms = await seedRooms(payload, req, collectionData['amenities'] as string[])
     collectionData['rooms'] = rooms.map((r: any) => r._id || r.id)
     payload.logger.info(`— Rooms seeded successfully!`)
     await delay(1000) // 1 second delay
@@ -76,6 +83,7 @@ export const seed = async ({
       foodMenuId: (collectionData['foodmenu'] as string[])[0],
       roomIds: collectionData['rooms'] as string[],
       managerId: (collectionData['users'] as string[])[0],
+      amenityIds: collectionData['amenities'] as string[],
     })
     collectionData['properties'] = properties.map((p: any) => p.id)
     payload.logger.info(`— Properties seeded successfully!`)

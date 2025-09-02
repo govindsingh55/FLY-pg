@@ -95,16 +95,6 @@ async function buildPostBody(p: ReturnType<typeof normalizeParams>, payload: any
     and.push({ propertyType: { like: p.propertyType.trim(), options: 'i' } })
   }
 
-  if (p.amenities && p.amenities.trim()) {
-    const items = p.amenities
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-    for (const a of items) {
-      and.push({ amenities: { contains: a } })
-    }
-  }
-
   return {
     where: { and },
     sort: mapSort(p.sort),

@@ -1,5 +1,3 @@
-export * from './amenities'
-
 export type Location = {
   id: string
   name: string

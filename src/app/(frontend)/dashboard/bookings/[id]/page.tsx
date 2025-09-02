@@ -36,6 +36,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Amenity } from '@/payload/payload-types'
 
 interface Booking {
   id: string
@@ -335,7 +336,9 @@ export default function BookingDetailPage() {
                   <div className="flex flex-wrap gap-2 mt-1">
                     {booking.room.amenities.map((amenity, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
-                        {amenity}
+                        {typeof amenity !== 'string'
+                          ? amenity
+                          : (amenity as unknown as Amenity).name || 'Unknown Amenity'}
                       </Badge>
                     ))}
                   </div>

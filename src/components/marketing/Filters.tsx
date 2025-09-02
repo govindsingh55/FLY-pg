@@ -61,6 +61,7 @@ export function FilterBadges({ className }: { className?: string }) {
     </div>
   )
 }
+
 function FiltersPanel({ onClose }: { onClose: () => void }) {
   const current = useFilterState()
   const { setFilters, setFilterApplied, clearAll } = useFilterActions()

@@ -71,8 +71,20 @@ async function buildQuery(p: ReturnType<typeof normalizeParams>, payload: any) {
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean)
-    for (const a of items) {
-      and.push({ amenities: { contains: a } })
+
+    // Find amenities by name and get their IDs
+    const amenitiesResult = await payload.find({
+      collection: 'amenities',
+      where: {
+        name: { in: items },
+        status: { equals: 'active' },
+      },
+      limit: 1000,
+    })
+
+    if (amenitiesResult.docs.length > 0) {
+      const amenityIds = amenitiesResult.docs.map((a: any) => a.id)
+      and.push({ amenities: { in: amenityIds } })
     }
   }
 
