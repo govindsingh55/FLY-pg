@@ -10,7 +10,7 @@ import TestimonialWall from '@/components/marketing/TestimonialWall'
 import PressLogos from '@/components/marketing/PressLogos'
 import AppPromo from '@/components/marketing/AppPromo'
 import { features, stats } from '@/data'
-import type { Media as MediaType } from '@/payload/payload-types'
+import type { Media as MediaType, Property, Room, Amenity } from '@/payload/payload-types'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { Calendar, MessageCircle, Phone } from 'lucide-react'
@@ -22,42 +22,99 @@ import PropertyDetailsSection from '@/components/marketing/PropertyDetailsSectio
 import ContactCTASection from '@/components/marketing/ContactCTASection'
 import StatsSection from '@/components/marketing/StatsSection'
 
+// Type definitions for processed data that extends Payload types
+interface ProcessedRoom {
+  id: string
+  name: string
+  roomType: Room['roomType']
+  rent: number
+  available: boolean
+}
+
+interface ProcessedNearbyLocation {
+  name: string
+  distance: string
+}
+
+interface ProcessedImage {
+  id: string
+  isCover: boolean
+  image: MediaType
+}
+
+interface ProcessedProperty extends Omit<Property, 'rooms' | 'nearbyLocations' | 'images'> {
+  images: ProcessedImage[]
+  rooms: ProcessedRoom[]
+  nearby: ProcessedNearbyLocation[]
+  tagline?: string
+}
+
+interface FallbackImage {
+  id: string
+  isCover: boolean
+  image: {
+    id: string
+    url: string
+    filename: string
+    mimeType: string
+    filesize: number
+    width: number
+    height: number
+  }
+}
+
 // Avoid static generation – ensures we always query the latest single property.
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
 
-async function fetchFirstProperty() {
+async function fetchFirstProperty(): Promise<ProcessedProperty | null> {
   try {
     const payload = await getPayload({ config })
     const res = await payload.find({
       collection: 'properties',
       depth: 2,
       limit: 1,
+      where: {
+        _status: { equals: 'published' },
+      },
+      draft: false,
     })
-    const doc: any = res.docs[0]
+
+    const doc = res.docs[0] as Property
     if (!doc) return null
 
-    const images = Array.isArray(doc.images) ? doc.images : []
+    const images = Array.isArray(doc.images)
+      ? doc.images
+          .map((img) => ({
+            id: img.id || '',
+            isCover: img.isCover || false,
+            image: img.image as MediaType,
+          }))
+          .filter((img) => img.id && img.image)
+      : []
     const rooms = Array.isArray(doc.rooms)
       ? doc.rooms
-          .map((r: any) => ({
-            id: r.id,
-            name: r.name,
-            roomType: r.roomType,
-            rent: r.rent,
-            available: r.available,
-          }))
-          .filter(Boolean)
+          .map((r: Room | string) => {
+            if (typeof r === 'string') return null
+            return {
+              id: r.id,
+              name: r.name,
+              roomType: r.roomType,
+              rent: r.rent,
+              available: r.available ?? true,
+            }
+          })
+          .filter((r): r is ProcessedRoom => r !== null)
       : []
-    const nearby = (doc.nearbyLocations || []).map((l: any) => ({
+    const nearby = (doc.nearbyLocations || []).map((l) => ({
       name: l?.name ?? '',
       distance: l?.distance ?? '',
     }))
 
     return { ...doc, images, rooms, nearby }
   } catch (e) {
-    console.error('[single property home] fetchFirstProperty failed:', (e as any)?.message)
+    console.error('[single property home] fetchFirstProperty failed:', (e as Error)?.message)
     return null
   }
 }
@@ -131,16 +188,14 @@ export default async function SinglePropertyHome() {
         height: 600,
       },
     },
-  ] as any
+  ] as FallbackImage[]
 
-  const images = (prop.images?.length ? prop.images : fallbackImages) as {
-    image: MediaType
-    id: string
-    isCover: boolean
-  }[]
+  const images = (prop.images?.length ? prop.images : fallbackImages) as ProcessedImage[]
 
-  const minRent = prop.rooms?.length ? Math.min(...prop.rooms.map((r: any) => r.rent)) : null
-  const availableRooms = prop.rooms?.filter((r: any) => r.available !== false).length || 0
+  const minRent = prop.rooms?.length
+    ? Math.min(...prop.rooms.map((r: ProcessedRoom) => r.rent))
+    : null
+  const availableRooms = prop.rooms?.filter((r: ProcessedRoom) => r.available !== false).length || 0
 
   // Prepare hero section data
   const heroBadges = []
@@ -177,6 +232,32 @@ export default async function SinglePropertyHome() {
       variant: 'outline' as const,
     },
   ]
+
+  // Create a compatible property object for PropertyDetailsSection
+  const compatibleProperty = {
+    id: prop.id,
+    name: prop.name,
+    description: prop.description,
+    amenities: prop.amenities?.map((item) => (typeof item === 'string' ? item : item.id)) || [],
+    foodMenu: prop.foodMenu
+      ? {
+          menu: prop.foodMenu.menu ? { description: prop.foodMenu.menu } : undefined,
+          price: prop.foodMenu.price || undefined,
+        }
+      : undefined,
+    nearby: prop.nearby,
+    rooms: prop.rooms,
+    images: prop.images,
+    address: prop.address
+      ? {
+          address: prop.address.address,
+          location: {
+            sector: prop.address.location?.sector || undefined,
+            city: prop.address.location?.city || undefined,
+          },
+        }
+      : undefined,
+  }
 
   return (
     <PropertyDetailProvider>
@@ -229,7 +310,7 @@ export default async function SinglePropertyHome() {
 
       {/* Main Property Details */}
       <PropertyDetailsSection
-        property={prop}
+        property={compatibleProperty}
         bookingCard={<BookingCard rooms={prop.rooms} propertyId={String(prop.id || '')} />}
       />
 

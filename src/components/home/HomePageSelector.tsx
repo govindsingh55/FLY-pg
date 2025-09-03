@@ -13,11 +13,15 @@ async function getPropertyCount() {
     const payload = await getPayload({ config })
     const res = await payload.find({
       collection: 'properties',
+      where: {
+        _status: { equals: 'published' },
+      },
       limit: 0, // We only need the count
     })
+    console.log('[HomePageSelector] getPropertyCount res:', res)
     return res.totalDocs
   } catch (e) {
-    console.error('[HomePageSelector] getPropertyCount failed:', (e as any)?.message)
+    console.error('[HomePageSelector] getPropertyCount failed:', (e as Error)?.message)
     return 0
   }
 }
