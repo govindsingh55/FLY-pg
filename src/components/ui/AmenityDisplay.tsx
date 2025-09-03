@@ -34,7 +34,7 @@ export const AmenityDisplay: React.FC<AmenityDisplayProps> = ({
         {showIcon && (
           <IconByName
             name={iconName}
-            className={cn('h-4 w-4 text-muted-foreground', iconClassName)}
+            className={cn('h-4 w-4 text-muted-foreground flex-shrink-0', iconClassName)}
           />
         )}
         <span className={cn('text-sm font-medium text-nowrap whitespace-nowrap', nameClassName)}>

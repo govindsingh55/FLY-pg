@@ -1,7 +1,7 @@
 'use client'
 
 import { useAmenities } from '@/hooks/useAmenities'
-import { AmenityGrid as DynamicAmenityGrid } from '@/components/ui/AmenityGrid'
+import { AmenityMarquee } from '@/components/ui/AmenityMarquee'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 export function AmenityGrid() {
@@ -29,13 +29,20 @@ export function AmenityGrid() {
 
   return (
     <section id="amenities" className="mx-auto max-w-6xl px-4 py-8">
-      <DynamicAmenityGrid
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-foreground mb-2">What We Offer</h2>
+        <p className="text-muted-foreground">
+          Discover the amenities that make our properties special
+        </p>
+      </div>
+      <AmenityMarquee
         amenities={amenities}
-        columns={6}
         variant="compact"
         showIcon={true}
         showDescription={false}
-        maxItems={12}
+        maxItems={20}
+        speed={25}
+        pauseOnHover={true}
         className="mx-auto"
       />
     </section>

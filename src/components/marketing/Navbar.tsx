@@ -32,13 +32,13 @@ export function Navbar() {
 
         {/* Center: Primary nav */}
         <nav className="flex items-center justify-center gap-6 text-sm">
-          <Link href="#amenities" className="hover:text-primary">
+          <Link href="/#amenities" className="hover:text-primary">
             Amenities
           </Link>
           <Link href="/properties" className="hover:text-primary">
             Properties
           </Link>
-          <Link href="#community" className="hover:text-primary">
+          <Link href="/#community" className="hover:text-primary">
             Community
           </Link>
         </nav>
