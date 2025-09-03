@@ -20,6 +20,8 @@ import SupportMedia from './collections/SupportMedia'
 import Payments from './collections/Payments'
 import Notifications from './collections/Notifications'
 import Amenities from './collections/Amenities'
+import { PaymentConfig } from './collections/PaymentConfig'
+import { CustomerPaymentSettings } from './collections/CustomerPaymentSettings'
 import { resendAdapter } from '@payloadcms/email-resend'
 
 const filename = fileURLToPath(import.meta.url)
@@ -49,6 +51,8 @@ export default buildConfig({
     SupportMedia,
     Notifications,
     Amenities,
+    PaymentConfig,
+    CustomerPaymentSettings,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -68,4 +72,8 @@ export default buildConfig({
     defaultFromName: process.env.RESEND_FROM_NAME || 'FLY PG',
     apiKey: process.env.RESEND_API_KEY || '',
   }),
+  jobs: {
+    // Payment system jobs will be added here
+    // These will be imported from the jobs directory
+  },
 })
