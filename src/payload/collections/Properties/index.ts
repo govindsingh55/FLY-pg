@@ -1,5 +1,4 @@
-import type { AccessArgs } from 'payload'
-import type { CollectionConfig } from 'payload'
+import type { AccessArgs, CollectionConfig } from 'payload'
 import roomRentPriceRange from './hooks/roomRentPriceRange'
 
 const propertiesAccess = {
@@ -19,7 +18,6 @@ const propertiesAccess = {
 }
 
 import { generateSlug } from './generateSlug'
-import { generatePreviewPath } from '@/payload/utilities/generatePreviewPath'
 
 // Removed FieldAccess import, use inline types below
 const previewAccess = ({ req, data }: { req: any; data?: any }) => {
@@ -303,6 +301,8 @@ const Properties: CollectionConfig = {
     },
     maxPerDoc: 50,
   },
+  // Enable trash functionality for soft delete and restoration
+  trash: true,
 }
 
 export default Properties
