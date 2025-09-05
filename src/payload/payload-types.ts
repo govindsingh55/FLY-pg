@@ -81,6 +81,9 @@ export interface Config {
     'support-media': SupportMedia;
     notifications: Notification;
     amenities: Amenity;
+    'payment-configs': PaymentConfig;
+    'customer-payment-settings': CustomerPaymentSetting;
+    'job-execution-logs': JobExecutionLog;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -101,6 +104,9 @@ export interface Config {
     'support-media': SupportMediaSelect<false> | SupportMediaSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     amenities: AmenitiesSelect<false> | AmenitiesSelect<true>;
+    'payment-configs': PaymentConfigsSelect<false> | PaymentConfigsSelect<true>;
+    'customer-payment-settings': CustomerPaymentSettingsSelect<false> | CustomerPaymentSettingsSelect<true>;
+    'job-execution-logs': JobExecutionLogsSelect<false> | JobExecutionLogsSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -109,8 +115,12 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'payload-jobs-stats': PayloadJobsStat;
+  };
+  globalsSelect: {
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
+  };
   locale: null;
   user:
     | (User & {
@@ -121,6 +131,12 @@ export interface Config {
       });
   jobs: {
     tasks: {
+      'monthly-rent-payment': TaskMonthlyRentPayment;
+      'payment-reminder-email': TaskPaymentReminderEmail;
+      'overdue-payment-notification': TaskOverduePaymentNotification;
+      'auto-pay-processing': TaskAutoPayProcessing;
+      'job-health-check': TaskJobHealthCheck;
+      'payment-analytics': TaskPaymentAnalytics;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1100,6 +1116,143 @@ export interface Notification {
   updatedAt: string;
 }
 /**
+ * Central configuration for the payment system
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-configs".
+ */
+export interface PaymentConfig {
+  id: string;
+  /**
+   * Master toggle to start/stop all payment jobs. When disabled, no payment jobs will run
+   */
+  isEnabled?: boolean | null;
+  /**
+   * Payment system will not run before this date
+   */
+  startDate: string;
+  /**
+   * Day of month (1-31) when monthly payments are due
+   */
+  monthlyPaymentDay: number;
+  /**
+   * Send reminders X days before payment is due
+   */
+  reminderDays: {
+    /**
+     * Days before due date
+     */
+    days: number;
+    id?: string | null;
+  }[];
+  /**
+   * Check for overdue payments X days after due date
+   */
+  overdueCheckDays: {
+    /**
+     * Days after due date
+     */
+    days: number;
+    id?: string | null;
+  }[];
+  /**
+   * These customers will not receive payment notifications or have payments created
+   */
+  excludedCustomers?: (string | Customer)[] | null;
+  /**
+   * When disabled, auto-pay functionality will not work
+   */
+  autoPayEnabled?: boolean | null;
+  /**
+   * Optional notes for administrators
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Customer-specific payment settings and exclusions
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customer-payment-settings".
+ */
+export interface CustomerPaymentSetting {
+  id: string;
+  /**
+   * Select the customer for these payment settings
+   */
+  customer: string | Customer;
+  /**
+   * When disabled, customer will not receive any payment emails
+   */
+  notificationsEnabled?: boolean | null;
+  /**
+   * When enabled, customer will be excluded from all payment jobs
+   */
+  excludedFromSystem?: boolean | null;
+  /**
+   * Leave empty to use system defaults
+   */
+  customReminderDays?:
+    | {
+        /**
+         * Days before due date
+         */
+        days: number;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * When enabled, customer can set up automatic payments
+   */
+  autoPayEnabled?: boolean | null;
+  /**
+   * Optional notes about this customer's payment settings
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "job-execution-logs".
+ */
+export interface JobExecutionLog {
+  id: string;
+  jobName: string;
+  jobId: string;
+  status: 'running' | 'completed' | 'failed' | 'cancelled';
+  success: boolean;
+  startTime: string;
+  endTime?: string | null;
+  duration?: number | null;
+  retryCount?: number | null;
+  maxRetries?: number | null;
+  errorMessage?: string | null;
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  output?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  queue?: string | null;
+  priority?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs".
  */
@@ -1151,7 +1304,15 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug:
+          | 'inline'
+          | 'monthly-rent-payment'
+          | 'payment-reminder-email'
+          | 'overdue-payment-notification'
+          | 'auto-pay-processing'
+          | 'job-health-check'
+          | 'payment-analytics'
+          | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1184,10 +1345,30 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?:
+    | (
+        | 'inline'
+        | 'monthly-rent-payment'
+        | 'payment-reminder-email'
+        | 'overdue-payment-notification'
+        | 'auto-pay-processing'
+        | 'job-health-check'
+        | 'payment-analytics'
+        | 'schedulePublish'
+      )
+    | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1249,6 +1430,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'amenities';
         value: string | Amenity;
+      } | null)
+    | ({
+        relationTo: 'payment-configs';
+        value: string | PaymentConfig;
+      } | null)
+    | ({
+        relationTo: 'customer-payment-settings';
+        value: string | CustomerPaymentSetting;
+      } | null)
+    | ({
+        relationTo: 'job-execution-logs';
+        value: string | JobExecutionLog;
       } | null)
     | ({
         relationTo: 'payload-jobs';
@@ -1854,6 +2047,73 @@ export interface AmenitiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-configs_select".
+ */
+export interface PaymentConfigsSelect<T extends boolean = true> {
+  isEnabled?: T;
+  startDate?: T;
+  monthlyPaymentDay?: T;
+  reminderDays?:
+    | T
+    | {
+        days?: T;
+        id?: T;
+      };
+  overdueCheckDays?:
+    | T
+    | {
+        days?: T;
+        id?: T;
+      };
+  excludedCustomers?: T;
+  autoPayEnabled?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customer-payment-settings_select".
+ */
+export interface CustomerPaymentSettingsSelect<T extends boolean = true> {
+  customer?: T;
+  notificationsEnabled?: T;
+  excludedFromSystem?: T;
+  customReminderDays?:
+    | T
+    | {
+        days?: T;
+        id?: T;
+      };
+  autoPayEnabled?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "job-execution-logs_select".
+ */
+export interface JobExecutionLogsSelect<T extends boolean = true> {
+  jobName?: T;
+  jobId?: T;
+  status?: T;
+  success?: T;
+  startTime?: T;
+  endTime?: T;
+  duration?: T;
+  retryCount?: T;
+  maxRetries?: T;
+  errorMessage?: T;
+  input?: T;
+  output?: T;
+  queue?: T;
+  priority?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs_select".
  */
 export interface PayloadJobsSelect<T extends boolean = true> {
@@ -1880,6 +2140,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1914,6 +2175,82 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: string;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskMonthly-rent-payment".
+ */
+export interface TaskMonthlyRentPayment {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskPayment-reminder-email".
+ */
+export interface TaskPaymentReminderEmail {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskOverdue-payment-notification".
+ */
+export interface TaskOverduePaymentNotification {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskAuto-pay-processing".
+ */
+export interface TaskAutoPayProcessing {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskJob-health-check".
+ */
+export interface TaskJobHealthCheck {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskPayment-analytics".
+ */
+export interface TaskPaymentAnalytics {
+  input?: unknown;
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

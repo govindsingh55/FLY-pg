@@ -1,8 +1,9 @@
 'use client'
 import React, { useState } from 'react'
-import { Button, Pill } from '@payloadcms/ui'
+import { Button, Pill, useConfig } from '@payloadcms/ui'
 
 const BeforeDashboard: React.FC = () => {
+  const config = useConfig()
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [messageType, setMessageType] = useState<'success' | 'error' | null>(null)
@@ -31,6 +32,11 @@ const BeforeDashboard: React.FC = () => {
     setLoading(false)
   }
 
+  const navigateToJobSystem = () => {
+    // Navigate to the existing job monitoring page
+    window.location.href = '/admin/jobs'
+  }
+
   return (
     <div
       style={{
@@ -39,6 +45,51 @@ const BeforeDashboard: React.FC = () => {
         marginBottom: '1rem',
       }}
     >
+      {/* Job System Navigation */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          flexWrap: 'wrap',
+          marginBottom: '1rem',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: '200px' }}>
+          <h3
+            style={{
+              margin: 0,
+              fontSize: '1.1rem',
+              fontWeight: '600',
+              color: 'var(--theme-elevation-800)',
+            }}
+          >
+            Payment System Jobs
+          </h3>
+          <p
+            style={{
+              margin: '0.25rem 0 0 0',
+              fontSize: '0.85rem',
+              color: 'var(--theme-elevation-600)',
+            }}
+          >
+            Monitor and manage payment processing jobs, schedules, and analytics
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Button
+            onClick={navigateToJobSystem}
+            buttonStyle="secondary"
+            size="small"
+            icon="settings"
+          >
+            Open Job Dashboard
+          </Button>
+        </div>
+      </div>
+
+      {/* Seed Database Section */}
       <div
         style={{
           display: 'flex',

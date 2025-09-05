@@ -160,7 +160,13 @@ export async function getCustomerReminderDays(payload: any, customerId: string):
     })
 
     if (config.docs && config.docs.length > 0) {
-      return config.docs[0].reminderDays || [7, 3, 1] // Default: 7, 3, 1 days before
+      const reminderDays = config.docs[0].reminderDays
+      if (reminderDays && Array.isArray(reminderDays)) {
+        return reminderDays
+          .map((item: any) => item.days || item)
+          .filter((day: any) => typeof day === 'number')
+      }
+      return [7, 3, 1] // Default: 7, 3, 1 days before
     }
 
     return [7, 3, 1] // Fallback default

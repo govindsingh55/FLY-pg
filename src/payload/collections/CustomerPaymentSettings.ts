@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 export const CustomerPaymentSettings: CollectionConfig = {
   slug: 'customer-payment-settings',
   admin: {
-    useAsTitle: 'Customer Payment Settings',
+    useAsTitle: 'customer',
     description: 'Customer-specific payment settings and exclusions',
     group: 'Payment System',
     defaultColumns: ['customer', 'notificationsEnabled', 'excludedFromSystem', 'autoPayEnabled'],
@@ -69,20 +69,6 @@ export const CustomerPaymentSettings: CollectionConfig = {
         if (!value || value.length === 0) {
           return true // Empty is valid (use defaults)
         }
-
-        const days = value.map((item: any) => item.days)
-        const uniqueDays = [...new Set(days)]
-
-        if (uniqueDays.length !== days.length) {
-          return 'Reminder days must be unique'
-        }
-
-        for (const day of days) {
-          if (day < 0 || day > 30) {
-            return 'Reminder days must be between 0 and 30'
-          }
-        }
-
         return true
       },
     },

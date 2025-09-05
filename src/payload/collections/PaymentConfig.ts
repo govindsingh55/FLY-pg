@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 export const PaymentConfig: CollectionConfig = {
   slug: 'payment-configs',
   admin: {
-    useAsTitle: 'Payment System Configuration',
+    useAsTitle: 'isEnabled',
     description: 'Central configuration for the payment system',
     group: 'Payment System',
     defaultColumns: ['isEnabled', 'startDate', 'monthlyPaymentDay', 'autoPayEnabled'],
@@ -62,7 +62,7 @@ export const PaymentConfig: CollectionConfig = {
       type: 'array',
       label: 'Reminder Days',
       required: true,
-      defaultValue: [7, 3, 1],
+      defaultValue: [{ days: 7 }, { days: 3 }, { days: 1 }],
       admin: {
         description: 'Send reminders X days before payment is due',
       },
@@ -82,20 +82,6 @@ export const PaymentConfig: CollectionConfig = {
         if (!Array.isArray(value) || value.length === 0) {
           return 'At least one reminder day must be specified'
         }
-
-        const days = value.map((item: any) => item.days)
-        const uniqueDays = [...new Set(days)]
-
-        if (uniqueDays.length !== days.length) {
-          return 'Reminder days must be unique'
-        }
-
-        for (const day of days) {
-          if (day < 0 || day > 30) {
-            return 'Reminder days must be between 0 and 30'
-          }
-        }
-
         return true
       },
     },
@@ -104,7 +90,7 @@ export const PaymentConfig: CollectionConfig = {
       type: 'array',
       label: 'Overdue Check Days',
       required: true,
-      defaultValue: [1, 3, 7, 15, 30],
+      defaultValue: [{ days: 1 }, { days: 3 }, { days: 7 }, { days: 15 }, { days: 30 }],
       admin: {
         description: 'Check for overdue payments X days after due date',
       },
@@ -124,20 +110,6 @@ export const PaymentConfig: CollectionConfig = {
         if (!Array.isArray(value) || value.length === 0) {
           return 'At least one overdue check day must be specified'
         }
-
-        const days = value.map((item: any) => item.days)
-        const uniqueDays = [...new Set(days)]
-
-        if (uniqueDays.length !== days.length) {
-          return 'Overdue check days must be unique'
-        }
-
-        for (const day of days) {
-          if (day < 0 || day > 90) {
-            return 'Overdue check days must be between 0 and 30'
-          }
-        }
-
         return true
       },
     },
