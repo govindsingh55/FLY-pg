@@ -20,6 +20,7 @@ import SupportMedia from './collections/SupportMedia'
 import Payments from './collections/Payments'
 import Notifications from './collections/Notifications'
 import Amenities from './collections/Amenities'
+import Pages from './collections/PagesFixed'
 import { resendAdapter } from '@payloadcms/email-resend'
 
 const filename = fileURLToPath(import.meta.url)
@@ -49,6 +50,7 @@ export default buildConfig({
     SupportMedia,
     Notifications,
     Amenities,
+    Pages,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

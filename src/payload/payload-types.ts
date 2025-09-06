@@ -81,6 +81,7 @@ export interface Config {
     'support-media': SupportMedia;
     notifications: Notification;
     amenities: Amenity;
+    pages: Page;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -101,6 +102,7 @@ export interface Config {
     'support-media': SupportMediaSelect<false> | SupportMediaSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     amenities: AmenitiesSelect<false> | AmenitiesSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1101,6 +1103,471 @@ export interface Notification {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: string;
+  /**
+   * The main title of the page
+   */
+  title: string;
+  /**
+   * The URL path for this page (e.g., "about-us")
+   */
+  slug: string;
+  status: 'draft' | 'published';
+  theme?: {
+    colorScheme?: ('light' | 'dark' | 'auto') | null;
+    backgroundVariant?: ('default' | 'gradient' | 'pattern') | null;
+  };
+  /**
+   * Build your page using these layout blocks
+   */
+  layout?:
+    | (
+        | {
+            title: string;
+            subtitle?: string | null;
+            description?: string | null;
+            backgroundImage?: (string | null) | Media;
+            ctaButton?: {
+              text?: string | null;
+              url?: string | null;
+            };
+            backgroundColor?: ('transparent' | 'background' | 'muted' | 'primary' | 'secondary') | null;
+            textAlignment?: ('left' | 'center' | 'right') | null;
+            padding?: ('small' | 'default' | 'large' | 'xl') | null;
+            maxWidth?: ('narrow' | 'default' | 'wide' | 'full') | null;
+            overlayOpacity?: ('light' | 'medium' | 'dark' | 'heavy') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'hero';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            features?:
+              | {
+                  title: string;
+                  description?: string | null;
+                  icon?: (string | null) | Media;
+                  id?: string | null;
+                }[]
+              | null;
+            backgroundColor?: ('transparent' | 'background' | 'muted' | 'primary' | 'secondary') | null;
+            textAlignment?: ('left' | 'center' | 'right') | null;
+            padding?: ('small' | 'default' | 'large' | 'xl') | null;
+            maxWidth?: ('narrow' | 'default' | 'wide' | 'full') | null;
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'features';
+          }
+        | {
+            title: string;
+            content?: {
+              root: {
+                type: string;
+                children: {
+                  type: string;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            image?: (string | null) | Media;
+            variant?: ('default' | 'narrow' | 'wide' | 'centered') | null;
+            backgroundColor?: ('transparent' | 'background' | 'muted' | 'primary' | 'secondary') | null;
+            textAlignment?: ('left' | 'center' | 'right') | null;
+            showBorder?: boolean | null;
+            padding?: ('small' | 'default' | 'large' | 'xl') | null;
+            imagePosition?: ('right' | 'left' | 'top' | 'bottom') | null;
+            imageSize?: ('small' | 'medium' | 'large' | 'full') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'content';
+          }
+        | {
+            title: string;
+            description?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            address?: string | null;
+            backgroundColor?: ('transparent' | 'background' | 'muted' | 'primary' | 'secondary') | null;
+            textAlignment?: ('left' | 'center' | 'right') | null;
+            padding?: ('small' | 'default' | 'large' | 'xl') | null;
+            maxWidth?: ('narrow' | 'default' | 'wide' | 'full') | null;
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'contact';
+          }
+        | {
+            title: string;
+            stats?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            backgroundColor?: ('transparent' | 'background' | 'muted' | 'primary' | 'secondary') | null;
+            textAlignment?: ('left' | 'center' | 'right') | null;
+            padding?: ('small' | 'default' | 'large' | 'xl') | null;
+            maxWidth?: ('narrow' | 'default' | 'wide' | 'full') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
+        | {
+            title?: string | null;
+            media: string | Media;
+            caption?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'media';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            testimonials?:
+              | {
+                  name: string;
+                  role?: string | null;
+                  text: string;
+                  avatar?: (string | null) | Media;
+                  tag?: string | null;
+                  rating?: number | null;
+                  id?: string | null;
+                }[]
+              | null;
+            layout?: ('grid' | 'carousel' | 'wall') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonials';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            images?:
+              | {
+                  image: string | Media;
+                  title?: string | null;
+                  caption?: string | null;
+                  badge?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            columns?: ('2' | '3' | '4' | '5') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'gallery';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            logos?:
+              | {
+                  name: string;
+                  logo: string | Media;
+                  url?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            style?: ('grayscale' | 'color' | 'monochrome') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'press';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            amenities?:
+              | {
+                  name: string;
+                  icon?: (string | null) | Media;
+                  description?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            columns?: ('2' | '3' | '4' | '5') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'amenities';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            locations?:
+              | {
+                  name: string;
+                  distance: string;
+                  icon?: (string | null) | Media;
+                  description?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'locations';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            plans?:
+              | {
+                  name: string;
+                  price: string;
+                  period?: string | null;
+                  description?: string | null;
+                  features?:
+                    | {
+                        feature: string;
+                        included?: boolean | null;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  ctaText?: string | null;
+                  ctaUrl?: string | null;
+                  highlighted?: boolean | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'pricing';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            faqs?:
+              | {
+                  question: string;
+                  answer: {
+                    root: {
+                      type: string;
+                      children: {
+                        type: string;
+                        version: number;
+                        [k: string]: unknown;
+                      }[];
+                      direction: ('ltr' | 'rtl') | null;
+                      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                      indent: number;
+                      version: number;
+                    };
+                    [k: string]: unknown;
+                  };
+                  id?: string | null;
+                }[]
+              | null;
+            layout?: ('accordion' | 'grid' | 'list') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            members?:
+              | {
+                  name: string;
+                  role: string;
+                  bio?: string | null;
+                  photo?: (string | null) | Media;
+                  socialLinks?:
+                    | {
+                        platform?: ('linkedin' | 'twitter' | 'instagram' | 'facebook' | 'email') | null;
+                        url: string;
+                        label?: string | null;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  id?: string | null;
+                }[]
+              | null;
+            columns?: ('2' | '3' | '4') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'team';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            posts?:
+              | {
+                  title: string;
+                  excerpt?: string | null;
+                  featuredImage?: (string | null) | Media;
+                  author?: string | null;
+                  date?: string | null;
+                  url?: string | null;
+                  category?: string | null;
+                  tags?:
+                    | {
+                        tag: string;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  id?: string | null;
+                }[]
+              | null;
+            layout?: ('grid' | 'list' | 'carousel') | null;
+            showViewAll?: boolean | null;
+            viewAllUrl?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'blog';
+          }
+        | {
+            title?: string | null;
+            subtitle?: string | null;
+            video?: (string | null) | Media;
+            videoUrl?: string | null;
+            posterImage?: (string | null) | Media;
+            caption?: string | null;
+            autoplay?: boolean | null;
+            controls?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            title?: string | null;
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: string;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            textAlign?: ('left' | 'center' | 'right' | 'justify') | null;
+            maxWidth?: ('full' | 'narrow' | 'medium' | 'wide') | null;
+            backgroundColor?: ('transparent' | 'background' | 'muted' | 'primary' | 'secondary') | null;
+            padding?: ('small' | 'default' | 'large' | 'xl') | null;
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            image: string | Media;
+            title?: string | null;
+            caption?: string | null;
+            altText?: string | null;
+            alignment?: ('left' | 'center' | 'right' | 'full') | null;
+            backgroundColor?: ('transparent' | 'background' | 'muted' | 'primary' | 'secondary') | null;
+            textAlignment?: ('left' | 'center' | 'right') | null;
+            padding?: ('small' | 'default' | 'large' | 'xl') | null;
+            maxWidth?: ('narrow' | 'default' | 'wide' | 'full') | null;
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'image';
+          }
+        | {
+            height?: ('small' | 'medium' | 'large' | 'xlarge') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'spacer';
+          }
+        | {
+            style?: ('solid' | 'dashed' | 'dotted' | 'gradient') | null;
+            thickness?: ('thin' | 'medium' | 'thick') | null;
+            color?: ('default' | 'primary' | 'secondary' | 'muted') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'divider';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            description?: string | null;
+            actions?:
+              | {
+                  text: string;
+                  url: string;
+                  variant?: ('primary' | 'secondary' | 'outline' | 'ghost') | null;
+                  icon?: (string | null) | Media;
+                  id?: string | null;
+                }[]
+              | null;
+            variant?: ('default' | 'primary' | 'secondary' | 'gradient' | 'card') | null;
+            backgroundImage?: (string | null) | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+      )[]
+    | null;
+  seo?: {
+    /**
+     * Title tag for search engines (50-60 characters)
+     */
+    metaTitle?: string | null;
+    /**
+     * Description for search engines (150-160 characters)
+     */
+    metaDescription?: string | null;
+    /**
+     * Comma-separated keywords for SEO
+     */
+    keywords?: string | null;
+    /**
+     * Image for social media sharing
+     */
+    ogImage?: (string | null) | Media;
+    /**
+     * Title for social media sharing
+     */
+    ogTitle?: string | null;
+    /**
+     * Description for social media sharing
+     */
+    ogDescription?: string | null;
+    twitterCard?: ('summary' | 'summary_large_image') | null;
+    /**
+     * Canonical URL for this page
+     */
+    canonicalUrl?: string | null;
+    robots?: {
+      /**
+       * Prevent search engines from indexing this page
+       */
+      noIndex?: boolean | null;
+      /**
+       * Prevent search engines from following links on this page
+       */
+      noFollow?: boolean | null;
+      /**
+       * Prevent search engines from archiving this page
+       */
+      noArchive?: boolean | null;
+      /**
+       * Prevent search engines from showing snippets of this page
+       */
+      noSnippet?: boolean | null;
+    };
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs".
  */
 export interface PayloadJob {
@@ -1249,6 +1716,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'amenities';
         value: string | Amenity;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: string | Page;
       } | null)
     | ({
         relationTo: 'payload-jobs';
@@ -1851,6 +2322,415 @@ export interface AmenitiesSelect<T extends boolean = true> {
   iconName?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  status?: T;
+  theme?:
+    | T
+    | {
+        colorScheme?: T;
+        backgroundVariant?: T;
+      };
+  layout?:
+    | T
+    | {
+        hero?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              description?: T;
+              backgroundImage?: T;
+              ctaButton?:
+                | T
+                | {
+                    text?: T;
+                    url?: T;
+                  };
+              backgroundColor?: T;
+              textAlignment?: T;
+              padding?: T;
+              maxWidth?: T;
+              overlayOpacity?: T;
+              id?: T;
+              blockName?: T;
+            };
+        features?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              features?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              backgroundColor?: T;
+              textAlignment?: T;
+              padding?: T;
+              maxWidth?: T;
+              showBorder?: T;
+              id?: T;
+              blockName?: T;
+            };
+        content?:
+          | T
+          | {
+              title?: T;
+              content?: T;
+              image?: T;
+              variant?: T;
+              backgroundColor?: T;
+              textAlignment?: T;
+              showBorder?: T;
+              padding?: T;
+              imagePosition?: T;
+              imageSize?: T;
+              id?: T;
+              blockName?: T;
+            };
+        contact?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              email?: T;
+              phone?: T;
+              address?: T;
+              backgroundColor?: T;
+              textAlignment?: T;
+              padding?: T;
+              maxWidth?: T;
+              showBorder?: T;
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              title?: T;
+              stats?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              backgroundColor?: T;
+              textAlignment?: T;
+              padding?: T;
+              maxWidth?: T;
+              id?: T;
+              blockName?: T;
+            };
+        media?:
+          | T
+          | {
+              title?: T;
+              media?: T;
+              caption?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              testimonials?:
+                | T
+                | {
+                    name?: T;
+                    role?: T;
+                    text?: T;
+                    avatar?: T;
+                    tag?: T;
+                    rating?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              id?: T;
+              blockName?: T;
+            };
+        gallery?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    title?: T;
+                    caption?: T;
+                    badge?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              id?: T;
+              blockName?: T;
+            };
+        press?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              logos?:
+                | T
+                | {
+                    name?: T;
+                    logo?: T;
+                    url?: T;
+                    id?: T;
+                  };
+              style?: T;
+              id?: T;
+              blockName?: T;
+            };
+        amenities?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              amenities?:
+                | T
+                | {
+                    name?: T;
+                    icon?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              id?: T;
+              blockName?: T;
+            };
+        locations?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              locations?:
+                | T
+                | {
+                    name?: T;
+                    distance?: T;
+                    icon?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        pricing?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              plans?:
+                | T
+                | {
+                    name?: T;
+                    price?: T;
+                    period?: T;
+                    description?: T;
+                    features?:
+                      | T
+                      | {
+                          feature?: T;
+                          included?: T;
+                          id?: T;
+                        };
+                    ctaText?: T;
+                    ctaUrl?: T;
+                    highlighted?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              faqs?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              id?: T;
+              blockName?: T;
+            };
+        team?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              members?:
+                | T
+                | {
+                    name?: T;
+                    role?: T;
+                    bio?: T;
+                    photo?: T;
+                    socialLinks?:
+                      | T
+                      | {
+                          platform?: T;
+                          url?: T;
+                          label?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              columns?: T;
+              id?: T;
+              blockName?: T;
+            };
+        blog?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              posts?:
+                | T
+                | {
+                    title?: T;
+                    excerpt?: T;
+                    featuredImage?: T;
+                    author?: T;
+                    date?: T;
+                    url?: T;
+                    category?: T;
+                    tags?:
+                      | T
+                      | {
+                          tag?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              layout?: T;
+              showViewAll?: T;
+              viewAllUrl?: T;
+              id?: T;
+              blockName?: T;
+            };
+        video?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              video?: T;
+              videoUrl?: T;
+              posterImage?: T;
+              caption?: T;
+              autoplay?: T;
+              controls?: T;
+              id?: T;
+              blockName?: T;
+            };
+        text?:
+          | T
+          | {
+              title?: T;
+              content?: T;
+              textAlign?: T;
+              maxWidth?: T;
+              backgroundColor?: T;
+              padding?: T;
+              showBorder?: T;
+              id?: T;
+              blockName?: T;
+            };
+        image?:
+          | T
+          | {
+              image?: T;
+              title?: T;
+              caption?: T;
+              altText?: T;
+              alignment?: T;
+              backgroundColor?: T;
+              textAlignment?: T;
+              padding?: T;
+              maxWidth?: T;
+              showBorder?: T;
+              id?: T;
+              blockName?: T;
+            };
+        spacer?:
+          | T
+          | {
+              height?: T;
+              id?: T;
+              blockName?: T;
+            };
+        divider?:
+          | T
+          | {
+              style?: T;
+              thickness?: T;
+              color?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              description?: T;
+              actions?:
+                | T
+                | {
+                    text?: T;
+                    url?: T;
+                    variant?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              variant?: T;
+              backgroundImage?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        keywords?: T;
+        ogImage?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterCard?: T;
+        canonicalUrl?: T;
+        robots?:
+          | T
+          | {
+              noIndex?: T;
+              noFollow?: T;
+              noArchive?: T;
+              noSnippet?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -27,3 +27,6 @@ export default function RichText(props: Props) {
     />
   )
 }
+
+// Named export for compatibility
+export { RichText }
