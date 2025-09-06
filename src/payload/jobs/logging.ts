@@ -2,25 +2,7 @@
 // Following PayloadCMS v3 jobs logging documentation
 
 import type { Payload } from 'payload'
-
-export interface JobExecutionLog {
-  id: string
-  jobName: string
-  jobId: string
-  startTime: Date
-  endTime?: Date
-  duration?: number
-  status: 'running' | 'completed' | 'failed' | 'cancelled'
-  success: boolean
-  errorMessage?: string
-  retryCount: number
-  maxRetries: number
-  input?: Record<string, any>
-  output?: Record<string, any>
-  metadata?: Record<string, any>
-  createdAt: Date
-  updatedAt: Date
-}
+import type { JobExecutionLog } from '../payload-types'
 
 export interface JobLogFilter {
   jobName?: string
@@ -79,7 +61,7 @@ export class JobLogger {
         data: {
           jobName,
           jobId,
-          startTime: new Date(),
+          startTime: new Date().toISOString(),
           status: 'running',
           success: false,
           retryCount: 0,
@@ -103,15 +85,13 @@ export class JobLogger {
         id: `log-${jobId}-${Date.now()}`,
         jobName,
         jobId,
-        startTime: new Date(),
+        startTime: new Date().toISOString(),
         status: 'running',
         success: false,
         retryCount: 0,
         maxRetries: 3,
         input,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
+      } as JobExecutionLog
     }
   }
 
@@ -127,13 +107,13 @@ export class JobLogger {
   ): Promise<JobExecutionLog> {
     try {
       const endTime = new Date()
-      const duration = endTime.getTime() - logEntry.startTime.getTime()
+      const duration = endTime.getTime() - new Date(logEntry.startTime).getTime()
 
       const updatedLog = await payload.update({
         collection: 'job-execution-logs',
         id: logEntry.id,
         data: {
-          endTime,
+          endTime: endTime.toISOString(),
           duration,
           status: success ? 'completed' : 'failed',
           success,
@@ -157,17 +137,16 @@ export class JobLogger {
       console.error('Error logging job completion:', error)
       // Fallback to in-memory update if database fails
       const endTime = new Date()
-      const duration = endTime.getTime() - logEntry.startTime.getTime()
+      const duration = endTime.getTime() - new Date(logEntry.startTime).getTime()
       return {
         ...logEntry,
-        endTime,
+        endTime: endTime.toISOString(),
         duration,
         status: success ? 'completed' : 'failed',
         success,
         output,
         errorMessage,
-        updatedAt: new Date(),
-      }
+      } as JobExecutionLog
     }
   }
 
@@ -185,7 +164,6 @@ export class JobLogger {
         ...logEntry,
         retryCount,
         errorMessage,
-        updatedAt: new Date(),
       }
 
       console.log(`[JOB RETRY] ${logEntry.jobName} (${logEntry.jobId}):`, {
@@ -485,8 +463,8 @@ export class JobLogger {
         log.id,
         log.jobName,
         log.jobId,
-        log.startTime.toISOString(),
-        log.endTime?.toISOString() || '',
+        log.startTime,
+        log.endTime || '',
         log.duration || '',
         log.status,
         log.success,

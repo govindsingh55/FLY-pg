@@ -414,7 +414,7 @@ export class JobMonitor {
     systemMetrics: SystemHealthMetrics
     recentJobs: JobExecutionMetrics[]
     scheduleStatus: ReturnType<typeof PaymentJobScheduler.getJobScheduleStatus>
-    performanceAnalytics: Awaited<ReturnType<typeof this.getJobPerformanceAnalytics>>
+    performanceAnalytics: Awaited<ReturnType<typeof JobMonitor.getJobPerformanceAnalytics>>
   }> {
     try {
       const [healthStatus, systemMetrics, recentJobs, performanceAnalytics] = await Promise.all([

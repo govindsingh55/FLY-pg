@@ -76,13 +76,13 @@ export class EmailRenderer {
         break
 
       case 'autoPayStatus':
-        if (!data.status) {
+        if (!(data as any).status) {
           errors.push('Auto-pay status is required for auto-pay status email')
         }
         break
 
       case 'paymentFailure':
-        if (!data.failureReason) {
+        if (!(data as any).failureReason) {
           errors.push('Failure reason is required for payment failure email')
         }
         break
