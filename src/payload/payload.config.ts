@@ -1,6 +1,6 @@
 // storage-adapter-import-placeholder
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
-import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
+// import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -21,6 +21,11 @@ import Payments from './collections/Payments'
 import Notifications from './collections/Notifications'
 import Amenities from './collections/Amenities'
 import { resendAdapter } from '@payloadcms/email-resend'
+
+import { PaymentConfig } from './collections/PaymentConfig'
+import { CustomerPaymentSettings } from './collections/CustomerPaymentSettings'
+import { JobExecutionLog } from './collections/JobExecutionLog'
+import { paymentJobs, PaymentJobScheduler } from './jobs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -49,6 +54,9 @@ export default buildConfig({
     SupportMedia,
     Notifications,
     Amenities,
+    PaymentConfig,
+    CustomerPaymentSettings,
+    JobExecutionLog,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -68,4 +76,29 @@ export default buildConfig({
     defaultFromName: process.env.RESEND_FROM_NAME || 'FLY PG',
     apiKey: process.env.RESEND_API_KEY || '',
   }),
+  // Jobs configuration for payment system
+  // Following PayloadCMS v3 documentation: https://payloadcms.com/docs/jobs-queue/overview
+  jobs: {
+    // Get scheduling configuration from PaymentJobScheduler
+    tasks: PaymentJobScheduler.getJobSchedules().map((schedule) => ({
+      slug: schedule.slug,
+      handler: async ({ input, req }) => {
+        const result = await paymentJobs[schedule.slug as keyof typeof paymentJobs].run(
+          req.payload,
+          input,
+        )
+        if (result.success) {
+          return { output: result, state: 'succeeded' as const }
+        } else {
+          return { errorMessage: result.message, state: 'failed' as const }
+        }
+      },
+      schedule: [
+        {
+          cron: schedule.cron,
+          queue: schedule.queue,
+        },
+      ],
+    })),
+  },
 })
