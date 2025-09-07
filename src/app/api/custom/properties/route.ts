@@ -11,31 +11,16 @@ export async function GET(request: NextRequest) {
 
     const payload = await getPayload({ config })
 
-    let whereClause: any = {
+    const whereClause: any = {
       status: { equals: 'active' },
-    }
-
-    if (!showAll && propertyIds.length > 0) {
-      whereClause.id = { in: propertyIds }
+      ...(!showAll && propertyIds.length > 0 && { id: { in: propertyIds } }),
     }
 
     const result = await payload.find({
       collection: 'properties',
       where: whereClause,
       limit,
-      populate: {
-        images: {
-          populate: {
-            image: true,
-          },
-        },
-        rooms: true,
-        amenities: {
-          populate: {
-            icon: true,
-          },
-        },
-      },
+      depth: 2,
     })
 
     const processedProperties = result.docs.map((prop: any) => ({
