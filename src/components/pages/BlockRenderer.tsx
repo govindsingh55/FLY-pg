@@ -15,6 +15,9 @@ import { TextSection } from './blocks/TextSection'
 import { ImageSection } from './blocks/ImageSection'
 import { SpacerSection } from './blocks/SpacerSection'
 import { DividerSection } from './blocks/DividerSection'
+import { PropertyCarouselSection } from './blocks/PropertyCarouselSection'
+import { PropertySearchSection } from './blocks/PropertySearchSection'
+import { PropertyListingSection } from './blocks/PropertyListingSection'
 
 interface Block {
   blockType: string
@@ -80,6 +83,15 @@ export function BlockRenderer({ block }: BlockRendererProps) {
 
     case 'cta':
       return <ContactSection {...(block as any)} /> // Reuse contact component for CTA
+
+    case 'property-carousel':
+      return <PropertyCarouselSection {...(block as any)} />
+
+    case 'property-search':
+      return <PropertySearchSection {...(block as any)} />
+
+    case 'property-listing':
+      return <PropertyListingSection {...(block as any)} />
 
     default:
       console.warn(`Unknown block type: ${block.blockType}`)
