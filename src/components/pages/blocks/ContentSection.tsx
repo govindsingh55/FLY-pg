@@ -30,7 +30,7 @@ export function ContentSection({
   imageSize = 'medium',
 }: ContentSectionProps) {
   // Determine layout based on content and image
-  const hasImage = image && (image.url || image)
+  const hasImage = image && image !== null && image !== undefined
   const hasContent = content
 
   // Style configurations
@@ -80,7 +80,7 @@ export function ContentSection({
 
     return (
       <div className="prose prose-lg max-w-none dark:prose-invert">
-        <RichText data={content} />
+        <RichText data={content as any} />
       </div>
     )
   }
@@ -89,10 +89,15 @@ export function ContentSection({
   const renderImage = () => {
     if (!hasImage) return null
 
+    const imageSrc =
+      typeof image === 'object' && image !== null && 'url' in image
+        ? (image as { url: string }).url
+        : (image as string)
+
     return (
       <div className="relative">
         <Image
-          src={image.url || image}
+          src={imageSrc}
           alt={title || 'Content image'}
           width={imageDimensions.width}
           height={imageDimensions.height}

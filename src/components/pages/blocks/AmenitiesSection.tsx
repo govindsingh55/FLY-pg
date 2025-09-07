@@ -86,10 +86,16 @@ export function AmenitiesSection({
                 {amenities.map((amenity, index) => (
                   <Card key={index} className="p-3">
                     <div className="flex items-center gap-2">
-                      {amenity.icon && (
+                      {amenity.icon !== null && amenity.icon !== undefined && (
                         <div className="w-4 h-4 flex-shrink-0">
                           <Image
-                            src={amenity.icon.url || amenity.icon}
+                            src={
+                              typeof amenity.icon === 'object' &&
+                              amenity.icon !== null &&
+                              'url' in amenity.icon
+                                ? (amenity.icon as { url: string }).url
+                                : (amenity.icon as string)
+                            }
                             alt={amenity.name}
                             width={16}
                             height={16}
@@ -124,10 +130,16 @@ export function AmenitiesSection({
               {amenities.map((amenity, index) => (
                 <Card key={index} className="p-3">
                   <div className="flex items-center gap-2">
-                    {amenity.icon && (
+                    {amenity.icon !== null && amenity.icon !== undefined && (
                       <div className="w-4 h-4 flex-shrink-0">
                         <Image
-                          src={amenity.icon.url || amenity.icon}
+                          src={
+                            typeof amenity.icon === 'object' &&
+                            amenity.icon !== null &&
+                            'url' in amenity.icon
+                              ? (amenity.icon as { url: string }).url
+                              : (amenity.icon as string)
+                          }
                           alt={amenity.name}
                           width={16}
                           height={16}

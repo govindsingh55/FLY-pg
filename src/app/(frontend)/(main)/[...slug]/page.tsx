@@ -4,9 +4,9 @@ import { isRouteProtected } from '@/lib/config/protected-routes'
 import { PageRenderer, generatePageMetadata } from '@/components/pages/PageRenderer'
 
 interface DynamicPageProps {
-  params: {
+  params: Promise<{
     slug: string[]
-  }
+  }>
 }
 
 export default async function DynamicPage({ params }: DynamicPageProps) {

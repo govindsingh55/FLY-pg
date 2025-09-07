@@ -18,7 +18,7 @@ import { DividerSection } from './blocks/DividerSection'
 
 interface Block {
   blockType: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 interface BlockRendererProps {
@@ -28,58 +28,58 @@ interface BlockRendererProps {
 export function BlockRenderer({ block }: BlockRendererProps) {
   switch (block.blockType) {
     case 'hero':
-      return <HeroSection {...block} />
+      return <HeroSection {...(block as any)} />
 
     case 'features':
-      return <FeaturesSection {...block} />
+      return <FeaturesSection {...(block as any)} />
 
     case 'contact':
-      return <ContactSection {...block} />
+      return <ContactSection {...(block as any)} />
 
     case 'stats':
-      return <StatsSection {...block} />
+      return <StatsSection {...(block as any)} />
 
     case 'content':
-      return <ContentSection {...block} />
+      return <ContentSection {...(block as any)} />
 
     case 'media':
-      return <MediaSection {...block} />
+      return <MediaSection {...(block as any)} />
 
     case 'testimonials':
-      return <TestimonialsSection {...block} />
+      return <TestimonialsSection {...(block as any)} />
 
     case 'gallery':
-      return <GallerySection {...block} />
+      return <GallerySection {...(block as any)} />
 
     case 'press':
-      return <PressSection {...block} />
+      return <PressSection {...(block as any)} />
 
     case 'amenities':
-      return <AmenitiesSection {...block} />
+      return <AmenitiesSection {...(block as any)} />
 
     case 'locations':
-      return <AmenitiesSection {...block} /> // Reuse amenities component for locations
+      return <AmenitiesSection {...(block as any)} /> // Reuse amenities component for locations
 
     case 'pricing':
-      return <PricingSection {...block} />
+      return <PricingSection {...(block as any)} />
 
     case 'faq':
-      return <FAQSection {...block} />
+      return <FAQSection {...(block as any)} />
 
     case 'text':
-      return <TextSection {...block} />
+      return <TextSection {...(block as any)} />
 
     case 'image':
-      return <ImageSection {...block} />
+      return <ImageSection {...(block as any)} />
 
     case 'spacer':
-      return <SpacerSection {...block} />
+      return <SpacerSection {...(block as any)} />
 
     case 'divider':
-      return <DividerSection {...block} />
+      return <DividerSection {...(block as any)} />
 
     case 'cta':
-      return <ContactSection {...block} /> // Reuse contact component for CTA
+      return <ContactSection {...(block as any)} /> // Reuse contact component for CTA
 
     default:
       console.warn(`Unknown block type: ${block.blockType}`)

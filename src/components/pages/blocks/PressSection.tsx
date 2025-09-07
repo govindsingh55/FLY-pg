@@ -98,7 +98,11 @@ export function PressSection({
                 {logos.map((logo, index) => {
                   const logoElement = (
                     <Image
-                      src={logo.logo.url || logo.logo}
+                      src={
+                        typeof logo.logo === 'object' && logo.logo !== null && 'url' in logo.logo
+                          ? (logo.logo as { url: string }).url
+                          : (logo.logo as string)
+                      }
                       alt={logo.name}
                       width={120}
                       height={48}
@@ -147,7 +151,11 @@ export function PressSection({
               {logos.map((logo, index) => {
                 const logoElement = (
                   <Image
-                    src={logo.logo.url || logo.logo}
+                    src={
+                      typeof logo.logo === 'object' && logo.logo !== null && 'url' in logo.logo
+                        ? (logo.logo as { url: string }).url
+                        : (logo.logo as string)
+                    }
                     alt={logo.name}
                     width={120}
                     height={48}

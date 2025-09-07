@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
       seo: pageData.seo,
       layout: pageData.layout,
       theme: pageData.theme,
+      createdAt: pageData.createdAt || new Date().toISOString(),
+      updatedAt: pageData.updatedAt || new Date().toISOString(),
     }
 
     // Return the page data for live preview

@@ -85,7 +85,7 @@ export function FAQSection({
                     <AccordionItem key={index} value={`item-${index}`}>
                       <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
                       <AccordionContent>
-                        <RichText data={faq.answer} />
+                        <RichText data={faq.answer as any} />
                       </AccordionContent>
                     </AccordionItem>
                   ))}
@@ -106,7 +106,7 @@ export function FAQSection({
                   <AccordionItem key={index} value={`item-${index}`}>
                     <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
                     <AccordionContent>
-                      <RichText data={faq.answer} />
+                      <RichText data={faq.answer as any} />
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -139,7 +139,7 @@ export function FAQSection({
                         <CardTitle className="text-lg">{faq.question}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <RichText data={faq.answer} />
+                        <RichText data={faq.answer as any} />
                       </CardContent>
                     </Card>
                   ))}
@@ -162,7 +162,7 @@ export function FAQSection({
                       <CardTitle className="text-lg">{faq.question}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <RichText data={faq.answer} />
+                      <RichText data={faq.answer as any} />
                     </CardContent>
                   </Card>
                 ))}
@@ -192,7 +192,7 @@ export function FAQSection({
                 {faqs.map((faq, index) => (
                   <div key={index} className="border-b pb-6">
                     <h3 className="text-xl font-semibold mb-3">{faq.question}</h3>
-                    <RichText data={faq.answer} />
+                    <RichText data={faq.answer as any} />
                   </div>
                 ))}
               </div>
@@ -211,7 +211,7 @@ export function FAQSection({
               {faqs.map((faq, index) => (
                 <div key={index} className="border-b pb-6">
                   <h3 className="text-xl font-semibold mb-3">{faq.question}</h3>
-                  <RichText data={faq.answer} />
+                  <RichText data={faq.answer as any} />
                 </div>
               ))}
             </div>

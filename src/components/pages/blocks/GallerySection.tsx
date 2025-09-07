@@ -90,7 +90,11 @@ export function GallerySection({
                     className="group relative overflow-hidden rounded-2xl border bg-card"
                   >
                     <Image
-                      src={item.image.url || item.image}
+                      src={
+                        typeof item.image === 'object' && item.image !== null && 'url' in item.image
+                          ? (item.image as { url: string }).url
+                          : (item.image as string)
+                      }
                       alt={item.title || item.caption || 'Gallery image'}
                       width={400}
                       height={300}
@@ -126,7 +130,11 @@ export function GallerySection({
                   className="group relative overflow-hidden rounded-2xl border bg-card"
                 >
                   <Image
-                    src={item.image.url || item.image}
+                    src={
+                      typeof item.image === 'object' && item.image !== null && 'url' in item.image
+                        ? (item.image as { url: string }).url
+                        : (item.image as string)
+                    }
                     alt={item.title || item.caption || 'Gallery image'}
                     width={400}
                     height={300}

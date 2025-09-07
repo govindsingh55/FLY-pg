@@ -64,7 +64,7 @@ export function TextSection({
             <div
               className={cn('prose prose-lg max-w-none dark:prose-invert', alignClasses[textAlign])}
             >
-              <RichText data={content} />
+              <RichText data={content as any} />
             </div>
           </div>
         ) : (
@@ -75,7 +75,7 @@ export function TextSection({
             <div
               className={cn('prose prose-lg max-w-none dark:prose-invert', alignClasses[textAlign])}
             >
-              <RichText data={content} />
+              <RichText data={content as any} />
             </div>
           </>
         )}

@@ -73,7 +73,11 @@ export function ImageSection({
 
             <div className={cn('relative', alignmentClasses[alignment])}>
               <Image
-                src={image.url || image}
+                src={
+                  typeof image === 'object' && image !== null && 'url' in image
+                    ? (image as { url: string }).url
+                    : (image as string)
+                }
                 alt={altText || title || caption || 'Image'}
                 width={800}
                 height={600}
@@ -92,7 +96,11 @@ export function ImageSection({
 
             <div className={cn('relative', alignmentClasses[alignment])}>
               <Image
-                src={image.url || image}
+                src={
+                  typeof image === 'object' && image !== null && 'url' in image
+                    ? (image as { url: string }).url
+                    : (image as string)
+                }
                 alt={altText || title || caption || 'Image'}
                 width={800}
                 height={600}

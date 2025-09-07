@@ -3,15 +3,15 @@ import { getPageBySlug, getDraftPage } from '@/lib/payload/pages'
 import { PageRenderer } from '@/components/pages/PageRenderer'
 
 interface PreviewPageProps {
-  searchParams: {
+  searchParams: Promise<{
     slug?: string
     secret?: string
     type?: 'draft' | 'published'
-  }
+  }>
 }
 
 export default async function PreviewPage({ searchParams }: PreviewPageProps) {
-  const { slug, secret, type = 'draft' } = searchParams
+  const { slug, secret, type = 'draft' } = await searchParams
 
   if (!slug) {
     notFound()
@@ -51,7 +51,7 @@ export default async function PreviewPage({ searchParams }: PreviewPageProps) {
 
 // Generate metadata for the preview page
 export async function generateMetadata({ searchParams }: PreviewPageProps) {
-  const { slug, type = 'draft' } = searchParams
+  const { slug, type = 'draft' } = await searchParams
 
   if (!slug) {
     return {
@@ -63,7 +63,8 @@ export async function generateMetadata({ searchParams }: PreviewPageProps) {
     let page
 
     if (type === 'draft') {
-      page = await getDraftPage(slug, searchParams.secret || '')
+      const { secret } = await searchParams
+      page = await getDraftPage(slug, secret || '')
     } else {
       page = await getPageBySlug(slug)
     }
