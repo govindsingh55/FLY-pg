@@ -41,14 +41,19 @@ function mapSort(sort: 'price_asc' | 'price_desc' | 'newest') {
 async function fetchProperties(params: SearchParams) {
   const normalized = normalizeParams(params)
   // Call internal API route to centralize filtering logic
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/api/custom/properties`, {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/custom/properties`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(normalized),
     // Ensure this runs on the server without caching stale data
     cache: 'no-store',
   })
-  if (!res.ok) throw new Error('Failed to fetch properties')
+  if (!res.ok) {
+    const errorText = await res.text()
+    console.error('Properties API error:', res.status, errorText)
+    throw new Error(`Failed to fetch properties: ${res.status} ${errorText}`)
+  }
   return res.json()
 }
 

@@ -15,6 +15,14 @@ export default async function DynamicPage({ params }: DynamicPageProps) {
 
   console.log('DynamicPage: Attempting to load slug:', fullSlug)
 
+  // Skip static assets and common files
+  const staticAssets = ['favicon.ico', 'robots.txt', 'sitemap.xml', 'manifest.json']
+  const fileName = slug[slug.length - 1]
+  if (staticAssets.includes(fileName) || fileName.includes('.')) {
+    console.log('DynamicPage: Skipping static asset:', fullSlug)
+    notFound()
+  }
+
   // Check if route is protected (existing manual pages)
   if (isRouteProtected(fullSlug)) {
     console.log('DynamicPage: Route is protected:', fullSlug)
@@ -49,6 +57,15 @@ export default async function DynamicPage({ params }: DynamicPageProps) {
 export async function generateMetadata({ params }: DynamicPageProps) {
   const { slug } = await params
   const fullSlug = `/${slug.join('/')}`
+
+  // Skip metadata generation for static assets
+  const staticAssets = ['favicon.ico', 'robots.txt', 'sitemap.xml', 'manifest.json']
+  const fileName = slug[slug.length - 1]
+  if (staticAssets.includes(fileName) || fileName.includes('.')) {
+    return {
+      title: 'Static Asset',
+    }
+  }
 
   try {
     const page = await getPageBySlug(fullSlug)

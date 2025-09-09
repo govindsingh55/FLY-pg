@@ -164,14 +164,14 @@ export default function PropertiesListClient({
           <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
             Loading…
           </div>
-        ) : data?.docs?.length === 0 ? (
+        ) : data?.properties?.length === 0 ? (
           <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
             No properties found.
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {data.docs.map((p: Property) => (
+              {data.properties.map((p: Property) => (
                 <PropertyCard key={p.id} property={p} />
               ))}
             </div>
