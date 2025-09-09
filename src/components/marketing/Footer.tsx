@@ -43,7 +43,7 @@ export function Footer() {
             <div className="text-sm font-semibold">Company</div>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
               <li>
-                <Link href="#">About</Link>
+                <Link href="/about-us">About</Link>
               </li>
               <li>
                 <Link href="#">Careers</Link>

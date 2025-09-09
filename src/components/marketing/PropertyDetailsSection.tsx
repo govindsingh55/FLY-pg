@@ -32,13 +32,11 @@ interface PropertyDetailsSectionProps {
     images?: Array<{ image: any; id: string; isCover: boolean }>
     address?: { address?: any; location?: { sector?: string; city?: string } }
   }
-  bookingCard?: React.ReactNode
   className?: string
 }
 
 export default function PropertyDetailsSection({
   property,
-  bookingCard,
   className = '',
 }: PropertyDetailsSectionProps) {
   const sector =
@@ -66,157 +64,126 @@ export default function PropertyDetailsSection({
           </div>
         )}
 
-        {/* Main Content Grid - Responsive Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Property Details */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* About Section */}
-            {property.description && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lucide.Info className="h-5 w-5 text-primary" />
-                    About {property.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <RichText data={property.description} enableGutter={false} enableProse={true} />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Amenities */}
-            {property.amenities && property.amenities.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lucide.Star className="h-5 w-5 text-primary" />
-                    Amenities & Features
-                  </CardTitle>
-                  <CardDescription>Everything you need for comfortable living</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <AmenityGridForProperty items={property.amenities} />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Food Menu */}
-            {property.foodMenu?.menu?.description && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lucide.UtensilsCrossed className="h-5 w-5 text-primary" />
-                    Food Menu
-                  </CardTitle>
-                  <CardDescription>
-                    Delicious meals prepared fresh daily
-                    {property.foodMenu.price && (
-                      <span className="block text-green-600 font-medium">
-                        Monthly Food Charge: ₹{property.foodMenu.price.toLocaleString()}
-                      </span>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RichText
-                    data={property.foodMenu.menu.description}
-                    enableGutter={false}
-                    enableProse={true}
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Nearby Locations */}
-            {property.nearby && property.nearby.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lucide.MapPin className="h-5 w-5 text-primary" />
-                    Nearby Locations
-                  </CardTitle>
-                  <CardDescription>Convenient access to key locations</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <NearbyLocations locations={property.nearby} />
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Right Column - Booking Card & Quick Info */}
-          <div className="space-y-6">
-            {/* Sticky Booking Card */}
-            {bookingCard && <div className="lg:sticky lg:top-24 lg:self-start">{bookingCard}</div>}
-
-            {/* Quick Property Stats */}
+        {/* Main Content - Full Width Layout */}
+        <div className="space-y-8">
+          {/* About Section */}
+          {property.description && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Lucide.BarChart3 className="h-5 w-5 text-primary" />
-                  Property Overview
+                  <Lucide.Info className="h-5 w-5 text-primary" />
+                  About {property.name}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
+                <RichText data={property.description} enableGutter={false} enableProse={true} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Amenities */}
+          {property.amenities && property.amenities.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lucide.Star className="h-5 w-5 text-primary" />
+                  Amenities & Features
+                </CardTitle>
+                <CardDescription>Everything you need for comfortable living</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AmenityGridForProperty items={property.amenities} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Food Menu */}
+          {property.foodMenu?.menu?.description && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lucide.UtensilsCrossed className="h-5 w-5 text-primary" />
+                  Food Menu
+                </CardTitle>
+                <CardDescription>
+                  Delicious meals prepared fresh daily
+                  {property.foodMenu.price && (
+                    <span className="block text-green-600 font-medium">
+                      Monthly Food Charge: ₹{property.foodMenu.price.toLocaleString()}
+                    </span>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RichText
+                  data={property.foodMenu.menu.description}
+                  enableGutter={false}
+                  enableProse={true}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Nearby Locations */}
+          {property.nearby && property.nearby.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lucide.MapPin className="h-5 w-5 text-primary" />
+                  Nearby Locations
+                </CardTitle>
+                <CardDescription>Convenient access to key locations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <NearbyLocations locations={property.nearby} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Property Overview Stats */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lucide.BarChart3 className="h-5 w-5 text-primary" />
+                Property Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {property.rooms && property.rooms.length > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Rooms</span>
-                    <span className="font-semibold">{property.rooms.length}</span>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{property.rooms.length}</div>
+                    <div className="text-sm text-muted-foreground">Total Rooms</div>
                   </div>
                 )}
                 {property.rooms && property.rooms.length > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Available Rooms</span>
-                    <span className="font-semibold text-green-600">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
                       {property.rooms.filter((r) => r.available !== false).length}
-                    </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">Available</div>
                   </div>
                 )}
                 {property.amenities && property.amenities.length > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Amenities</span>
-                    <span className="font-semibold">{property.amenities.length}</span>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">
+                      {property.amenities.length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Amenities</div>
                   </div>
                 )}
                 {localityLine && (
-                  <div className="pt-4 border-t">
-                    <div className="flex items-start gap-2">
-                      <Lucide.MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <div>
-                        <div className="text-sm font-medium">Location</div>
-                        <div className="text-sm text-muted-foreground">{localityLine}</div>
-                      </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <Lucide.MapPin className="h-4 w-4 text-muted-foreground" />
+                      <div className="text-sm font-medium">Location</div>
                     </div>
+                    <div className="text-sm text-muted-foreground">{localityLine}</div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Contact Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lucide.Phone className="h-5 w-5 text-primary" />
-                  Get in Touch
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full" size="sm">
-                  <Lucide.Calendar className="mr-2 h-4 w-4" />
-                  Schedule Visit
-                </Button>
-                <Button variant="outline" className="w-full" size="sm">
-                  <Lucide.MessageCircle className="mr-2 h-4 w-4" />
-                  WhatsApp
-                </Button>
-                <Button variant="outline" className="w-full" size="sm">
-                  <Lucide.Phone className="mr-2 h-4 w-4" />
-                  Call Now
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Room Types - Full Width Below */}
@@ -226,9 +193,11 @@ export default function PropertyDetailsSection({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Lucide.Bed className="h-5 w-5 text-primary" />
-                  Available Room Types
+                  Room Types & Pricing
                 </CardTitle>
-                <CardDescription>Choose the perfect space for your lifestyle</CardDescription>
+                <CardDescription>
+                  Explore our comfortable living spaces designed for modern lifestyles
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -240,22 +209,24 @@ export default function PropertyDetailsSection({
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-semibold">{room.name}</h4>
-                          {room.available !== false && (
+                          {room.available !== false ? (
                             <Badge variant="default" className="bg-green-100 text-green-800">
                               Available
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-gray-100 text-gray-600">
+                              Occupied
                             </Badge>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground capitalize mb-3">
                           {room.roomType?.replace('_', ' ')}
                         </p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-lg font-bold">
-                            ₹{room.rent?.toLocaleString()}/mo
+                        <div className="text-center">
+                          <span className="text-2xl font-bold text-primary">
+                            ₹{room.rent?.toLocaleString()}
                           </span>
-                          <Button size="sm" variant="outline">
-                            View Details
-                          </Button>
+                          <div className="text-sm text-muted-foreground">per month</div>
                         </div>
                       </CardContent>
                     </Card>

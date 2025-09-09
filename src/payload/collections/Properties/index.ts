@@ -1,4 +1,4 @@
-import type { AccessArgs, CollectionConfig } from 'payload'
+import type { AccessArgs, CollectionConfig, Data, PayloadRequest } from 'payload'
 import roomRentPriceRange from './hooks/roomRentPriceRange'
 
 const propertiesAccess = {
@@ -20,7 +20,7 @@ const propertiesAccess = {
 import { generateSlug } from './generateSlug'
 
 // Removed FieldAccess import, use inline types below
-const previewAccess = ({ req, data }: { req: any; data?: any }) => {
+const previewAccess = ({ req, data }: { req: PayloadRequest; data?: Data }) => {
   const user = req.user as { role?: string; id?: string } | undefined
   // Only admins or assigned manager can preview/edit
   if (!user) return false

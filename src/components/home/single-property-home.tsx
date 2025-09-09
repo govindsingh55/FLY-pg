@@ -4,8 +4,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import BookingCard from '@/components/marketing/property-detail/BookingCard'
-import { PropertyDetailProvider } from '@/lib/state/propertyDetail'
 import TestimonialWall from '@/components/marketing/TestimonialWall'
 import PressLogos from '@/components/marketing/PressLogos'
 import AppPromo from '@/components/marketing/AppPromo'
@@ -260,7 +258,7 @@ export default async function SinglePropertyHome() {
   }
 
   return (
-    <PropertyDetailProvider>
+    <>
       {/* Hero Section */}
       <HeroSection
         title={prop.name}
@@ -309,10 +307,7 @@ export default async function SinglePropertyHome() {
       />
 
       {/* Main Property Details */}
-      <PropertyDetailsSection
-        property={compatibleProperty}
-        bookingCard={<BookingCard rooms={prop.rooms} propertyId={String(prop.id || '')} />}
-      />
+      <PropertyDetailsSection property={compatibleProperty} />
 
       {/* Social Proof */}
       <section className="py-16 bg-muted/30">
@@ -342,6 +337,6 @@ export default async function SinglePropertyHome() {
         actions={contactActions}
         variant="primary"
       />
-    </PropertyDetailProvider>
+    </>
   )
 }
