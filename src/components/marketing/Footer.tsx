@@ -15,6 +15,15 @@ export function Footer() {
             <p className="mt-2 text-sm text-muted-foreground">
               Flexible, community-first living across major cities.
             </p>
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-primary">Call us now</p>
+              <a
+                href="tel:7678688964"
+                className="text-lg font-bold text-primary hover:text-primary/80 transition-colors"
+              >
+                7678688964
+              </a>
+            </div>
           </div>
           <div>
             <div className="text-sm font-semibold">Product</div>

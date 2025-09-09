@@ -41,6 +41,9 @@ export function Navbar() {
           <Link href="/#community" className="hover:text-primary">
             Community
           </Link>
+          <Link href="/about-us" className="hover:text-primary">
+            About Us
+          </Link>
         </nav>
 
         {/* Right: Actions */}
