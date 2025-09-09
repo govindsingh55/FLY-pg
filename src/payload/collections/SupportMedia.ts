@@ -1,10 +1,15 @@
 import type { CollectionConfig } from 'payload'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
 
 const SupportMedia: CollectionConfig = {
   slug: 'support-media',
   admin: { useAsTitle: 'filename' },
   upload: {
-    staticDir: 'media/support',
+    staticDir: path.resolve(dirname, '../../../media/support'),
     mimeTypes: ['image/*', 'video/*', 'application/pdf'],
     imageSizes: [
       {
