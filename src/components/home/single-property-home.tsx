@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import TestimonialWall from '@/components/marketing/TestimonialWall'
 import PressLogos from '@/components/marketing/PressLogos'
-import AppPromo from '@/components/marketing/AppPromo'
 import { features, stats } from '@/data'
 import type { Media as MediaType, Property, Room, Amenity } from '@/payload/payload-types'
 import { getPayload } from 'payload'
@@ -218,16 +217,19 @@ export default async function SinglePropertyHome() {
       label: 'Schedule a Visit',
       icon: Calendar,
       variant: 'default' as const,
+      href: `/properties/${prop.slug || prop.id}`,
     },
     {
       label: 'WhatsApp Us',
       icon: MessageCircle,
       variant: 'outline' as const,
+      href: `https://wa.me/7678688964`,
     },
     {
       label: 'Call Now',
       icon: Phone,
       variant: 'outline' as const,
+      href: `tel:7678688964`,
     },
   ]
 
@@ -236,7 +238,7 @@ export default async function SinglePropertyHome() {
     id: prop.id,
     name: prop.name,
     description: prop.description,
-    amenities: prop.amenities?.map((item) => (typeof item === 'string' ? item : item.id)) || [],
+    amenities: prop.amenities?.map((item) => (typeof item === 'string' ? item : item)) || [],
     foodMenu: prop.foodMenu
       ? {
           menu: prop.foodMenu.menu ? { description: prop.foodMenu.menu } : undefined,
@@ -287,10 +289,12 @@ export default async function SinglePropertyHome() {
         primaryCta={{
           label: 'Schedule Visit',
           icon: Calendar,
+          href: `/properties/${prop.slug || prop.id}`,
         }}
         secondaryCta={{
           label: 'Call Now',
           icon: Phone,
+          href: `tel:7678688964`,
         }}
         backgroundImage={images[0]?.image?.url || undefined}
       />
@@ -320,13 +324,6 @@ export default async function SinglePropertyHome() {
       <section className="py-12">
         <div className="mx-auto max-w-6xl px-6">
           <PressLogos />
-        </div>
-      </section>
-
-      {/* App Promotion */}
-      <section className="py-16 bg-gradient-to-r from-primary/5 to-primary/10">
-        <div className="mx-auto max-w-6xl px-6">
-          <AppPromo />
         </div>
       </section>
 

@@ -4,7 +4,7 @@ import type { Amenity } from '@/payload/payload-types'
 
 export default function AmenityGridForProperty({ items }: { items: (string | Amenity)[] }) {
   if (!items?.length) return null
-
+  console.log('[AmenityGridForProperty] items:', items)
   return (
     <section className="mx-auto max-w-6xl px-4 pl-0 py-4">
       <h3 className="mb-3 text-lg font-semibold text-primary">Amenities</h3>

@@ -6,6 +6,7 @@ interface CTAAction {
   icon?: LucideIcon
   variant?: 'default' | 'secondary' | 'outline'
   onClick?: () => void
+  href?: string
 }
 
 interface ContactCTASectionProps {
@@ -56,6 +57,27 @@ export default function ContactCTASection({
           {actions.map((action, index) => {
             const buttonVariant = action.variant || 'default'
             const buttonStyle = buttonVariants[variant][buttonVariant]
+
+            if (action.href) {
+              return (
+                <Button
+                  key={index}
+                  size="lg"
+                  variant={buttonVariant === 'outline' ? 'outline' : 'default'}
+                  className={buttonStyle}
+                  asChild
+                >
+                  <a
+                    href={action.href}
+                    target={action.href.startsWith('http') ? '_blank' : '_self'}
+                    rel={action.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  >
+                    {action.icon && <action.icon className="mr-2 h-5 w-5" />}
+                    {action.label}
+                  </a>
+                </Button>
+              )
+            }
 
             return (
               <Button

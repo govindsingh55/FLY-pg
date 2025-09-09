@@ -1,10 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import ImageGallery from '@/components/marketing/property-detail/ImageGallery'
 import AmenityGridForProperty from '@/components/marketing/property-detail/AmenityGridForProperty'
 import NearbyLocations from '@/components/marketing/property-detail/NearbyLocations'
 import RichText from '@/components/RichText'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import * as Lucide from 'lucide-react'
 
 interface Room {
@@ -52,19 +50,7 @@ export default function PropertyDetailsSection({
   return (
     <section className={`py-16 ${className}`}>
       <div className="mx-auto max-w-6xl px-6">
-        {/* Property Gallery - Full Width */}
-        {property.images && property.images.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">Property Gallery</h2>
-            <ImageGallery
-              images={property.images}
-              addressRich={property.address?.address}
-              localityLine={localityLine}
-            />
-          </div>
-        )}
-
-        {/* Main Content - Full Width Layout */}
+        {/* Main Content - Simple Stacked Layout */}
         <div className="space-y-8">
           {/* About Section */}
           {property.description && (
@@ -108,7 +94,7 @@ export default function PropertyDetailsSection({
                 <CardDescription>
                   Delicious meals prepared fresh daily
                   {property.foodMenu.price && (
-                    <span className="block text-green-600 font-medium">
+                    <span className="block text-green-600 font-medium mt-1">
                       Monthly Food Charge: ₹{property.foodMenu.price.toLocaleString()}
                     </span>
                   )}
