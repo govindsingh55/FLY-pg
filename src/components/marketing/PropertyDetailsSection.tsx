@@ -3,6 +3,7 @@ import NearbyLocations from '@/components/marketing/property-detail/NearbyLocati
 import RichText from '@/components/RichText'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Amenity } from '@/payload/payload-types'
 import * as Lucide from 'lucide-react'
 
 interface Room {
@@ -23,7 +24,7 @@ interface PropertyDetailsSectionProps {
     id: string
     name: string
     description?: any
-    amenities?: string[]
+    amenities?: (string | Amenity)[]
     foodMenu?: { menu?: { description?: any }; price?: number }
     nearby?: NearbyLocation[]
     rooms?: Room[]
