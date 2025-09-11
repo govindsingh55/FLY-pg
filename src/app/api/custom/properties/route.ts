@@ -68,7 +68,8 @@ export async function POST(request: NextRequest) {
     const payload = await getPayload({ config })
 
     // Build where clause
-    const and: any[] = [{ status: { equals: 'active' } }]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const and: any[] = [{ _status: { equals: 'published' } }]
 
     if (q && q.trim()) {
       const query = q.trim()
