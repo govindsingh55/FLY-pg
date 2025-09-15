@@ -31,6 +31,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      beforeDashboard: ['@/payload/components/BeforeDashboard'],
+    },
   },
   collections: [
     Users,

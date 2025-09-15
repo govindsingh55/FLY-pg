@@ -122,7 +122,7 @@ export default async function SinglePropertyHome() {
   if (!prop) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Card className="mx-auto max-w-lg text-center">
+        <Card className="mx-auto max-w-lg w-full text-center">
           <CardHeader>
             <CardTitle className="text-2xl">Welcome to FLY</CardTitle>
             <CardDescription>
