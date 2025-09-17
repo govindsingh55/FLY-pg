@@ -201,6 +201,24 @@ The admin preview functionality automatically detects the correct domain:
 
 **Important**: Always set `NEXT_PUBLIC_SITE_URL` in production to prevent localhost URLs.
 
+## 📧 Rent Reminder System
+
+Automated rent reminder notifications for customers.
+
+### Quick Start
+```bash
+# Execute rent reminders
+npm run rent-reminders
+
+# Test without execution
+npm run rent-reminders:dry-run
+
+# Check system status  
+npm run rent-reminders:status
+```
+
+**Documentation**: [docs/RENT_REMINDERS.md](docs/RENT_REMINDERS.md) | **Setup**: [docs/SETUP.md](docs/SETUP.md)
+
 ### Available Scripts
 ```bash
 npm run dev          # Start development server

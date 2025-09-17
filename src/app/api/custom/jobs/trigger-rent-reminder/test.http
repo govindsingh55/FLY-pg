@@ -1,0 +1,179 @@
+### Payment Rent Reminder Notification Task API Tests
+### Base URL - Update this to match your environment
+@baseUrl = http://localhost:3000
+@apiToken = test-token
+
+### Test 1: Basic Job Trigger (Success)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+### Test 2: Job Trigger with Dry Run
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": true
+}
+
+### Test 3: Job Trigger with Dry Run False (Explicit)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": false
+}
+
+### Test 4: Unauthorized Access (No Token)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Content-Type: application/json
+
+### Test 5: Unauthorized Access (Invalid Token)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer invalid_token_here
+Content-Type: application/json
+
+### Test 6: Unauthorized Access (Wrong Token Format)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Invalid {{apiToken}}
+Content-Type: application/json
+
+### Test 7: Missing Content-Type Header
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+
+### Test 8: Invalid JSON Body
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": "invalid_boolean"
+}
+
+### Test 9: Empty JSON Body
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{}
+
+### Test 10: Extra Parameters (Should be ignored)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": false,
+  "extraParam": "should_be_ignored",
+  "force": true
+}
+
+### Test 11: Multiple Dry Run Tests (Performance)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": true
+}
+
+###
+
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": true
+}
+
+###
+
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": true
+}
+
+### Test 12: Production Environment Test (Update baseUrl)
+# @baseUrl = https://your-production-domain.com
+# POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+# Authorization: Bearer {{apiToken}}
+# Content-Type: application/json
+
+### Test 13: Stress Test - Multiple Concurrent Requests
+# Uncomment and run multiple times simultaneously to test concurrency
+# POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+# Authorization: Bearer {{apiToken}}
+# Content-Type: application/json
+# {
+#   "dryRun": true
+# }
+
+### Test 14: Large Request Body (Edge Case)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": false,
+  "metadata": {
+    "test": "large_request_body",
+    "description": "This is a test with additional metadata to ensure the API handles larger request bodies properly",
+    "timestamp": "2024-01-01T00:00:00.000Z",
+    "version": "1.0.0",
+    "environment": "test"
+  }
+}
+
+### Test 15: Special Characters in Token (Edge Case)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer special!@#$%^&*()_+token
+Content-Type: application/json
+
+### Test 16: Very Long Token (Edge Case)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}{{apiToken}}{{apiToken}}{{apiToken}}
+Content-Type: application/json
+
+### Test 17: Unicode Characters in Request
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": true,
+  "description": "Test with unicode: 🚀 💰 📧 ✅ ❌"
+}
+
+### Test 18: Null Values (Edge Case)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "dryRun": null
+}
+
+### Test 19: Array Instead of Object (Edge Case)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+["dryRun", true]
+
+### Test 20: Nested Object (Edge Case)
+POST {{baseUrl}}/api/custom/jobs/trigger-rent-reminder
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{
+  "options": {
+    "dryRun": true
+  }
+}

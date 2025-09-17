@@ -18,7 +18,12 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts --run",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --no-experimental-strip-types\" npm exec playwright test",
     "test:watch": "cross-env NODE_OPTIONS=--no-deprecation vitest --config ./vitest.config.mts",
-    "test:coverage": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts --coverage"
+    "test:coverage": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts --coverage",
+    "rent-reminders": "cross-env NODE_OPTIONS=--no-deprecation node scripts/trigger-rent-reminders.js",
+    "rent-reminders:dry-run": "cross-env NODE_OPTIONS=--no-deprecation node scripts/trigger-rent-reminders.js --dry-run",
+    "rent-reminders:verbose": "cross-env NODE_OPTIONS=--no-deprecation node scripts/trigger-rent-reminders.js --verbose",
+    "rent-reminders:help": "cross-env NODE_OPTIONS=--no-deprecation node scripts/trigger-rent-reminders.js --help",
+    "rent-reminders:status": "cross-env NODE_OPTIONS=--no-deprecation node scripts/simple-job-check.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -52,6 +57,7 @@
     "embla-carousel-react": "^8.6.0",
     "graphql": "^16.11.0",
     "lucide-react": "^0.536.0",
+    "mongodb": "^6.19.0",
     "next": "15.4.4",
     "next-themes": "^0.4.6",
     "nuqs": "^2.4.3",

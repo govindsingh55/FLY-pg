@@ -123,6 +123,7 @@ export interface Config {
       });
   jobs: {
     tasks: {
+      'customer-rent-reminder-notification-task': TaskCustomerRentReminderNotificationTask;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1618,7 +1619,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'customer-rent-reminder-notification-task' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1651,7 +1652,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'customer-rent-reminder-notification-task' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -2794,6 +2795,14 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCustomer-rent-reminder-notification-task".
+ */
+export interface TaskCustomerRentReminderNotificationTask {
+  input?: unknown;
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
