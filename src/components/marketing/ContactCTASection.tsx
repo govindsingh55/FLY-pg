@@ -32,9 +32,11 @@ export default function ContactCTASection({
 
   const buttonVariants = {
     primary: {
-      default: 'bg-white text-primary hover:bg-white/90',
-      secondary: 'bg-white/20 text-white hover:bg-white/30',
-      outline: 'border-white text-white hover:bg-white hover:text-primary',
+      default: 'bg-white text-primary hover:bg-white/90 shadow-lg',
+      secondary:
+        'bg-white/20 text-primary-foreground hover:bg-white/90 hover:text-primary border-2 border-primary-foreground/30 hover:border-primary/20 font-semibold',
+      outline:
+        'border-2 border-primary text-primary hover:bg-white/90 hover:text-accent dark:hover:text-white dark:border-white dark:text-white backdrop-blur-sm font-semibold',
     },
     secondary: {
       default: 'bg-primary text-primary-foreground hover:bg-primary/90',
@@ -42,9 +44,11 @@ export default function ContactCTASection({
       outline: 'border-primary text-primary hover:bg-primary hover:text-primary-foreground',
     },
     gradient: {
-      default: 'bg-white text-primary hover:bg-white/90',
-      secondary: 'bg-white/20 text-white hover:bg-white/30',
-      outline: 'border-white text-white hover:bg-white hover:text-primary',
+      default: 'bg-white text-primary hover:bg-white/90 shadow-lg',
+      secondary:
+        'bg-white/20 text-primary-foreground hover:bg-white/90 hover:text-primary border-2 border-primary-foreground/30 hover:border-primary/20 font-semibold',
+      outline:
+        'border-2 border-primary-foreground text-primary-foreground hover:bg-white/90 hover:text-primary backdrop-blur-sm hover:border-primary/20 font-semibold',
     },
   }
 

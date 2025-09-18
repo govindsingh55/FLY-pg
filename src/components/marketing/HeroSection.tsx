@@ -125,7 +125,7 @@ export default function HeroSection({
                   <Button
                     size="lg"
                     variant={primaryCta.variant || 'default'}
-                    className="bg-white text-primary hover:bg-white/90 shadow-lg backdrop-blur-sm w-full sm:w-auto"
+                    className="bg-white text-primary hover:bg-white/90 shadow-lg backdrop-blur-sm border-2 border-white/20 w-full sm:w-auto"
                     asChild
                   >
                     <a
@@ -141,7 +141,7 @@ export default function HeroSection({
                   <Button
                     size="lg"
                     variant={primaryCta.variant || 'default'}
-                    className="bg-white text-primary hover:bg-white/90 shadow-lg backdrop-blur-sm w-full sm:w-auto"
+                    className="bg-white text-primary hover:bg-white/90 shadow-lg backdrop-blur-sm border-2 border-white/20 w-full sm:w-auto"
                     onClick={primaryCta.onClick}
                   >
                     {primaryCta.icon && <primaryCta.icon className="mr-2 h-5 w-5" />}
@@ -154,7 +154,7 @@ export default function HeroSection({
                   <Button
                     size="lg"
                     variant={secondaryCta.variant || 'outline'}
-                    className="border-white text-white hover:bg-white hover:text-primary backdrop-blur-sm w-full sm:w-auto"
+                    className="border-2 border-white dark:border-white hover:bg-white hover:text-primary text-white dark:text-white backdrop-blur-sm bg-white/10 dark:bg-white/10 w-full sm:w-auto"
                     asChild
                   >
                     <a
@@ -170,7 +170,7 @@ export default function HeroSection({
                   <Button
                     size="lg"
                     variant={secondaryCta.variant || 'outline'}
-                    className="border-white text-white hover:bg-white hover:text-primary backdrop-blur-sm w-full sm:w-auto"
+                    className="border-2 border-white text-white hover:bg-white hover:text-primary backdrop-blur-sm bg-white/10 w-full sm:w-auto"
                     onClick={secondaryCta.onClick}
                   >
                     {secondaryCta.icon && <secondaryCta.icon className="mr-2 h-5 w-5" />}

@@ -2,21 +2,21 @@
 // This is designed for when the platform starts with only one property,
 // creating a dedicated experience that highlights all property features.
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import TestimonialWall from '@/components/marketing/TestimonialWall'
 import PressLogos from '@/components/marketing/PressLogos'
+import TestimonialWall from '@/components/marketing/TestimonialWall'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { features, stats } from '@/data'
-import type { Media as MediaType, Property, Room, Amenity } from '@/payload/payload-types'
-import { getPayload } from 'payload'
+import type { Media as MediaType, Property, Room } from '@/payload/payload-types'
 import config from '@payload-config'
 import { Calendar, MessageCircle, Phone } from 'lucide-react'
+import { getPayload } from 'payload'
 
 // Import new reusable components
-import HeroSection from '@/components/marketing/HeroSection'
-import FeaturesSection from '@/components/marketing/FeaturesSection'
-import PropertyDetailsSection from '@/components/marketing/PropertyDetailsSection'
 import ContactCTASection from '@/components/marketing/ContactCTASection'
+import FeaturesSection from '@/components/marketing/FeaturesSection'
+import HeroSection from '@/components/marketing/HeroSection'
+import PropertyDetailsSection from '@/components/marketing/PropertyDetailsSection'
 import StatsSection from '@/components/marketing/StatsSection'
 
 // Type definitions for processed data that extends Payload types
