@@ -3,10 +3,9 @@ import config from '@payload-config'
 import MultiPropertyHome from './multi-property-home'
 import SinglePropertyHome from './single-property-home'
 
-// Avoid static generation – ensures we always query the latest data
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-export const fetchCache = 'force-no-store'
+// Enable ISR with revalidation every 60 seconds and when properties change
+export const revalidate = 60
+export const fetchCache = 'default-cache'
 
 async function getPropertyCount() {
   try {

@@ -24,7 +24,7 @@ const EMAIL_TEMPLATES = {
 } as const
 
 const PAYMENT_STATUS = {
-  NOTIFIED: 'notified',
+  NOTIFIED: 'pending', // Using 'pending' as the notified status since 'notified' doesn't exist in Payment type
   COMPLETED: 'completed',
   PENDING: 'pending',
   FAILED: 'failed',
@@ -80,7 +80,11 @@ const isPaymentCompletedForLastMonth = (payment: Payment | null): boolean => {
     return false
   }
 
-  const lastPaymentDate = parseISO(payment.paymentForDate)
+  if (!payment.paymentDate) {
+    return false
+  }
+
+  const lastPaymentDate = parseISO(payment.paymentDate)
   const now = getCurrentDate()
   const lastMonth = subMonths(now, 1)
 
@@ -198,7 +202,8 @@ const createPaymentRecord = async (
   try {
     const paymentData = {
       customer: customer.id,
-      paymentForDate: getCurrentDate().toISOString(),
+      paymentDate: getCurrentDate().toISOString(),
+      paymentForMonthAndYear: getCurrentDate().toISOString(),
       amount: booking.price + foodAmount,
       payfor: booking.id,
       dueDate: getDueDate().toISOString(),
@@ -304,7 +309,7 @@ const processCustomerBooking = async (
     console.log(`📊 [TASK] Payment context for customer ${customer.id}:`, {
       hasLastPayment: !!lastPayment,
       lastPaymentStatus: lastPayment?.status || 'none',
-      lastPaymentDate: lastPayment?.paymentForDate || 'none',
+      lastPaymentDate: lastPayment?.paymentDate || 'none',
       currentDate: getCurrentDate().toISOString(),
       bookingPrice: booking.price,
       foodIncluded: booking.foodIncluded,

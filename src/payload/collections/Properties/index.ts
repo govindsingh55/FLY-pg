@@ -1,5 +1,6 @@
 import type { AccessArgs, CollectionConfig, Data, PayloadRequest } from 'payload'
 import roomRentPriceRange from './hooks/roomRentPriceRange'
+import { revalidateHomePage, revalidateHomePageAfterDelete } from './hooks/revalidateHomePage'
 
 const propertiesAccess = {
   create: ({ req }: AccessArgs) => {
@@ -49,6 +50,8 @@ const Properties: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [revalidateHomePage],
+    afterDelete: [revalidateHomePageAfterDelete],
   },
   fields: [
     {
