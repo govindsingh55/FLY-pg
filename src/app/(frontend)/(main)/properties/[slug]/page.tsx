@@ -1,6 +1,6 @@
 import AmenityGridForProperty from '@/components/marketing/property-detail/AmenityGridForProperty'
 import BookingCard from '@/components/marketing/property-detail/BookingCard'
-import ImageGallery from '@/components/marketing/property-detail/ImageGallery'
+import MediaGallery from '@/components/marketing/property-detail/MediaGallery'
 import NearbyLocations from '@/components/marketing/property-detail/NearbyLocations'
 import PropertyHeader from '@/components/marketing/property-detail/PropertyHeader'
 import RichText from '@/components/RichText'
@@ -57,6 +57,7 @@ async function fetchProperty(slug: string) {
             roomType: r.roomType,
             rent: r.rent,
             available: r.available,
+            images: Array.isArray(r.images) ? r.images : [],
           }))
           .filter(Boolean)
       : []
@@ -108,8 +109,9 @@ export default async function PropertyDetailPage({ params }: { params: Params })
         />
         <div className="grid grid-cols-1 gap-6 px-4 pb-16 md:grid-cols-3 md:items-start">
           <div className="md:col-span-2 space-y-6">
-            <ImageGallery
+            <MediaGallery
               images={prop.images as { image: MediaType; id: string; isCover: boolean }[]}
+              rooms={prop.rooms}
               addressRich={prop.address?.address as any}
               localityLine={[sector, city].filter(Boolean).join(', ')}
             />
