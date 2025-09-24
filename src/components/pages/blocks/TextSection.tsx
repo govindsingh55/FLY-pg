@@ -26,7 +26,7 @@ export function TextSection({
     full: 'max-w-none',
     narrow: 'max-w-2xl',
     medium: 'max-w-4xl',
-    wide: 'max-w-6xl',
+    wide: 'max-w-8xl',
   }
 
   const alignClasses = {

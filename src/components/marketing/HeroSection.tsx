@@ -60,7 +60,7 @@ export default function HeroSection({
       )}
 
       {/* Content */}
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 text-center">
+      <div className="relative z-10 mx-auto w-full max-w-8xl px-4 sm:px-6 text-center">
         <div className="mx-auto max-w-4xl">
           {/* Badges */}
           {badges.length > 0 && (

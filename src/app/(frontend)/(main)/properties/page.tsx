@@ -31,13 +31,6 @@ function normalizeParams(params: SearchParams) {
   return { ...params, page, limit, sort, propertyType }
 }
 
-function mapSort(sort: 'price_asc' | 'price_desc' | 'newest') {
-  // Using roomRentPriceRange.min as price surrogate
-  if (sort === 'price_asc') return 'roomRentPriceRange.min'
-  if (sort === 'price_desc') return '-roomRentPriceRange.min'
-  return '-createdAt'
-}
-
 async function fetchProperties(params: SearchParams) {
   const normalized = normalizeParams(params)
   // Call internal API route to centralize filtering logic
@@ -55,57 +48,6 @@ async function fetchProperties(params: SearchParams) {
     throw new Error(`Failed to fetch properties: ${res.status} ${errorText}`)
   }
   return res.json()
-}
-
-async function buildPostBody(p: ReturnType<typeof normalizeParams>, payload: any) {
-  const and: any[] = []
-
-  if (p.q && p.q.trim()) {
-    const q = p.q.trim()
-    and.push({
-      or: [{ name: { like: q } }, { description: { like: q } }],
-    })
-  }
-
-  if (p.city && p.city.trim()) {
-    and.push({ address: { location: { city: { equals: p.city.trim() } } } })
-  }
-
-  if (p.minPrice) {
-    and.push({ roomRentPriceRange: { min: { greater_than_equal: Number(p.minPrice) } } })
-  }
-
-  if (p.maxPrice) {
-    and.push({ roomRentPriceRange: { max: { less_than_equal: Number(p.maxPrice) } } })
-  }
-
-  // Two-step query for roomType
-  if (p.roomType && p.roomType.trim()) {
-    const roomsResult = await payload.find({
-      collection: 'rooms',
-      where: { roomType: { equals: p.roomType.trim() } },
-      limit: 1000,
-    })
-    const matchingRoomIds = roomsResult.docs.map((room: any) => room.id)
-    if (matchingRoomIds.length > 0) {
-      console.log(
-        `Found ${matchingRoomIds.length} rooms with type ${p.roomType} : `,
-        JSON.stringify(matchingRoomIds),
-      )
-      and.push({ rooms: { in: matchingRoomIds } })
-    }
-  }
-
-  if (p.propertyType && p.propertyType.trim()) {
-    and.push({ propertyType: { like: p.propertyType.trim(), options: 'i' } })
-  }
-
-  return {
-    where: { and },
-    sort: mapSort(p.sort),
-    page: p.page,
-    limit: p.limit,
-  }
 }
 
 export default async function PropertiesPage({

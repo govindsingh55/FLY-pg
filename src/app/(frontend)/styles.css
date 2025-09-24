@@ -14,6 +14,11 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
+  /* Custom spacing utilities */
+  --spacing-8xl: 96rem;    /* 1536px */
+  --spacing-9xl: 112rem;   /* 1792px */
+  --spacing-10xl: 128rem;  /* 2048px */
+
   /* Tailwind color tokens mapping to CSS variables */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -70,7 +75,7 @@
   --popover-foreground: #1b1b1b;
 
   /* brand palette (HEX approximations) */
-  --primary: #183a2c;              /* Forest Green */
+  --primary: #1c4937;              /* Forest Green */
   --primary-foreground: #e8f1ec;
 
   --secondary: #254457;            /* Deep Blue */

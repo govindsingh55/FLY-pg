@@ -18,7 +18,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur">
       {/* Desktop grid */}
-      <div className="mx-auto hidden max-w-6xl grid-cols-3 items-center px-4 py-3 md:grid">
+      <div className="mx-auto hidden max-w-8xl grid-cols-3 items-center px-4 py-3 md:grid">
         {/* Left: Logo (left aligned) */}
         <div className="col-span-1 flex justify-start">
           <Link
@@ -90,7 +90,7 @@ export function Navbar() {
       </div>
 
       {/* Mobile single row (only logo centered) */}
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:hidden">
+      <div className="mx-auto flex max-w-8xl items-center justify-between px-4 py-3 md:hidden">
         <Link
           href="/"
           className="text-2xl font-bold tracking-wide hover:text-primary"

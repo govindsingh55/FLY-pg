@@ -11,6 +11,93 @@ import { useEffect, useMemo, useState } from 'react'
 import FiltersTrigger from './FiltersTrigger'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 
+export default function PropertiesListClient({
+  initialData,
+  initialParams,
+}: {
+  initialData: any
+  initialParams: any
+}) {
+  const searchParams = useSearchParams()
+  const [data, setData] = useState(initialData)
+  const [loading, setLoading] = useState(false)
+
+  // Build params from searchParams (URL is the source of truth for fetching)
+  const params = useMemo(() => {
+    const obj: any = {}
+    for (const [key, value] of searchParams.entries()) {
+      obj[key] = value
+    }
+    return obj
+  }, [searchParams])
+
+  // Refetch when params change
+  useEffect(() => {
+    // Only refetch if params differ from initialParams
+    const isInitial = JSON.stringify(params) === JSON.stringify(initialParams)
+    if (isInitial) return
+    setLoading(true)
+
+    let cancelled = false
+
+    ;(async () => {
+      const body: any = {}
+      for (const k in params) body[k] = (params as any)[k]
+      body.page = Number(params.page) || 1
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/api/custom/properties`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const json = await res.json()
+      if (!cancelled) setData(json)
+      if (!cancelled) setLoading(false)
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [params, initialParams])
+
+  return (
+    <div className="mx-auto max-w-8xl w-full px-4 py-8 md:py-12">
+      <h1 className="text-2xl font-bold">Browse Properties</h1>
+      <div className="flex justify-between items-start mb-6 mt-2">
+        <div className="">
+          <FilterBadges className="" />
+        </div>
+        <FiltersTrigger />
+      </div>
+      <section className="mt-2">
+        {loading ? (
+          <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+            Loading…
+          </div>
+        ) : data?.properties?.length === 0 ? (
+          <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+            No properties found.
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {data.properties.map((p: Property) => (
+                <PropertyCard key={p.id} property={p} />
+              ))}
+            </div>
+            <Pagination
+              page={data.page}
+              hasPrevPage={data.hasPrevPage}
+              hasNextPage={data.hasNextPage}
+              totalPages={data.totalPages}
+            />
+          </>
+        )}
+      </section>
+    </div>
+  )
+}
+
 function PropertyCard({ property }: { property: Property }) {
   const cover = property.images?.find((i) => i?.isCover) ?? property.images?.[0]
   const imgUrl = typeof cover?.image === 'object' && cover?.image?.url ? cover.image.url : undefined
@@ -97,93 +184,6 @@ function Pagination({
           <ArrowRight className="size-5" />
         </span>
       </Button>
-    </div>
-  )
-}
-
-export default function PropertiesListClient({
-  initialData,
-  initialParams,
-}: {
-  initialData: any
-  initialParams: any
-}) {
-  const searchParams = useSearchParams()
-  const [data, setData] = useState(initialData)
-  const [loading, setLoading] = useState(false)
-
-  // Build params from searchParams (URL is the source of truth for fetching)
-  const params = useMemo(() => {
-    const obj: any = {}
-    for (const [key, value] of searchParams.entries()) {
-      obj[key] = value
-    }
-    return obj
-  }, [searchParams])
-
-  // Refetch when params change
-  useEffect(() => {
-    // Only refetch if params differ from initialParams
-    const isInitial = JSON.stringify(params) === JSON.stringify(initialParams)
-    if (isInitial) return
-    setLoading(true)
-
-    let cancelled = false
-
-    ;(async () => {
-      const body: any = {}
-      for (const k in params) body[k] = (params as any)[k]
-      body.page = Number(params.page) || 1
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/api/custom/properties`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const json = await res.json()
-      if (!cancelled) setData(json)
-      if (!cancelled) setLoading(false)
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [params, initialParams])
-
-  return (
-    <div className="mx-auto max-w-6xl w-full px-4 py-8 md:py-12">
-      <h1 className="text-2xl font-bold">Browse Properties</h1>
-      <div className="flex justify-between items-start mb-6 mt-2">
-        <div className="">
-          <FilterBadges className="" />
-        </div>
-        <FiltersTrigger />
-      </div>
-      <section className="mt-2">
-        {loading ? (
-          <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
-            Loading…
-          </div>
-        ) : data?.properties?.length === 0 ? (
-          <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
-            No properties found.
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {data.properties.map((p: Property) => (
-                <PropertyCard key={p.id} property={p} />
-              ))}
-            </div>
-            <Pagination
-              page={data.page}
-              hasPrevPage={data.hasPrevPage}
-              hasNextPage={data.hasNextPage}
-              totalPages={data.totalPages}
-            />
-          </>
-        )}
-      </section>
     </div>
   )
 }

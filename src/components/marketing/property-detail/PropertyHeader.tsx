@@ -23,7 +23,7 @@ export default function PropertyHeader({ name, propertyType, genderType, mapLink
   }
 
   return (
-    <header className="mx-auto max-w-6xl px-4 pt-4">
+    <header className="mx-auto max-w-8xl w-full px-4 pt-4">
       <div className="flex items-center justify-between">
         <button
           onClick={handleBack}

@@ -315,14 +315,14 @@ export default async function SinglePropertyHome() {
 
       {/* Social Proof */}
       <section className="py-16 bg-muted/30">
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-8xl px-6">
           <TestimonialWall />
         </div>
       </section>
 
       {/* Press & Recognition */}
       <section className="py-12">
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-8xl px-6">
           <PressLogos />
         </div>
       </section>

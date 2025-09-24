@@ -9,7 +9,7 @@ export function AmenityGrid() {
 
   if (loading) {
     return (
-      <section id="amenities" className="mx-auto max-w-6xl px-4 py-8">
+      <section id="amenities" className="mx-auto max-w-8xl px-4 py-8">
         <div className="flex justify-center items-center py-8">
           <LoadingSpinner />
         </div>
@@ -19,7 +19,7 @@ export function AmenityGrid() {
 
   if (error) {
     return (
-      <section id="amenities" className="mx-auto max-w-6xl px-4 py-8">
+      <section id="amenities" className="mx-auto max-w-8xl px-4 py-8">
         <div className="text-center text-muted-foreground py-8">
           Unable to load amenities at this time
         </div>
@@ -28,7 +28,7 @@ export function AmenityGrid() {
   }
 
   return (
-    <section id="amenities" className="mx-auto max-w-6xl px-4 py-8">
+    <section id="amenities" className="mx-auto max-w-8xl px-4 py-8">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-foreground mb-2">What We Offer</h2>
         <p className="text-muted-foreground">

@@ -50,7 +50,7 @@ export default function PropertyDetailsSection({
 
   return (
     <section className={`py-16 ${className}`}>
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-8xl px-6">
         {/* Main Content - Simple Stacked Layout */}
         <div className="space-y-8">
           {/* About Section */}

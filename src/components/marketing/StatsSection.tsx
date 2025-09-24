@@ -32,7 +32,7 @@ export default function StatsSection({
 
   return (
     <section className={`${variantStyles[variant]} ${className}`}>
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-8xl px-6">
         <Card className={cardStyles[variant]}>
           <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

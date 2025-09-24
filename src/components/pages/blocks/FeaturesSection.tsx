@@ -101,7 +101,7 @@ export function FeaturesSection({
   const maxWidthStyles = {
     narrow: 'max-w-2xl',
     default: 'max-w-6xl',
-    wide: 'max-w-7xl',
+    wide: 'max-w-8xl',
     full: 'max-w-none',
   }
 

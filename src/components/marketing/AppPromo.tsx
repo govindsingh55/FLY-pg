@@ -7,7 +7,7 @@ import { appPromo } from '../../data'
 export function AppPromo() {
   const d = appPromo
   return (
-    <section id="download" className="mx-auto max-w-6xl px-4 py-12 pb-28 md:pb-12">
+    <section id="download" className="mx-auto max-w-8xl px-4 py-12 pb-28 md:pb-12">
       <div className="grid gap-6 md:grid-cols-2 items-center rounded-2xl border bg-card p-6">
         <div>
           <h3 className="text-2xl font-semibold">{d.title}</h3>

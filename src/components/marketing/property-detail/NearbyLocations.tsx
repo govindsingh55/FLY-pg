@@ -7,7 +7,7 @@ export default function NearbyLocations({
 }) {
   if (!locations?.length) return null
   return (
-    <section className="mx-auto max-w-6xl px-4 pl-0 py-4">
+    <section className="mx-auto max-w-8xl px-4 pl-0 py-4">
       <h3 className="mb-3 text-lg font-semibold text-primary">Nearby Locations</h3>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
         {locations.map((l, i) => (

@@ -5,7 +5,7 @@ import { features } from '../../data'
 
 export function FeatureBand() {
   return (
-    <section className="mx-auto max-w-6xl px-4 py-20 lg:py-24">
+    <section className="mx-auto max-w-8xl px-4 py-20 lg:py-24">
       <div className="text-center mb-16">
         <h2 className="text-4xl lg:text-5xl font-bold mb-6 tracking-tight">Why Choose FLY?</h2>
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">

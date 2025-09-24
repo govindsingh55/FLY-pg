@@ -6,7 +6,7 @@ export default function AmenityGridForProperty({ items }: { items: (string | Ame
   if (!items?.length) return null
   console.log('[AmenityGridForProperty] items:', items)
   return (
-    <section className="mx-auto max-w-6xl px-4 pl-0 py-4">
+    <section className="mx-auto max-w-8xl px-4 pl-0 py-4">
       <h3 className="mb-3 text-lg font-semibold text-primary">Amenities</h3>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
         {items.map((item, index) => {

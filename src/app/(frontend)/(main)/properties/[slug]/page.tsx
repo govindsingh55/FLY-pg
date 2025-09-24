@@ -72,7 +72,7 @@ export default async function PropertyDetailPage({ params }: { params: Params })
   const { slug } = await params
   const prop = await fetchProperty(slug)
   console.log({ prop, slug })
-  if (!prop) return <div className="mx-auto max-w-6xl px-4 py-8">Property not found.</div>
+  if (!prop) return <div className="mx-auto max-w-8xl px-4 py-8">Property not found.</div>
   const sector =
     typeof prop.address?.location?.sector === 'string' ? prop.address.location.sector : undefined
   const city =
@@ -94,7 +94,7 @@ export default async function PropertyDetailPage({ params }: { params: Params })
 
   return (
     <PropertyDetailProvider>
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-8xl w-full">
         {/* Preview Banner */}
         {prop.isPreview && (
           <div className="bg-yellow-500 text-black px-4 py-2 text-center font-semibold">
@@ -118,7 +118,7 @@ export default async function PropertyDetailPage({ params }: { params: Params })
             {/* About */}
             {prop.description ? (
               <section className="max-w-none">
-                <h3 className="mb-2 text-lg font-semibold text-primary">About the Property</h3>
+                <h3 className="mb-2 text-xl font-semibold text-primary">About the Property</h3>
                 <RichText data={prop.description as any} />
               </section>
             ) : null}

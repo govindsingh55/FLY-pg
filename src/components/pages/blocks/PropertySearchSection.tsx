@@ -144,7 +144,7 @@ export function PropertySearchSection({
       case 'narrow':
         return 'max-w-4xl'
       case 'wide':
-        return 'max-w-7xl'
+        return 'max-w-8xl'
       case 'full':
         return 'max-w-none'
       default:

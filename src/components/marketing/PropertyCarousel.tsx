@@ -38,9 +38,9 @@ export function PropertyCarousel() {
   }, [api])
 
   return (
-    <section id="properties" className="mx-auto max-w-6xl px-4 py-10">
+    <section id="properties" className="mx-auto max-w-8xl px-4 py-10 w-full">
       <header className="mb-4">
-        <h3 className="text-xl font-semibold">Find your stay, your way</h3>
+        <h3 className="text-xl font-semibold text-center">Find your stay, your way</h3>
       </header>
       <Carousel opts={{ align: 'start', loop: false }} className="w-full" setApi={setApi}>
         <CarouselContent className={count <= 1 ? 'justify-center' : undefined}>

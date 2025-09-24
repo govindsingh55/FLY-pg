@@ -1,10 +1,10 @@
-import React, { Suspense } from 'react'
+import { FilterProvider } from '@/components/marketing/FilterContext'
 import Filters from '@/components/marketing/Filters'
-import Navbar from '@/components/marketing/Navbar'
 import Footer from '@/components/marketing/Footer'
+import Navbar from '@/components/marketing/Navbar'
 import { BottomNav } from '@/components/marketing/components'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
-import { FilterProvider } from '@/components/marketing/FilterContext'
+import React, { Suspense } from 'react'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +13,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <FilterProvider>
           <Navbar />
           {/* Main site content: no vertical centering so pages can scroll naturally */}
-          <main className="flex-1 flex flex-col w-full justify-start items-stretch">
+          <main className="flex-1 flex flex-col w-full justify-start items-stretch mx-auto max-w-8xl">
             {children}
           </main>
           <Footer />

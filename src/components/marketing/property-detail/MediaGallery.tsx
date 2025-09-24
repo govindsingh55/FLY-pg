@@ -107,15 +107,14 @@ export default function MediaGallery({
   // This is placed after hook calls so hooks are always invoked in the same order.
   if (!hasMedia) {
     return (
-      <section className="pt-4 pb-2">
-        <div className="w-full overflow-hidden rounded-xl border bg-muted">
+      <section className="w-full pt-4 pb-2">
+        <div className="w-full h-[400px] md:h-[500px] overflow-hidden rounded-lg border bg-muted relative">
           {/* Use Picsum for placeholder images */}
           <Image
             src="https://picsum.photos/seed/property-placeholder/800/450"
-            className="w-full aspect-[4/5] md:aspect-[16/9] object-cover"
+            className="w-full h-full object-cover"
             alt="Property placeholder"
-            width={800}
-            height={450}
+            fill={true}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
             priority={true}
             quality={85}
@@ -138,16 +137,16 @@ export default function MediaGallery({
   }
 
   return (
-    <section className="mx-auto max-w-6xl pt-4 pb-2">
+    <section className="w-full pt-4 pb-2">
       <div
-        className="w-full overflow-hidden aspect-[16/9] max-h-[450px] max-w-[800px] mx-auto rounded-sm md:rounded-md border bg-muted cursor-pointer relative"
+        className="w-full h-[400px] md:h-[500px] overflow-hidden rounded-lg border bg-muted cursor-pointer relative group"
         onClick={() => openModal(0)}
       >
         {cover && (
           <>
             {cover.image?.mimeType?.includes('video') ? (
               <video
-                className="w-full aspect-[16/9] object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
                 muted
                 playsInline
                 preload="metadata"
@@ -156,26 +155,29 @@ export default function MediaGallery({
             ) : (
               <Media
                 resource={cover.image}
-                className="w-full aspect-[16/9] object-cover"
+                className="w-full h-full object-cover"
+                fill={true}
                 priority={true}
                 size="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
               />
             )}
             {/* Video indicator for main cover */}
             {cover.image?.mimeType?.includes('video') && (
-              <div className="absolute top-4 right-4 bg-black/70 text-white rounded-full size-10 flex items-center justify-center">
+              <div className="absolute top-4 right-4 bg-black/70 text-white rounded-full size-10 flex items-center justify-center group-hover:bg-black/80 transition-colors">
                 <Play className="size-5" />
               </div>
             )}
+            {/* Hover overlay for main image */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
           </>
         )}
       </div>
       {rest.length > 0 && (
-        <div className="mt-3 flex gap-3 overflow-x-auto">
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
           {rest.map((img, idx) => (
             <div
               key={idx}
-              className="overflow-hidden rounded-xl border bg-muted w-32 flex-shrink-0 cursor-pointer aspect-[16/9] relative"
+              className="overflow-hidden rounded-lg border bg-muted w-24 h-16 md:w-32 md:h-20 flex-shrink-0 cursor-pointer relative group hover:scale-105 transition-transform"
               onClick={() => openModal(idx + 1)}
             >
               {img && (
@@ -192,7 +194,7 @@ export default function MediaGallery({
                     <Media
                       resource={img.image}
                       className="w-full h-full object-cover"
-                      size="(max-width: 768px) 128px, 128px"
+                      size="(max-width: 768px) 96px, 128px"
                       loading="lazy"
                     />
                   )}
@@ -204,8 +206,8 @@ export default function MediaGallery({
                   )}
                   {/* Video indicator for gallery thumbnails */}
                   {img.image?.mimeType?.includes('video') && (
-                    <div className="absolute top-2 right-2 bg-black/70 text-white rounded-full size-6 flex items-center justify-center">
-                      <Play className="size-3" />
+                    <div className="absolute top-1 right-1 bg-black/70 text-white rounded-full size-5 flex items-center justify-center group-hover:bg-black/80 transition-colors">
+                      <Play className="size-2.5" />
                     </div>
                   )}
                 </>
@@ -215,9 +217,9 @@ export default function MediaGallery({
         </div>
       )}
       {(addressRich || localityLine) && (
-        <div className="mt-2 text-sm text-muted-foreground">
+        <div className="mt-3 text-sm text-muted-foreground">
           {addressRich ? (
-            <div className="mt-2">
+            <div>
               <RichText data={addressRich} enableGutter={false} enableProse={false} />
             </div>
           ) : null}
