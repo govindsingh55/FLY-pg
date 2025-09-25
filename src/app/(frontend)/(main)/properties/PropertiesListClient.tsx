@@ -115,6 +115,7 @@ function PropertyCard({ property }: { property: Property }) {
               resource={cover?.image}
               fill
               priority={true}
+              autoPlay={true}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">
