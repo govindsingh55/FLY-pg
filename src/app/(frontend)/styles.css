@@ -173,4 +173,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Font size scaling for frontend - increase base font size */
+  :root {
+    --font-size-scale: 1.125; /* 12.5% larger */
+  }
+  
+  html {
+    font-size: calc(1rem * var(--font-size-scale));
+  }
 }
