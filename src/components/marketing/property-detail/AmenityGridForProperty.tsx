@@ -7,7 +7,9 @@ export default function AmenityGridForProperty({ items }: { items: (string | Ame
   console.log('[AmenityGridForProperty] items:', items)
   return (
     <section className="mx-auto max-w-8xl px-4 pl-0 py-4">
-      <h3 className="mb-3 text-lg font-semibold text-primary">Amenities</h3>
+      <h3 className="mb-3 text-2xl font-semibold text-primary">
+        Amazing <span className="text-accent">Amenities</span>
+      </h3>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
         {items.map((item, index) => {
           const amenityName = typeof item === 'string' ? item : item.name || 'Unknown Amenity'
