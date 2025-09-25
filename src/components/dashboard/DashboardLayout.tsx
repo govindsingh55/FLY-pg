@@ -68,7 +68,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             <Breadcrumb />
             <div className="flex items-center space-x-4">
               <GlobalSearch className="w-80" />
-              <Button variant="ghost" size="sm" className="relative">
+              <Button variant="ghost" size="lg" className="relative">
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[0.6rem] text-white">
                   3

@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 /* Custom theme palette: approved mapping
    primary=Forest Green, secondary=Deep Blue, accent=Muted Ochre,
@@ -15,9 +15,9 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   /* Custom spacing utilities */
-  --spacing-8xl: 96rem;    /* 1536px */
-  --spacing-9xl: 112rem;   /* 1792px */
-  --spacing-10xl: 128rem;  /* 2048px */
+  --spacing-8xl: 96rem; /* 1536px */
+  --spacing-9xl: 112rem; /* 1792px */
+  --spacing-10xl: 128rem; /* 2048px */
 
   /* Tailwind color tokens mapping to CSS variables */
   --color-background: var(--background);
@@ -75,21 +75,21 @@
   --popover-foreground: #1b1b1b;
 
   /* brand palette (HEX approximations) */
-  --primary: #1c4937;              /* Forest Green */
+  --primary: #1c4937; /* Forest Green */
   --primary-foreground: #e8f1ec;
 
-  --secondary: #254457;            /* Deep Blue */
+  --secondary: #254457; /* Deep Blue */
   --secondary-foreground: #e6eef3;
 
-  --accent: #c59a2a;               /* Muted Ochre */
+  --accent: #c59a2a; /* Muted Ochre */
   --accent-foreground: #231f12;
 
-  --plum: #4a2a3b;                 /* Plum */
-  --sage: #8aa17f;                 /* Sage Green */
-  --rust: #a14e3b;                 /* Rust */
-  --taupe: #b4a38f;                /* Mushroom Taupe */
-  --cream: #efe7d7;                /* Warm Cream */
-  --inky: #2a3b49;                 /* Inky Blue */
+  --plum: #4a2a3b; /* Plum */
+  --sage: #8aa17f; /* Sage Green */
+  --rust: #a14e3b; /* Rust */
+  --taupe: #b4a38f; /* Mushroom Taupe */
+  --cream: #efe7d7; /* Warm Cream */
+  --inky: #2a3b49; /* Inky Blue */
 
   --muted: #f3f4f6;
   --muted-foreground: #6b7280;
@@ -126,7 +126,7 @@
   --popover: #161a1a;
   --popover-foreground: #f5f7f6;
 
-  --primary: #2a5a46;               /* elevated forest */
+  --primary: #2a5a46; /* elevated forest */
   --primary-foreground: #e5f0ea;
 
   --secondary: #2c5066;
@@ -174,4 +174,3 @@
     @apply bg-background text-foreground;
   }
 }
-

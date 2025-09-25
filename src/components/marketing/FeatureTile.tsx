@@ -241,7 +241,7 @@ export default function FeatureTile(props: FeatureTileProps) {
             <div className="relative z-10">
               <Button
                 asChild
-                size="default"
+                size="lg"
                 className={cn(
                   'group/btn font-semibold rounded-xl transition-all duration-300 hover:scale-105 border-0',
                   buttonVariant,

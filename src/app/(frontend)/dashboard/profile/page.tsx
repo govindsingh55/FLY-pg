@@ -153,7 +153,7 @@ export default function ProfilePage() {
                   {profile?.name?.charAt(0)?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="lg">
                 <Camera className="mr-2 h-4 w-4" />
                 Change Photo
               </Button>

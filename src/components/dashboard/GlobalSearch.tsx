@@ -216,7 +216,7 @@ export function GlobalSearch({
           {query && (
             <Button
               variant="ghost"
-              size="sm"
+              size="lg"
               onClick={() => {
                 setQuery('')
                 setResults([])

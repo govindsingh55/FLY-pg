@@ -496,7 +496,7 @@ export default function BookingDetailPage() {
                           {doc.type} • {new Date(doc.uploadedAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <Button variant="outline" size="sm" asChild>
+                      <Button variant="outline" size="lg" asChild>
                         <a href={doc.document.url} download>
                           <Download className="h-4 w-4" />
                         </a>

@@ -267,7 +267,7 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
               </CardTitle>
               <CardDescription>View and manage your payment history</CardDescription>
             </div>
-            <Button onClick={handleRefresh} variant="outline" size="sm" disabled={isLoading}>
+            <Button onClick={handleRefresh} variant="outline" size="lg" disabled={isLoading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
@@ -329,7 +329,7 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
                 </Select>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                 >
                   {sortOrder === 'asc' ? '↑' : '↓'}
@@ -405,7 +405,7 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="lg">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -577,13 +577,13 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
                   <Button
                     onClick={() => handleDownloadReceipt(selectedPayment.id)}
                     variant="outline"
-                    size="sm"
+                    size="lg"
                   >
                     <Download className="mr-2 h-4 w-4" />
                     Download Receipt
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={() => setIsDetailsOpen(false)}>
+                <Button variant="outline" size="lg" onClick={() => setIsDetailsOpen(false)}>
                   Close
                 </Button>
               </div>

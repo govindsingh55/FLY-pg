@@ -416,7 +416,7 @@ export function SupportCenter() {
                         <Button
                           onClick={sendMessage}
                           disabled={sendingMessage || !newMessage.trim()}
-                          size="sm"
+                          size="lg"
                         >
                           <Send className="h-4 w-4" />
                         </Button>

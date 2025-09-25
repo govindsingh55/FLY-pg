@@ -208,7 +208,7 @@ export default function PaymentsPage() {
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                 >
@@ -222,7 +222,7 @@ export default function PaymentsPage() {
                       <Button
                         key={page}
                         variant={currentPage === page ? 'default' : 'outline'}
-                        size="sm"
+                        size="lg"
                         onClick={() => handlePageChange(page)}
                         className="w-8 h-8 p-0"
                       >
@@ -234,7 +234,7 @@ export default function PaymentsPage() {
 
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
                 >

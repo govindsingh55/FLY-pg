@@ -237,7 +237,7 @@ export function RentSummary({ className }: RentSummaryProps) {
                 {new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
               </CardDescription>
             </div>
-            <Button onClick={fetchRentSummary} variant="outline" size="sm">
+            <Button onClick={fetchRentSummary} variant="outline" size="lg">
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
             </Button>

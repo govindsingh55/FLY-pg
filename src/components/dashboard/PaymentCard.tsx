@@ -140,7 +140,7 @@ export function PaymentCard({ payment, showActions = true }: PaymentCardProps) {
         {/* Actions */}
         {showActions && (
           <div className="flex items-center space-x-2 pt-4 border-t">
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="lg" asChild>
               <Link href={`/dashboard/rent/payments/${payment.id}`}>
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
@@ -148,14 +148,14 @@ export function PaymentCard({ payment, showActions = true }: PaymentCardProps) {
             </Button>
 
             {payment.status === 'completed' && (
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="lg">
                 <Download className="mr-2 h-4 w-4" />
                 Download Receipt
               </Button>
             )}
 
             {payment.status === 'pending' && (
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="lg" asChild>
                 <Link href={`/dashboard/rent?payment=${payment.id}`}>
                   <CreditCard className="mr-2 h-4 w-4" />
                   Pay Now
@@ -164,7 +164,7 @@ export function PaymentCard({ payment, showActions = true }: PaymentCardProps) {
             )}
 
             {payment.status === 'failed' && (
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="lg" asChild>
                 <Link href={`/dashboard/rent?payment=${payment.id}`}>
                   <CreditCard className="mr-2 h-4 w-4" />
                   Retry Payment

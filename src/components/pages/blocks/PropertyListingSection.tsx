@@ -339,7 +339,7 @@ export function PropertyListingSection({
                 'Contact for pricing'
               )}
             </div>
-            <Button asChild size="sm">
+            <Button asChild size="lg">
               <Link href={`/properties/${property.slug}`}>View</Link>
             </Button>
           </div>

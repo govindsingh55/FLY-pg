@@ -13,7 +13,7 @@ export default function RentSettingsPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="lg" asChild>
           <Link href="/dashboard/rent">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Rent
@@ -142,7 +142,7 @@ export default function RentSettingsPage() {
                   full card details.
                 </p>
               </div>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button variant="outline" size="lg" className="w-full">
                 View Security Policy
               </Button>
             </CardContent>
@@ -157,10 +157,10 @@ export default function RentSettingsPage() {
               <p className="text-sm text-muted-foreground">
                 Having trouble with your payments or settings?
               </p>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button variant="outline" size="lg" className="w-full">
                 Contact Support
               </Button>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button variant="outline" size="lg" className="w-full">
                 View FAQ
               </Button>
             </CardContent>

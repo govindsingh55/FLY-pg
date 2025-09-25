@@ -167,7 +167,7 @@ export default function SettingsPage() {
                   <Badge variant={settings.twoFactorAuth ? 'default' : 'secondary'}>
                     {settings.twoFactorAuth ? 'Enabled' : 'Disabled'}
                   </Badge>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="lg">
                     {settings.twoFactorAuth ? 'Manage' : 'Enable'}
                   </Button>
                 </div>

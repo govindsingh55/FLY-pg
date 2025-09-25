@@ -139,7 +139,7 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
         {/* Actions */}
         {showActions && (
           <div className="flex items-center space-x-2 pt-4 border-t">
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="lg" asChild>
               <Link href={`/dashboard/bookings/${booking.id}`}>
                 <Clock className="mr-2 h-4 w-4" />
                 View Details
@@ -147,7 +147,7 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
             </Button>
 
             {booking.status === 'confirmed' && (
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="lg" asChild>
                 <Link href={`/dashboard/rent?booking=${booking.id}`}>
                   <CreditCard className="mr-2 h-4 w-4" />
                   Pay Rent
@@ -156,7 +156,7 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
             )}
 
             {booking.status === 'completed' && (
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="lg">
                 <Star className="mr-2 h-4 w-4" />
                 Rate & Review
               </Button>

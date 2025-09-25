@@ -236,7 +236,7 @@ export function ProfileCompletionProgress({
                     <AlertCircle className="h-3 w-3 text-red-500" />
                     <span className="text-red-600">{field.label}</span>
                     {field.editPath && (
-                      <Button variant="link" size="sm" className="h-auto p-0 text-xs" asChild>
+                      <Button variant="link" size="lg" className="h-auto p-0 text-xs" asChild>
                         <Link href={field.editPath}>
                           Complete <ArrowRight className="ml-1 h-3 w-3" />
                         </Link>
@@ -271,7 +271,7 @@ export function ProfileCompletionProgress({
                       <AlertCircle className="h-3 w-3 text-yellow-500" />
                       <span className="text-muted-foreground">{field.label}</span>
                       {field.editPath && (
-                        <Button variant="link" size="sm" className="h-auto p-0 text-xs" asChild>
+                        <Button variant="link" size="lg" className="h-auto p-0 text-xs" asChild>
                           <Link href={field.editPath}>
                             Add <ArrowRight className="ml-1 h-3 w-3" />
                           </Link>

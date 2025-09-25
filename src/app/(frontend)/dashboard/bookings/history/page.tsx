@@ -171,7 +171,7 @@ export default function BookingHistoryPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
+          <Button variant="ghost" size="lg" asChild>
             <Link href="/dashboard/bookings">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Bookings
@@ -183,11 +183,11 @@ export default function BookingHistoryPage() {
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Button onClick={handleRefresh} variant="outline" size="sm">
+          <Button onClick={handleRefresh} variant="outline" size="lg">
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button onClick={exportHistory} variant="outline" size="sm">
+          <Button onClick={exportHistory} variant="outline" size="lg">
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
@@ -405,7 +405,7 @@ export default function BookingHistoryPage() {
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="lg"
                       onClick={() => handlePageChange(pagination.page - 1)}
                       disabled={!pagination.hasPrevPage}
                     >
@@ -416,7 +416,7 @@ export default function BookingHistoryPage() {
                     </span>
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="lg"
                       onClick={() => handlePageChange(pagination.page + 1)}
                       disabled={!pagination.hasNextPage}
                     >

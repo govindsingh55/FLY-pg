@@ -298,7 +298,7 @@ export default function PaymentSuccessPage() {
                 <p className="text-sm text-gray-600 mb-2">
                   Your payment is being processed. This may take a few minutes.
                 </p>
-                <Button variant="outline" size="sm" onClick={fetchPaymentStatus}>
+                <Button variant="outline" size="lg" onClick={fetchPaymentStatus}>
                   Refresh Status
                 </Button>
               </div>
@@ -313,7 +313,7 @@ export default function PaymentSuccessPage() {
                 <p className="text-sm text-gray-600 mb-2">
                   If you believe this is an error, please contact support.
                 </p>
-                <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/rent')}>
+                <Button variant="outline" size="lg" onClick={() => router.push('/dashboard/rent')}>
                   Try Again
                 </Button>
               </div>

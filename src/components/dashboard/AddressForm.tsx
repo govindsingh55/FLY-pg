@@ -157,7 +157,7 @@ export function AddressForm({
               )}
             </div>
 
-            <Button onClick={onEdit} variant="outline" size="sm">
+            <Button onClick={onEdit} variant="outline" size="lg">
               <Edit className="mr-2 h-4 w-4" />
               Edit Address
             </Button>

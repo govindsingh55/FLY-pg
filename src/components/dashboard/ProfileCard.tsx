@@ -94,13 +94,13 @@ export function ProfileCard({ profile, showActions = true }: ProfileCardProps) {
         {/* Actions */}
         {showActions && (
           <div className="flex items-center space-x-2 pt-4 border-t">
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="lg" asChild>
               <Link href="/dashboard/profile">
                 <User className="mr-2 h-4 w-4" />
                 Edit Profile
               </Link>
             </Button>
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="lg" asChild>
               <Link href="/dashboard/settings">
                 <MapPin className="mr-2 h-4 w-4" />
                 Settings

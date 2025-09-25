@@ -350,7 +350,7 @@ export function PaymentMethodManager({ className }: PaymentMethodManagerProps) {
                           <Button
                             type="button"
                             variant="ghost"
-                            size="sm"
+                            size="lg"
                             className="absolute right-0 top-0 h-full px-3"
                             onClick={() => setShowCardDetails(!showCardDetails)}
                           >
@@ -546,18 +546,18 @@ export function PaymentMethodManager({ className }: PaymentMethodManagerProps) {
                     {!method.isDefault && (
                       <Button
                         variant="outline"
-                        size="sm"
+                        size="lg"
                         onClick={() => handleSetDefault(method.id)}
                       >
                         Set Default
                       </Button>
                     )}
-                    <Button variant="outline" size="sm" onClick={() => openEditDialog(method)}>
+                    <Button variant="outline" size="lg" onClick={() => openEditDialog(method)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="lg">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>

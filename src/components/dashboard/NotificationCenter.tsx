@@ -242,10 +242,10 @@ export function NotificationCenter({ className, maxNotifications = 50 }: Notific
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
+              <Button variant="outline" size="lg" onClick={() => setShowSettings(!showSettings)}>
                 <Settings className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={fetchNotifications}>
+              <Button variant="outline" size="lg" onClick={fetchNotifications}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
@@ -285,7 +285,7 @@ export function NotificationCenter({ className, maxNotifications = 50 }: Notific
             </div>
 
             {unreadCount > 0 && (
-              <Button variant="outline" size="sm" onClick={markAllAsRead}>
+              <Button variant="outline" size="lg" onClick={markAllAsRead}>
                 Mark All Read
               </Button>
             )}
@@ -355,7 +355,7 @@ export function NotificationCenter({ className, maxNotifications = 50 }: Notific
                             {!notification.isRead && (
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                size="lg"
                                 onClick={() => markAsRead(notification.id)}
                                 className="h-6 w-6 p-0"
                               >
@@ -366,7 +366,7 @@ export function NotificationCenter({ className, maxNotifications = 50 }: Notific
                             {notification.actionUrl && notification.actionText && (
                               <Button
                                 variant="outline"
-                                size="sm"
+                                size="lg"
                                 onClick={() => (window.location.href = notification.actionUrl!)}
                                 className="h-6 text-xs"
                               >
@@ -376,7 +376,7 @@ export function NotificationCenter({ className, maxNotifications = 50 }: Notific
 
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="lg"
                               onClick={() => deleteNotification(notification.id)}
                               className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
                             >

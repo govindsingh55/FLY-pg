@@ -172,7 +172,7 @@ export default function DashboardPage() {
                   <p className="font-medium">₹15,000</p>
                   <p className="text-sm text-muted-foreground">Due in 5 days</p>
                 </div>
-                <Button size="sm">Pay Now</Button>
+                <Button size="lg">Pay Now</Button>
               </div>
             </div>
           </div>

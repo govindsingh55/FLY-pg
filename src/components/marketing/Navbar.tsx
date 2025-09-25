@@ -23,15 +23,15 @@ export function Navbar() {
         <div className="col-span-1 flex justify-start">
           <Link
             href="/"
-            className="text-2xl font-bold tracking-wide hover:text-primary"
+            className="text-4xl font-bold tracking-wide hover:text-primary"
             aria-label="Go to home"
           >
-            FLY <span className="text-sm font-medium text-accent">colive</span>
+            FLY <span className="text-lg font-medium text-accent">colive</span>
           </Link>
         </div>
 
         {/* Center: Primary nav */}
-        <nav className="flex items-center justify-center gap-6 text-sm">
+        <nav className="flex items-center justify-center gap-6 text-md">
           <Link href="/#amenities" className="hover:text-primary">
             Amenities
           </Link>
@@ -63,12 +63,16 @@ export function Navbar() {
               <Link
                 href={`/auth/sign-in${!pathname.startsWith('/auth') ? '?redirect=' + pathname : ''}`}
               >
-                <Button asChild variant="ghost">
+                <Button asChild variant="ghost" size="lg">
                   <span>Sign in</span>
                 </Button>
               </Link>
               <Link href="/auth/sign-up">
-                <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button
+                  asChild
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  size="lg"
+                >
                   <span>Sign up</span>
                 </Button>
               </Link>
@@ -77,7 +81,7 @@ export function Navbar() {
           {status !== 'loading' && isAuthenticated && (
             <div className="flex items-center gap-2">
               <Link href="/dashboard">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="lg">
                   <span>Dashboard</span>
                 </Button>
               </Link>
@@ -93,10 +97,10 @@ export function Navbar() {
       <div className="mx-auto flex max-w-8xl items-center justify-between px-4 py-3 md:hidden">
         <Link
           href="/"
-          className="text-2xl font-bold tracking-wide hover:text-primary"
+          className="text-4xl font-bold tracking-wide hover:text-primary"
           aria-label="Go to home"
         >
-          FLY <span className="text-sm font-medium text-accent">colive</span>
+          FLY <span className="text-lg font-medium text-accent">colive</span>
         </Link>
         <ThemeToggleBtn />
       </div>

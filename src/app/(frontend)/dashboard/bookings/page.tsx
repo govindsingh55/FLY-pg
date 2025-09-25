@@ -142,11 +142,11 @@ export default function BookingsPage() {
           <p className="text-muted-foreground">Manage and track all your property bookings</p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button onClick={handleRefresh} variant="outline" size="sm">
+          <Button onClick={handleRefresh} variant="outline" size="lg">
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" size="lg" asChild>
             <Link href="/dashboard/bookings/history">
               <Calendar className="mr-2 h-4 w-4" />
               View History
@@ -323,7 +323,7 @@ export default function BookingsPage() {
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="lg"
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={!pagination.hasPrevPage}
                   >
@@ -334,7 +334,7 @@ export default function BookingsPage() {
                   </span>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="lg"
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={!pagination.hasNextPage}
                   >

@@ -36,7 +36,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           <div className="text-lg lg:text-xl font-bold">FLY Dashboard</div>
         </Link>
         {onClose && (
-          <Button variant="ghost" size="sm" onClick={onClose} className="lg:hidden">
+          <Button variant="ghost" size="lg" onClick={onClose} className="lg:hidden">
             <X className="h-4 w-4" />
             <span className="sr-only">Close sidebar</span>
           </Button>
@@ -84,7 +84,7 @@ export function Sidebar({ onClose }: SidebarProps) {
         <div className="space-y-1">
           <Button
             variant="ghost"
-            size="sm"
+            size="lg"
             className="w-full justify-start text-sm"
             onClick={onClose}
           >
@@ -93,7 +93,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="lg"
             className="w-full justify-start text-sm text-destructive hover:text-destructive"
             onClick={handleLogout}
           >
