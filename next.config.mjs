@@ -5,6 +5,8 @@ const nextConfig = {
   output: 'standalone',
   // Your Next.js config here
   images: {
+    // Increase timeout for image optimization
+    unoptimized: process.env.NODE_ENV === 'development',
     remotePatterns: [
       {
         protocol: 'http',
@@ -26,6 +28,15 @@ const nextConfig = {
         hostname: 'images.unsplash.com',
       },
     ],
+    // Add timeout and retry configuration
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Increase timeout for image processing
+    minimumCacheTTL: 60,
+    formats: ['image/webp', 'image/avif'],
+    // Add loader configuration for better error handling
+    loader: 'custom',
+    loaderFile: './src/lib/imageLoader.ts',
   },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {

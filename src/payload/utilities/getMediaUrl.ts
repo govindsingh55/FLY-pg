@@ -14,6 +14,14 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
     return cacheTag ? `${url}?${cacheTag}` : url
   }
 
+  // For local media files, try to use our custom media endpoint first
+  if (url.startsWith('/media/')) {
+    const baseUrl = getClientSideURL()
+    const filename = url.split('/').pop()
+    const customUrl = `${baseUrl}/api/custom/media?filename=${filename}`
+    return cacheTag ? `${customUrl}&${cacheTag}` : customUrl
+  }
+
   // Otherwise prepend client-side URL
   const baseUrl = getClientSideURL()
   return cacheTag ? `${baseUrl}${url}?${cacheTag}` : `${baseUrl}${url}`
