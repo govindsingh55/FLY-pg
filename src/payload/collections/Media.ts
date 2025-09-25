@@ -53,7 +53,6 @@ export const Media: CollectionConfig = {
         crop: 'center',
         formatOptions: {
           format: 'webp',
-          quality: 80,
         },
       },
       {
@@ -63,7 +62,6 @@ export const Media: CollectionConfig = {
         crop: 'center',
         formatOptions: {
           format: 'webp',
-          quality: 85,
         },
       },
       {
@@ -71,7 +69,6 @@ export const Media: CollectionConfig = {
         width: 600,
         formatOptions: {
           format: 'webp',
-          quality: 85,
         },
       },
       {
@@ -79,7 +76,6 @@ export const Media: CollectionConfig = {
         width: 900,
         formatOptions: {
           format: 'webp',
-          quality: 90,
         },
       },
       {
@@ -87,7 +83,6 @@ export const Media: CollectionConfig = {
         width: 1400,
         formatOptions: {
           format: 'webp',
-          quality: 90,
         },
       },
       {
@@ -95,7 +90,6 @@ export const Media: CollectionConfig = {
         width: 1920,
         formatOptions: {
           format: 'webp',
-          quality: 95,
         },
       },
       {
@@ -105,7 +99,6 @@ export const Media: CollectionConfig = {
         crop: 'center',
         formatOptions: {
           format: 'webp',
-          quality: 90,
         },
       },
     ],
