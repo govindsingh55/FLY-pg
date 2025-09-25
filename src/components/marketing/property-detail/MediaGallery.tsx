@@ -2,12 +2,11 @@
 
 import * as React from 'react'
 import { useEffect, useState, useCallback } from 'react'
-import { X, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import RichText from '@/components/RichText'
 import { Media } from '@/components/Media'
 import { Media as MediaType } from '@/payload/payload-types'
-import { getMediaUrl } from '@/payload/utilities/getMediaUrl'
 import Image from 'next/image'
 
 type MediaItem = {
@@ -39,8 +38,6 @@ export default function MediaGallery({
 }: MediaGalleryProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedIdx, setSelectedIdx] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const videoRef = React.useRef<HTMLVideoElement>(null)
 
   // Combine property images with room images
   const propertyImages: MediaItem[] = Array.isArray(images) ? images : []
@@ -67,17 +64,6 @@ export default function MediaGallery({
   }
   const closeModal = () => setModalOpen(false)
 
-  const handleVideoPlay = () => setIsPlaying(true)
-  const handleVideoPause = () => setIsPlaying(false)
-  const togglePlayPause = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause()
-      } else {
-        videoRef.current.play()
-      }
-    }
-  }
   const prevMedia = useCallback(
     () => setSelectedIdx((i) => (i === 0 ? allMedia.length - 1 : i - 1)),
     [allMedia.length],
@@ -94,14 +80,10 @@ export default function MediaGallery({
       if (e.key === 'Escape') closeModal()
       if (e.key === 'ArrowLeft') prevMedia()
       if (e.key === 'ArrowRight') nextMedia()
-      if (e.key === ' ') {
-        e.preventDefault()
-        setIsPlaying(!isPlaying)
-      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [modalOpen, prevMedia, nextMedia, isPlaying])
+  }, [modalOpen, prevMedia, nextMedia])
 
   // If there are no media files, render a default placeholder from public/.
   // This is placed after hook calls so hooks are always invoked in the same order.
@@ -145,27 +127,23 @@ export default function MediaGallery({
         {cover && (
           <>
             {cover.image?.mimeType?.includes('video') ? (
-              <video
+              <Media
+                resource={cover.image}
                 className="absolute inset-0 w-full h-full object-cover"
-                muted
-                playsInline
-                preload="metadata"
-                src={getMediaUrl(cover.image?.url, cover.image?.updatedAt)}
+                fill={true}
+                priority={true}
+                size="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                controls={false}
+                autoPlay={true}
               />
             ) : (
               <Media
                 resource={cover.image}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
                 fill={true}
                 priority={true}
                 size="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
               />
-            )}
-            {/* Video indicator for main cover */}
-            {cover.image?.mimeType?.includes('video') && (
-              <div className="absolute top-4 right-4 bg-black/70 text-white rounded-full size-10 flex items-center justify-center group-hover:bg-black/80 transition-colors">
-                <Play className="size-5" />
-              </div>
             )}
             {/* Hover overlay for main image */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
@@ -183,13 +161,19 @@ export default function MediaGallery({
               {img && (
                 <>
                   {img.image?.mimeType?.includes('video') ? (
-                    <video
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                      preload="metadata"
-                      src={getMediaUrl(img.image?.url, img.image?.updatedAt)}
-                    />
+                    <div className="w-full h-full object-cover relative">
+                      <Media
+                        resource={img.image}
+                        className="w-full h-full object-cover"
+                        size="(max-width: 768px) 96px, 128px"
+                        loading="lazy"
+                        autoPlay={false}
+                        controls={false}
+                      />
+                      <div className="absolute inset-0 flex items-start justify-end p-2 bg-black/20 rounded-lg">
+                        <Play className="size-6 text-white" />
+                      </div>
+                    </div>
                   ) : (
                     <Media
                       resource={img.image}
@@ -202,12 +186,6 @@ export default function MediaGallery({
                   {img.isRoomImage && (
                     <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs px-1 py-0.5 text-center truncate">
                       Room
-                    </div>
-                  )}
-                  {/* Video indicator for gallery thumbnails */}
-                  {img.image?.mimeType?.includes('video') && (
-                    <div className="absolute top-1 right-1 bg-black/70 text-white rounded-full size-5 flex items-center justify-center group-hover:bg-black/80 transition-colors">
-                      <Play className="size-2.5" />
                     </div>
                   )}
                 </>
@@ -260,29 +238,14 @@ export default function MediaGallery({
                 {allMedia[selectedIdx] && (
                   <div className="relative">
                     {allMedia[selectedIdx].image?.mimeType?.includes('video') ? (
-                      <video
-                        ref={videoRef}
+                      <Media
+                        resource={allMedia[selectedIdx].image}
                         className="max-h-[75vh] w-auto rounded-xl border bg-muted max-w-[85vw]"
-                        controls={false}
-                        loop
-                        muted
-                        playsInline
-                        onPlay={handleVideoPlay}
-                        onPause={handleVideoPause}
-                        src={getMediaUrl(
-                          allMedia[selectedIdx].image?.url,
-                          allMedia[selectedIdx].image?.updatedAt,
-                        )}
-                        onError={(e) => {
-                          console.error('Video load error:', e)
-                          console.error(
-                            'Video URL:',
-                            getMediaUrl(
-                              allMedia[selectedIdx].image?.url,
-                              allMedia[selectedIdx].image?.updatedAt,
-                            ),
-                          )
-                        }}
+                        size="(max-width: 768px) 85vw, (max-width: 1200px) 70vw, 60vw"
+                        priority={selectedIdx === 0}
+                        videoClassName="autoplay"
+                        controls={true}
+                        autoPlay={false}
                       />
                     ) : (
                       <Media
@@ -297,16 +260,6 @@ export default function MediaGallery({
                       <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
                         Room
                       </div>
-                    )}
-                    {/* Video play/pause overlay */}
-                    {allMedia[selectedIdx].image?.mimeType?.includes('video') && (
-                      <button
-                        onClick={togglePlayPause}
-                        className="absolute top-4 right-4 bg-black/50 text-white rounded-full size-12 flex items-center justify-center hover:bg-black/70"
-                        aria-label={isPlaying ? 'Pause video' : 'Play video'}
-                      >
-                        {isPlaying ? <Pause className="size-6" /> : <Play className="size-6" />}
-                      </button>
                     )}
                   </div>
                 )}
@@ -335,12 +288,12 @@ export default function MediaGallery({
                         {media && (
                           <div className="relative">
                             {media.image?.mimeType?.includes('video') ? (
-                              <video
+                              <Media
+                                resource={media.image}
                                 className="w-20 h-14 object-cover"
-                                muted
-                                playsInline
-                                preload="metadata"
-                                src={getMediaUrl(media.image?.url, media.image?.updatedAt)}
+                                size="80px"
+                                loading="lazy"
+                                videoClassName="no-autoplay"
                               />
                             ) : (
                               <Media
@@ -354,12 +307,6 @@ export default function MediaGallery({
                             {media.isRoomImage && (
                               <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs px-1 py-0.5 text-center truncate">
                                 Room
-                              </div>
-                            )}
-                            {/* Video indicator */}
-                            {media.image?.mimeType?.includes('video') && (
-                              <div className="absolute top-1 right-1 bg-black/70 text-white rounded-full size-4 flex items-center justify-center">
-                                <Play className="size-2" />
                               </div>
                             )}
                           </div>

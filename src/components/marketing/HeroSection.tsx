@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChevronDown, LucideIcon } from 'lucide-react'
 import { ReactNode } from 'react'
+import { Media } from '@/components/Media'
+import type { Media as MediaType } from '@/payload/payload-types'
 
 interface CTAButton {
   label: string
@@ -27,6 +29,7 @@ interface HeroSectionProps {
   primaryCta?: CTAButton
   secondaryCta?: CTAButton
   backgroundImage?: string
+  backgroundMedia?: MediaType
   showScrollIndicator?: boolean
   className?: string
   children?: ReactNode
@@ -41,18 +44,36 @@ export default function HeroSection({
   primaryCta,
   secondaryCta,
   backgroundImage,
+  backgroundMedia,
   showScrollIndicator = true,
   className = '',
   children,
 }: HeroSectionProps) {
   return (
     <section
-      className={`relative min-h-[80vh] sm:min-h-[70vh] flex items-center justify-center overflow-hidden ${className}`}
+      className={`relative min-h-[80vh] sm:min-h-[70vh] flex items-center justify-center overflow-hidden w-full ${className}`}
     >
       {/* Background */}
-      {backgroundImage ? (
-        <div className="absolute inset-0">
-          <img src={backgroundImage} alt={title} className="h-full w-full object-cover" />
+      {backgroundImage || backgroundMedia ? (
+        <div className="absolute inset-0 w-full h-full">
+          {backgroundMedia ? (
+            <div className="relative w-full h-full">
+              <Media
+                resource={backgroundMedia}
+                className="absolute inset-0 w-full h-full object-cover"
+                alt={title}
+                priority={true}
+                fill={true}
+                autoPlay={true}
+              />
+            </div>
+          ) : (
+            <img
+              src={backgroundImage}
+              alt={title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/20" />
         </div>
       ) : (

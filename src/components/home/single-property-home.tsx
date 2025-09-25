@@ -33,23 +33,23 @@ interface ProcessedNearbyLocation {
   distance: string
 }
 
-interface ProcessedImage {
+interface ProcessedMedia {
   id: string
   isCover: boolean
-  image: MediaType
+  media: MediaType
 }
 
 interface ProcessedProperty extends Omit<Property, 'rooms' | 'nearbyLocations' | 'images'> {
-  images: ProcessedImage[]
+  images: ProcessedMedia[]
   rooms: ProcessedRoom[]
   nearby: ProcessedNearbyLocation[]
   tagline?: string
 }
 
-interface FallbackImage {
+interface FallbackMedia {
   id: string
   isCover: boolean
-  image: {
+  media: {
     id: string
     url: string
     filename: string
@@ -86,9 +86,9 @@ async function fetchFirstProperty(): Promise<ProcessedProperty | null> {
           .map((img) => ({
             id: img.id || '',
             isCover: img.isCover || false,
-            image: img.image as MediaType,
+            media: img.image as MediaType,
           }))
-          .filter((img) => img.id && img.image)
+          .filter((img) => img.id && img.media)
       : []
     const rooms = Array.isArray(doc.rooms)
       ? doc.rooms
@@ -145,11 +145,11 @@ export default async function SinglePropertyHome() {
   const localityLine = [sector, city].filter(Boolean).join(', ')
 
   // Enhanced fallback with better placeholder content using Picsum
-  const fallbackImages = [
+  const fallbackMedia = [
     {
       id: 'hero-1',
       isCover: true,
-      image: {
+      media: {
         id: 'hero-1',
         url: 'https://picsum.photos/seed/property-hero/1200/800',
         filename: 'hero-1.jpg',
@@ -162,7 +162,7 @@ export default async function SinglePropertyHome() {
     {
       id: 'gallery-1',
       isCover: false,
-      image: {
+      media: {
         id: 'gallery-1',
         url: 'https://picsum.photos/seed/property-gallery-1/800/600',
         filename: 'gallery-1.jpg',
@@ -175,7 +175,7 @@ export default async function SinglePropertyHome() {
     {
       id: 'gallery-2',
       isCover: false,
-      image: {
+      media: {
         id: 'gallery-2',
         url: 'https://picsum.photos/seed/property-gallery-2/800/600',
         filename: 'gallery-2.jpg',
@@ -185,9 +185,9 @@ export default async function SinglePropertyHome() {
         height: 600,
       },
     },
-  ] as FallbackImage[]
+  ] as FallbackMedia[]
 
-  const images = (prop.images?.length ? prop.images : fallbackImages) as ProcessedImage[]
+  const images = (prop.images?.length ? prop.images : fallbackMedia) as ProcessedMedia[]
 
   const minRent = prop.rooms?.length
     ? Math.min(...prop.rooms.map((r: ProcessedRoom) => r.rent))
@@ -247,7 +247,12 @@ export default async function SinglePropertyHome() {
       : undefined,
     nearby: prop.nearby,
     rooms: prop.rooms,
-    images: prop.images,
+    images:
+      prop.images?.map((img) => ({
+        id: img.id,
+        isCover: img.isCover,
+        image: img.media,
+      })) || [],
     address: prop.address
       ? {
           address: prop.address.address,
@@ -257,6 +262,16 @@ export default async function SinglePropertyHome() {
           },
         }
       : undefined,
+  }
+
+  const getHeroMedia = (): MediaType | undefined => {
+    // Find the first image marked as cover
+    const coverImage = images.find((img) => img.isCover)
+    if (coverImage && coverImage.media) {
+      return coverImage.media
+    }
+    // Otherwise, return the media of the first image if available
+    return images[0]?.media || undefined
   }
 
   return (
@@ -296,7 +311,7 @@ export default async function SinglePropertyHome() {
           icon: Phone,
           href: `tel:7678688964`,
         }}
-        backgroundImage={images[0]?.image?.url || undefined}
+        backgroundMedia={getHeroMedia() || undefined}
       />
 
       {/* Quick Stats */}
