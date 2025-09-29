@@ -37,10 +37,10 @@ export default function AmenityGridForProperty({
           return (
             <div
               key={key}
-              className="flex flex-col items-center justify-center gap-1 md:gap-2 rounded-lg border border-primary bg-card px-2 py-3 md:px-3 md:py-4 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-accent hover:bg-accent/5 w-28 min-w-28 md:w-32 md:min-w-32 flex-shrink-0"
+              className="flex flex-col items-center justify-center gap-1 md:gap-2 rounded-lg border border-accent/35 bg-card px-2 py-3 md:px-3 md:py-4 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-2 hover:border-accent hover:bg-accent/5 w-28 min-w-28 md:w-32 md:min-w-32 flex-shrink-0"
             >
               <IconByName name={amenityIcon} className="size-5 md:size-6 text-primary" />
-              <span className="text-xs md:text-sm font-medium text-foreground leading-tight">
+              <span className="text-xs md:text-sm font-medium text-primary leading-tight">
                 {amenityName}
               </span>
             </div>
