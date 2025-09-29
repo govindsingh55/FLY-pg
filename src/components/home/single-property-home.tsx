@@ -18,6 +18,12 @@ import FeaturesSection from '@/components/marketing/FeaturesSection'
 import HeroSection from '@/components/marketing/HeroSection'
 import PropertyDetailsSection from '@/components/marketing/PropertyDetailsSection'
 import StatsSection from '@/components/marketing/StatsSection'
+import {
+  PropertySection,
+  PropertySectionContent,
+  PropertySectionDescription,
+  PropertySectionTitle,
+} from '../sections/PropertySection'
 
 // Type definitions for processed data that extends Payload types
 interface ProcessedRoom {
@@ -315,7 +321,27 @@ export default async function SinglePropertyHome() {
       />
 
       {/* Quick Stats */}
-      <StatsSection stats={stats} variant="floating" />
+      {/* <StatsSection stats={stats} variant="floating" /> */}
+      <PropertySection className="mt-10 py-4 w-full border border-gray-200 rounded-lg shadow-sm">
+        <PropertySectionTitle className="text-center">
+          Quick <span className="text-accent">Stats</span>
+        </PropertySectionTitle>
+        <PropertySectionDescription className="text-center">
+          Experience the perfect blend of comfort, community, and convenience in our thoughtfully
+          designed spaces.
+        </PropertySectionDescription>
+        <PropertySectionContent className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-4">
+          {stats.map((stat) => (
+            <div key={stat.id} className="text-center">
+              <div className="text-3xl font-bold text-primary mb-2">{stat.value}</div>
+              <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
+              {stat.sublabel && (
+                <div className="text-xs text-muted-foreground/70 mt-1">{stat.sublabel}</div>
+              )}
+            </div>
+          ))}
+        </PropertySectionContent>
+      </PropertySection>
 
       {/* Features Overview */}
       <FeaturesSection

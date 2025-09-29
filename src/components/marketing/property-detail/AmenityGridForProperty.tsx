@@ -4,11 +4,13 @@ import type { Amenity } from '@/payload/payload-types'
 import { cn } from '@/lib/utils'
 
 export default function AmenityGridForProperty({
+  align = 'left',
   items,
   headingClassName,
 }: {
   items: (string | Amenity)[]
   headingClassName?: string
+  align?: 'center' | 'left' | 'right'
 }) {
   if (!items?.length) return null
   console.log('[AmenityGridForProperty] items:', items)
@@ -17,7 +19,16 @@ export default function AmenityGridForProperty({
       <h3 className={cn('mb-3 text-2xl font-semibold text-primary', headingClassName)}>
         Amazing <span className="text-accent">Amenities</span>
       </h3>
-      <div className="flex flex-wrap justify-center gap-3">
+      <div
+        className={cn(
+          'flex flex-wrap justify-center gap-3',
+          align === 'center'
+            ? 'justify-center'
+            : align === 'left'
+              ? 'justify-start'
+              : 'justify-end',
+        )}
+      >
         {items.map((item, index) => {
           const amenityName = typeof item === 'string' ? item : item.name || 'Unknown Amenity'
           const amenityIcon =

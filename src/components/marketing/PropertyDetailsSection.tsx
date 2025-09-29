@@ -77,6 +77,7 @@ export default function PropertyDetailsSection({
               <AmenityGridForProperty
                 items={property.amenities}
                 headingClassName="text-center mb-8"
+                align="center"
               />
             </div>
           )}
