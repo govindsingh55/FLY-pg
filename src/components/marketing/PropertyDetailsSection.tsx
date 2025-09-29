@@ -4,6 +4,12 @@ import RichText from '@/components/RichText'
 import { Badge } from '@/components/ui/badge'
 import { Amenity } from '@/payload/payload-types'
 import * as Lucide from 'lucide-react'
+import {
+  PropertySection,
+  PropertySectionContent,
+  PropertySectionDescription,
+  PropertySectionTitle,
+} from '../sections/PropertySection'
 
 interface Room {
   id: string
@@ -110,18 +116,27 @@ export default function PropertyDetailsSection({
 
           {/* Nearby Locations */}
           {property.nearby && property.nearby.length > 0 && (
-            <div className="rounded-lg border border-primary bg-card shadow-sm p-6">
-              <div className="mb-4">
-                <h3 className="flex items-center gap-2 text-3xl font-semibold text-primary mb-2">
-                  <Lucide.MapPin className="h-5 w-5 text-primary" />
-                  Nearby Locations
-                </h3>
-                <p className="text-muted-foreground">Convenient access to key locations</p>
-              </div>
-              <div>
-                <NearbyLocations locations={property.nearby} />
-              </div>
-            </div>
+            <PropertySection>
+              <PropertySectionTitle className="text-center">
+                Nearby <span className="text-accent">Locations</span>
+              </PropertySectionTitle>
+              <PropertySectionDescription className="text-center">
+                Convenient access to key locations
+              </PropertySectionDescription>
+              <PropertySectionContent>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {property.nearby.map((l, i) => (
+                    <div
+                      key={i}
+                      className="rounded-lg border border-accent/35 bg-card p-3 md:px-8 text-sm flex flex-col items-center text-center"
+                    >
+                      <div className="font-medium">{l.name}</div>
+                      <div className="text-muted-foreground">{l.distance}</div>
+                    </div>
+                  ))}
+                </div>
+              </PropertySectionContent>
+            </PropertySection>
           )}
 
           {/* Property Overview Stats */}
