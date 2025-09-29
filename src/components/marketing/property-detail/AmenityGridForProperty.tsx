@@ -13,9 +13,8 @@ export default function AmenityGridForProperty({
   align?: 'center' | 'left' | 'right'
 }) {
   if (!items?.length) return null
-  console.log('[AmenityGridForProperty] items:', items)
   return (
-    <section className="mx-auto max-w-8xl px-1 md:px-4 pl-0 py-4">
+    <section className="mx-auto max-w-8xl pl-0 py-4">
       <h3 className={cn('mb-3 text-3xl font-semibold text-primary', headingClassName)}>
         Amazing <span className="text-accent">Amenities</span>
       </h3>
