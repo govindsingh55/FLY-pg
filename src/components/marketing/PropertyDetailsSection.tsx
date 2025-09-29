@@ -2,7 +2,6 @@ import AmenityGridForProperty from '@/components/marketing/property-detail/Ameni
 import NearbyLocations from '@/components/marketing/property-detail/NearbyLocations'
 import RichText from '@/components/RichText'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Amenity } from '@/payload/payload-types'
 import * as Lucide from 'lucide-react'
 
@@ -55,87 +54,83 @@ export default function PropertyDetailsSection({
         <div className="space-y-8">
           {/* About Section */}
           {property.description && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lucide.Info className="h-5 w-5 text-primary" />
-                  About {property.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RichText data={property.description} enableGutter={false} enableProse={true} />
-              </CardContent>
-            </Card>
+            <div className="rounded-lg p-6">
+              <div className="mb-4">
+                <h2 className="flex items-center justify-center gap-2 text-2xl font-semibold text-primary">
+                  About <span className="text-accent">{property.name}</span>
+                </h2>
+              </div>
+              <div className="text-center max-w-6xl mx-auto">
+                <RichText
+                  data={property.description}
+                  enableGutter={false}
+                  enableProse={true}
+                  className="text-center"
+                />
+              </div>
+            </div>
           )}
 
           {/* Amenities */}
           {property.amenities && property.amenities.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lucide.Star className="h-5 w-5 text-primary" />
-                  Amenities & Features
-                </CardTitle>
-                <CardDescription>Everything you need for comfortable living</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AmenityGridForProperty items={property.amenities} />
-              </CardContent>
-            </Card>
+            <div className="mx-auto max-w-6xl px-1">
+              <AmenityGridForProperty
+                items={property.amenities}
+                headingClassName="text-center mb-8"
+              />
+            </div>
           )}
 
           {/* Food Menu */}
           {property.foodMenu?.menu?.description && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lucide.UtensilsCrossed className="h-5 w-5 text-primary" />
-                  Food Menu
-                </CardTitle>
-                <CardDescription>
-                  Delicious meals prepared fresh daily
+            <div className="mx-auto max-w-6xl px-1">
+              <div className="rounded-lg p-6 flex flex-col items-center justify-center">
+                <div className="mb-4">
+                  <h3 className="flex items-center gap-2 text-2xl font-semibold text-primary mb-4 justify-center">
+                    Food <span className="text-accent">Menu</span>
+                  </h3>
+                  <p className="text-muted-foreground">Delicious meals prepared fresh daily</p>
                   {property.foodMenu.price && (
-                    <span className="block text-green-600 font-medium mt-1">
+                    <p className="block text-accent font-medium mt-1 text-center">
                       Monthly Food Charge: ₹{property.foodMenu.price.toLocaleString()}
-                    </span>
+                    </p>
                   )}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RichText
-                  data={property.foodMenu.menu.description}
-                  enableGutter={false}
-                  enableProse={true}
-                />
-              </CardContent>
-            </Card>
+                </div>
+                <div>
+                  <RichText
+                    data={property.foodMenu.menu.description}
+                    enableGutter={false}
+                    enableProse={true}
+                  />
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Nearby Locations */}
           {property.nearby && property.nearby.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="rounded-lg border border-primary bg-card shadow-sm p-6">
+              <div className="mb-4">
+                <h3 className="flex items-center gap-2 text-xl font-semibold text-primary mb-2">
                   <Lucide.MapPin className="h-5 w-5 text-primary" />
                   Nearby Locations
-                </CardTitle>
-                <CardDescription>Convenient access to key locations</CardDescription>
-              </CardHeader>
-              <CardContent>
+                </h3>
+                <p className="text-muted-foreground">Convenient access to key locations</p>
+              </div>
+              <div>
                 <NearbyLocations locations={property.nearby} />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Property Overview Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lucide.BarChart3 className="h-5 w-5 text-primary" />
-                Property Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-lg p-6 mx-auto max-w-6xl px-1">
+            <div className="mb-4">
+              <h3 className="flex items-center gap-2 text-2xl font-semibold text-primary justify-center mb-4">
+                Property <span className="text-accent">Overview</span>
+              </h3>
+            </div>
+            <div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {property.rooms && property.rooms.length > 0 && (
                   <div className="text-center">
@@ -145,7 +140,7 @@ export default function PropertyDetailsSection({
                 )}
                 {property.rooms && property.rooms.length > 0 && (
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold text-accent">
                       {property.rooms.filter((r) => r.available !== false).length}
                     </div>
                     <div className="text-sm text-muted-foreground">Available</div>
@@ -169,58 +164,58 @@ export default function PropertyDetailsSection({
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Room Types - Full Width Below */}
         {property.rooms && property.rooms.length > 0 && (
           <div className="mt-12">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lucide.Bed className="h-5 w-5 text-primary" />
-                  Room Types & Pricing
-                </CardTitle>
-                <CardDescription>
+            <div className="rounded-lg p-6">
+              <div className="mb-6">
+                <h3 className="flex items-center gap-2 text-2xl font-semibold text-primary mb-4 justify-center">
+                  Room Types & <span className="text-accent">Pricing</span>
+                </h3>
+                <p className="text-muted-foreground text-center">
                   Explore our comfortable living spaces designed for modern lifestyles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {property.rooms.map((room) => (
-                    <Card
+                    <div
                       key={room.id}
-                      className="border border-border/50 hover:shadow-md transition-shadow"
+                      className="rounded-lg border border-primary/20 bg-card hover:shadow-md transition-shadow p-4"
                     >
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold">{room.name}</h4>
-                          {room.available !== false ? (
-                            <Badge variant="default" className="bg-green-100 text-green-800">
-                              Available
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="bg-gray-100 text-gray-600">
-                              Occupied
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground capitalize mb-3">
-                          {room.roomType?.replace('_', ' ')}
-                        </p>
-                        <div className="text-center">
-                          <span className="text-2xl font-bold text-primary">
-                            ₹{room.rent?.toLocaleString()}
-                          </span>
-                          <div className="text-sm text-muted-foreground">per month</div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold text-foreground">{room.name}</h4>
+                        {room.available !== false ? (
+                          <Badge
+                            variant="default"
+                            className="bg-accent/10 text-accent border-accent/20"
+                          >
+                            Available
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-muted text-muted-foreground">
+                            Occupied
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground capitalize mb-3">
+                        {room.roomType?.replace('_', ' ')}
+                      </p>
+                      <div className="text-center">
+                        <span className="text-2xl font-bold text-primary">
+                          ₹{room.rent?.toLocaleString()}
+                        </span>
+                        <div className="text-sm text-muted-foreground">per month</div>
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )}
       </div>
