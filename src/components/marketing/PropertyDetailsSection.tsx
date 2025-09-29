@@ -56,7 +56,7 @@ export default function PropertyDetailsSection({
           {property.description && (
             <div className="rounded-lg p-6">
               <div className="mb-4">
-                <h2 className="flex items-center justify-center gap-2 text-2xl font-semibold text-primary">
+                <h2 className="flex items-center justify-center gap-2 text-3xl font-semibold text-primary">
                   About <span className="text-accent">{property.name}</span>
                 </h2>
               </div>
@@ -87,7 +87,7 @@ export default function PropertyDetailsSection({
             <div className="mx-auto max-w-6xl px-1">
               <div className="rounded-lg p-6 flex flex-col items-center justify-center">
                 <div className="mb-4">
-                  <h3 className="flex items-center gap-2 text-2xl font-semibold text-primary mb-4 justify-center">
+                  <h3 className="flex items-center gap-2 text-3xl font-semibold text-primary mb-4 justify-center">
                     Food <span className="text-accent">Menu</span>
                   </h3>
                   <p className="text-muted-foreground">Delicious meals prepared fresh daily</p>
@@ -112,7 +112,7 @@ export default function PropertyDetailsSection({
           {property.nearby && property.nearby.length > 0 && (
             <div className="rounded-lg border border-primary bg-card shadow-sm p-6">
               <div className="mb-4">
-                <h3 className="flex items-center gap-2 text-xl font-semibold text-primary mb-2">
+                <h3 className="flex items-center gap-2 text-3xl font-semibold text-primary mb-2">
                   <Lucide.MapPin className="h-5 w-5 text-primary" />
                   Nearby Locations
                 </h3>
@@ -127,7 +127,7 @@ export default function PropertyDetailsSection({
           {/* Property Overview Stats */}
           <div className="rounded-lg p-6 mx-auto max-w-6xl px-1">
             <div className="mb-4">
-              <h3 className="flex items-center gap-2 text-2xl font-semibold text-primary justify-center mb-4">
+              <h3 className="flex items-center gap-2 text-3xl font-semibold text-primary justify-center mb-4">
                 Property <span className="text-accent">Overview</span>
               </h3>
             </div>
@@ -174,7 +174,7 @@ export default function PropertyDetailsSection({
           <div className="mt-12">
             <div className="rounded-lg p-6">
               <div className="mb-6">
-                <h3 className="flex items-center gap-2 text-2xl font-semibold text-primary mb-4 justify-center">
+                <h3 className="flex items-center gap-2 text-3xl font-semibold text-primary mb-4 justify-center">
                   Room Types & <span className="text-accent">Pricing</span>
                 </h3>
                 <p className="text-muted-foreground text-center">

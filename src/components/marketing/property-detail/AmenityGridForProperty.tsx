@@ -15,18 +15,18 @@ export default function AmenityGridForProperty({
   if (!items?.length) return null
   console.log('[AmenityGridForProperty] items:', items)
   return (
-    <section className="mx-auto max-w-8xl px-4 pl-0 py-4">
-      <h3 className={cn('mb-3 text-2xl font-semibold text-primary', headingClassName)}>
+    <section className="mx-auto max-w-8xl px-1 md:px-4 pl-0 py-4">
+      <h3 className={cn('mb-3 text-3xl font-semibold text-primary', headingClassName)}>
         Amazing <span className="text-accent">Amenities</span>
       </h3>
       <div
         className={cn(
-          'flex flex-wrap justify-center gap-3',
+          'flex flex-wrap justify-center gap-1 md:gap-3',
           align === 'center'
             ? 'justify-center'
             : align === 'left'
-              ? 'justify-start'
-              : 'justify-end',
+              ? 'md:justify-start justify-center'
+              : 'md:justify-end justify-center',
         )}
       >
         {items.map((item, index) => {
@@ -38,10 +38,10 @@ export default function AmenityGridForProperty({
           return (
             <div
               key={key}
-              className="flex flex-col items-center justify-center gap-2 rounded-lg border border-primary bg-card px-3 py-4 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-accent hover:bg-accent/5 w-32 min-w-32 flex-shrink-0"
+              className="flex flex-col items-center justify-center gap-1 md:gap-2 rounded-lg border border-primary bg-card px-2 py-3 md:px-3 md:py-4 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-accent hover:bg-accent/5 w-28 min-w-28 md:w-32 md:min-w-32 flex-shrink-0"
             >
-              <IconByName name={amenityIcon} className="size-6 text-primary" />
-              <span className="text-sm font-medium text-foreground leading-tight">
+              <IconByName name={amenityIcon} className="size-5 md:size-6 text-primary" />
+              <span className="text-xs md:text-sm font-medium text-foreground leading-tight">
                 {amenityName}
               </span>
             </div>

@@ -90,7 +90,7 @@ export default function MediaGallery({
   if (!hasMedia) {
     return (
       <section className="w-full pt-4 pb-2">
-        <div className="w-full h-[400px] md:h-[500px] overflow-hidden rounded-lg border bg-muted relative">
+        <div className="w-full aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-lg border bg-muted relative">
           {/* Use Picsum for placeholder images */}
           <Image
             src="https://picsum.photos/seed/property-placeholder/800/450"
@@ -121,7 +121,7 @@ export default function MediaGallery({
   return (
     <section className="w-full pt-4 pb-2">
       <div
-        className="w-full h-[400px] md:h-[500px] overflow-hidden rounded-lg border bg-muted cursor-pointer relative group"
+        className="w-full aspect-[3/4] md:aspect-[16/9] overflow-hidden rounded-lg border bg-muted cursor-pointer relative group"
         onClick={() => openModal(0)}
       >
         {cover && (
@@ -155,7 +155,7 @@ export default function MediaGallery({
           {rest.map((img, idx) => (
             <div
               key={idx}
-              className="overflow-hidden rounded-lg border bg-muted w-24 h-16 md:w-32 md:h-20 flex-shrink-0 cursor-pointer relative group hover:scale-105 transition-transform"
+              className="overflow-hidden rounded-lg border bg-muted w-24 aspect-[3/2] md:w-32 md:aspect-[3/2] flex-shrink-0 cursor-pointer relative group hover:scale-105 transition-transform"
               onClick={() => openModal(idx + 1)}
             >
               {img && (

@@ -118,7 +118,7 @@ export default async function PropertyDetailPage({ params }: { params: Params })
             {/* About */}
             {prop.description ? (
               <section className="max-w-none">
-                <h3 className="mb-2 text-2xl font-semibold text-primary">
+                <h3 className="mb-2 text-2xl font-semibold text-primary text-center md:text-left">
                   About <span className="text-accent">Property</span>
                 </h3>
                 <RichText data={prop.description as any} />
@@ -128,14 +128,17 @@ export default async function PropertyDetailPage({ params }: { params: Params })
             {/* Food Menu */}
             {foodMenuDesc ? (
               <section className="mt-6 max-w-none">
-                <h3 className="mb-2 text-2xl font-semibold text-primary">
+                <h3 className="mb-2 text-2xl font-semibold text-primary text-center md:text-left">
                   Food <span className="text-accent">Menu</span>
                 </h3>
                 <RichText data={foodMenuDesc as any} />
               </section>
             ) : null}
 
-            <AmenityGridForProperty items={(prop.amenities as string[]) || []} />
+            <AmenityGridForProperty
+              items={(prop.amenities as string[]) || []}
+              headingClassName="text-center md:text-left"
+            />
             <NearbyLocations locations={nearby} />
           </div>
           <div className="sticky top-24 self-start mt-4">
