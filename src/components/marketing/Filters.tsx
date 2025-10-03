@@ -274,7 +274,9 @@ export default function Filters() {
                 <DrawerTitle className="text-sm font-medium">Filters</DrawerTitle>
               </div>
             </DrawerHeader>
-            <FiltersPanel onClose={() => actions.toggleFilterPanel(false)} />
+            <div className="flex-1 overflow-y-scroll pb-10">
+              <FiltersPanel onClose={() => actions.toggleFilterPanel(false)} />
+            </div>
             <DrawerFooter />
           </DrawerContent>
         </Drawer>

@@ -9,13 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Drawer,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer'
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { usePropertyDetail } from '@/lib/state/propertyDetail'
 import { useUser } from '@/lib/state/user'
@@ -130,15 +124,16 @@ export default function BookingCard({ rooms, propertyId }: Props) {
       {/* Responsive container: Drawer on mobile, Sheet on desktop */}
       {!isDesktop ? (
         <Drawer open={openVisit} onOpenChange={setOpenVisit}>
-          <DrawerContent className="data-[vaul-drawer-direction=bottom]:rounded-t-2xl">
-            <DrawerHeader className="flex items-center justify-between border-b px-4 py-3">
+          <DrawerContent className="data-[vaul-drawer-direction=bottom]:rounded-t-2xl max-h-[80vh] flex flex-col">
+            <DrawerHeader className="flex items-center justify-between border-b px-4 py-3 flex-shrink-0">
               <div className="flex items-center gap-2">
                 <Lucide.Calendar className="size-4" />
                 <DrawerTitle className="text-sm font-medium">Schedule a visit</DrawerTitle>
               </div>
             </DrawerHeader>
-            <VisitBookingForm propertyId={propertyId} onClose={() => setOpenVisit(false)} />
-            <DrawerFooter />
+            <div className="flex-1 overflow-scroll pb-20">
+              <VisitBookingForm propertyId={propertyId} onClose={() => setOpenVisit(false)} />
+            </div>
           </DrawerContent>
         </Drawer>
       ) : (
@@ -159,21 +154,22 @@ export default function BookingCard({ rooms, propertyId }: Props) {
       {/* Book Drawer/Sheet */}
       {!isDesktop ? (
         <Drawer open={openBook} onOpenChange={setOpenBook}>
-          <DrawerContent className="data-[vaul-drawer-direction=bottom]:rounded-t-2xl">
-            <DrawerHeader className="flex items-center justify-between border-b px-4 py-3">
+          <DrawerContent className="data-[vaul-drawer-direction=bottom]:rounded-t-2xl max-h-[80vh] flex flex-col">
+            <DrawerHeader className="flex items-center justify-between border-b px-4 py-3 flex-shrink-0">
               <div className="flex items-center gap-2">
                 <Lucide.Calendar className="size-4" />
                 <DrawerTitle className="text-sm font-medium">Book this room</DrawerTitle>
               </div>
             </DrawerHeader>
-            {selectedRoom ? (
-              <RoomBookingForm
-                room={selectedRoom}
-                propertyId={propertyId}
-                onClose={() => setOpenBook(false)}
-              />
-            ) : null}
-            <DrawerFooter />
+            <div className="flex-1 overflow-y-scroll pb-20">
+              {selectedRoom ? (
+                <RoomBookingForm
+                  room={selectedRoom}
+                  propertyId={propertyId}
+                  onClose={() => setOpenBook(false)}
+                />
+              ) : null}
+            </div>
           </DrawerContent>
         </Drawer>
       ) : (

@@ -111,8 +111,8 @@ export default function VisitBookingForm({ propertyId, onClose }: Props) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
+    <form onSubmit={onSubmit} className="flex flex-col h-full max-h-full">
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 min-h-0">
         {apiError && <div className="text-xs text-red-500 mb-2">{apiError}</div>}
         <div className="text-sm text-muted-foreground">
           {propertyId ? `Property: ${propertyId}` : 'Property selected'}
@@ -191,7 +191,7 @@ export default function VisitBookingForm({ propertyId, onClose }: Props) {
         </div>
       </div>
 
-      <div className="border-t px-6 py-2">
+      <div className="flex-shrink-0 border-t bg-background px-6 py-3">
         <div className="flex items-center justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>
             Cancel
