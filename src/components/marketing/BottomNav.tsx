@@ -10,39 +10,47 @@ import { useUser } from '@/lib/state/user'
 import { Building2, Home, Search, User } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useFilterActions } from './FilterContext'
+import { useFilterActions, useFilterState } from './FilterContext'
+import { cn } from '@/lib/utils'
 
 export function BottomNav() {
   const pathname = usePathname()
   const actions = useFilterActions()
-
+  const navState = useFilterState()
   return (
     <nav className="fixed z-[100] inset-x-0 bottom-0 h-16 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
       <div className="container flex h-full items-center justify-center px-4">
         <div className="flex w-full max-w-md items-center justify-around">
-          {pathname !== '/' ? (
-            <Link
-              href={'/'}
-              className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary"
-            >
-              <Home className="h-5 w-5" />
-              <span>Home</span>
-            </Link>
-          ) : null}
-          {pathname !== '/properties' ? (
-            <Link
-              href="/properties"
-              className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary"
-            >
-              <Building2 className="h-5 w-5" />
-              <span>Properties</span>
-            </Link>
-          ) : null}
+          <Link
+            aria-label="Go to home"
+            href={'/'}
+            className={cn(
+              'flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary',
+              pathname === '/' && 'text-primary',
+            )}
+          >
+            <Home className="h-5 w-5" />
+            <span>Home</span>
+          </Link>
+          <Link
+            aria-label="Go to properties"
+            href="/properties"
+            className={cn(
+              'flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary',
+              pathname === '/properties' && 'text-primary',
+            )}
+          >
+            <Building2 className="h-5 w-5" />
+            <span>Properties</span>
+          </Link>
           <button
+            aria-label="Open filter panel"
             onClick={() => {
               actions.toggleFilterPanel(true)
             }}
-            className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary"
+            className={cn(
+              'flex h-full w-full flex-col items-center justify-center gap-1 rounded-md py-2 text-xs hover:text-primary focus:text-primary',
+            )}
           >
             <Search className="h-5 w-5" />
             <span>Search</span>
@@ -87,6 +95,7 @@ function Account() {
             <DropdownMenuItem className="border-b rounded-none">
               <Link
                 href={`/auth/sign-in${!pathname.startsWith('/auth') ? '?redirect=' + pathname : ''}`}
+                className="text-lg"
               >
                 Login
               </Link>

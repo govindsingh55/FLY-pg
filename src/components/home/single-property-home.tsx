@@ -321,8 +321,7 @@ export default async function SinglePropertyHome() {
       />
 
       {/* Quick Stats */}
-      {/* <StatsSection stats={stats} variant="floating" /> */}
-      <PropertySection className="mt-10 py-4 w-full border border-gray-200 rounded-lg shadow-sm">
+      <PropertySection className="mt-10 py-4 w-full bg-muted/30 mb-8 rounded-lg shadow-sm">
         <PropertySectionTitle className="text-center">
           Quick <span className="text-accent">Stats</span>
         </PropertySectionTitle>
@@ -345,7 +344,12 @@ export default async function SinglePropertyHome() {
 
       {/* Features Overview */}
       <FeaturesSection
-        title={`Why Choose ${prop.name}?`}
+        className="rounded-lg shadow-sm"
+        title={
+          <>
+            Why Choose <span className="text-accent">{prop.name}?</span>
+          </>
+        }
         subtitle="Experience the perfect blend of comfort, community, and convenience in our thoughtfully designed spaces."
         features={propertyFeatures}
         columns={3}

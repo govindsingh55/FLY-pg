@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import IconByName from '@/components/marketing/IconByName'
+import { ReactNode } from 'react'
 
 interface Feature {
   id: string
@@ -11,7 +12,7 @@ interface Feature {
 }
 
 interface FeaturesSectionProps {
-  title: string
+  title: ReactNode
   subtitle?: string
   features: Feature[]
   columns?: 2 | 3 | 4
@@ -47,10 +48,10 @@ export default function FeaturesSection({
         </div>
 
         <div className={`grid gap-8 ${gridCols[columns]}`}>
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <Card
               key={feature.id}
-              className="border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+              className="border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 bg-muted/40"
             >
               <CardHeader className="text-center">
                 <div
