@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 const Customers: CollectionConfig = {
   slug: 'customers',
   auth: {
-    verify: true,
+    verify: process.env.NODE_ENV === 'development' ? false : true,
     tokenExpiration: 7200, // 2 hours
     forgotPassword: {
       generateEmailHTML: (args) => {

@@ -1,6 +1,6 @@
 import { Payload, PayloadRequest } from 'payload'
 
-export async function seedUsers(payload: Payload, req: PayloadRequest) {
+export async function seedUsers(payload: Payload, _req: PayloadRequest) {
   // Find the first registered user (earliest createdAt) to preserve for admin onboarding
   const firstUser = await payload.find({
     collection: 'users',
@@ -28,6 +28,8 @@ export async function seedUsers(payload: Payload, req: PayloadRequest) {
         role: 'admin',
         email: `admin${i}@example.com`,
         password: 'password123',
+        // Skip email verification during development seeding
+        ...(process.env.NODE_ENV === 'development' && { _verified: true }),
       },
     })
     users.push(user)

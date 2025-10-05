@@ -1,6 +1,6 @@
 import { Payload, PayloadRequest } from 'payload'
 
-export async function seedCustomers(payload: Payload, req: PayloadRequest) {
+export async function seedCustomers(payload: Payload, _req: PayloadRequest) {
   await payload.delete({
     collection: 'customers',
     where: {},
@@ -14,6 +14,8 @@ export async function seedCustomers(payload: Payload, req: PayloadRequest) {
         email: `customer${i}@example.com`,
         phone: `9876543${i.toString().padStart(3, '0')}`,
         password: `password${i}`,
+        // Skip email verification during development seeding
+        ...(process.env.NODE_ENV === 'development' && { _verified: true }),
       },
     })
     customers.push(customer)
