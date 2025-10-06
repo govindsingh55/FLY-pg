@@ -19,8 +19,8 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
-      <body className="min-h-screen relative flex flex-col bg-background text-foreground antialiased overflow-x-hidden">
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen relative flex flex-col bg-background text-foreground antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

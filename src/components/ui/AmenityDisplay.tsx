@@ -30,7 +30,7 @@ export const AmenityDisplay: React.FC<AmenityDisplayProps> = ({
 
   if (variant === 'compact') {
     return (
-      <div className={cn('flex items-center justify-center gap-2', className)}>
+      <div className={cn('flex items-center justify-center gap-2 px-2', className)}>
         {showIcon && (
           <IconByName
             name={iconName}

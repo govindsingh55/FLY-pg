@@ -13,9 +13,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <FilterProvider>
           <Navbar />
           {/* Main site content: no vertical centering so pages can scroll naturally */}
-          <main className="flex-1 flex flex-col w-full justify-start items-stretch mx-auto max-w-8xl">
-            {children}
-          </main>
+          <main className="flex-1 w-full mx-auto max-w-8xl">{children}</main>
           <Footer />
           <BottomNav />
           <Filters />

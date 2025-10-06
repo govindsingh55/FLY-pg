@@ -69,7 +69,7 @@ export const AmenityMarquee: React.FC<AmenityMarqueeProps> = ({
             <div
               key={amenity.id}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 md:gap-2 rounded-lg border border-accent/35 bg-card px-3 py-4 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-2 hover:border-accent hover:bg-accent/5 w-32 min-w-32 md:w-36 md:min-w-36 flex-shrink-0 mx-1 md:mx-2',
+                'flex flex-col items-center justify-center gap-1 md:gap-2 rounded-lg border border-accent/35 bg-card px-4 py-5 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-2 hover:border-accent hover:bg-accent/5 w-32 min-w-32 md:w-36 md:min-w-36 flex-shrink-0 mx-2 md:mx-3',
                 itemClassName,
               )}
             >

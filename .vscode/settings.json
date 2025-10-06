@@ -36,5 +36,13 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit"
     }
+  },
+  "piny.project_settings": {
+    "open-pages": ["pinyfakepage.html"],
+    "component-settings": {
+      "src/app/%28frontend%29/%28main%29/properties/%5Bslug%5D/page.tsx:::Temp": {
+        "route": "/properties/slug"
+      }
+    }
   }
 }
