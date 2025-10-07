@@ -15,7 +15,9 @@ import {
   CreditCard,
   Wrench,
   Loader2,
+  RefreshCw,
 } from 'lucide-react'
+import { useSettings, useUpdateSettings } from '@/hooks/useSettings'
 import { toast } from 'sonner'
 
 interface NotificationPreferences {
@@ -28,6 +30,10 @@ interface NotificationPreferences {
 }
 
 export function NotificationPreferences() {
+  // React Query hooks
+  const { data: settingsData, isLoading } = useSettings()
+  const updateSettingsMutation = useUpdateSettings()
+
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     emailNotifications: true,
     smsNotifications: true,
@@ -36,59 +42,68 @@ export function NotificationPreferences() {
     paymentReminders: true,
     maintenanceUpdates: true,
   })
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [originalPreferences, setOriginalPreferences] = useState<NotificationPreferences | null>(
+    null,
+  )
 
+  // Load preferences from React Query data
   useEffect(() => {
-    fetchNotificationPreferences()
-  }, [])
-
-  const fetchNotificationPreferences = async () => {
-    try {
-      const response = await fetch('/api/custom/customers/profile')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.customer?.notificationPreferences) {
-          setPreferences(data.customer.notificationPreferences)
-        }
+    if (settingsData) {
+      const notificationData = {
+        emailNotifications: settingsData.notifications.email ?? true,
+        smsNotifications: settingsData.notifications.sms ?? true,
+        pushNotifications: settingsData.notifications.push ?? true,
+        bookingReminders: settingsData.notifications.bookingReminders ?? true,
+        paymentReminders: settingsData.notifications.paymentReminders ?? true,
+        maintenanceUpdates: settingsData.notifications.maintenanceUpdates ?? true,
       }
-    } catch (error) {
-      console.error('Error fetching notification preferences:', error)
-    } finally {
-      setLoading(false)
+
+      setPreferences(notificationData)
+      setOriginalPreferences(notificationData)
+    }
+  }, [settingsData])
+
+  const hasChanges = () => {
+    if (!originalPreferences) return false
+
+    return Object.keys(preferences).some((key) => {
+      const prefKey = key as keyof NotificationPreferences
+      return preferences[prefKey] !== originalPreferences[prefKey]
+    })
+  }
+
+  const handleReset = () => {
+    if (originalPreferences) {
+      setPreferences(originalPreferences)
+      toast.info('Changes discarded')
     }
   }
 
-  const handleToggle = async (key: keyof NotificationPreferences, value: boolean) => {
+  const handleToggle = (key: keyof NotificationPreferences, value: boolean) => {
     setPreferences((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleSave = async () => {
-    setSaving(true)
-    try {
-      const response = await fetch('/api/custom/customers/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          notificationPreferences: preferences,
-        }),
-      })
+    // Use React Query mutation with optimistic updates
+    await updateSettingsMutation.mutateAsync({
+      notifications: {
+        email: preferences.emailNotifications,
+        sms: preferences.smsNotifications,
+        push: preferences.pushNotifications,
+        bookingReminders: preferences.bookingReminders,
+        paymentReminders: preferences.paymentReminders,
+        maintenanceUpdates: preferences.maintenanceUpdates,
+      },
+    })
 
-      if (response.ok) {
-        toast.success('Notification preferences saved successfully')
-      } else {
-        const error = await response.json()
-        toast.error(error.message || 'Failed to save preferences')
-      }
-    } catch (error) {
-      console.error('Error saving notification preferences:', error)
-      toast.error('Failed to save preferences')
-    } finally {
-      setSaving(false)
-    }
+    // Update original preferences after successful save
+    setOriginalPreferences(preferences)
   }
 
-  if (loading) {
+  const changesExist = hasChanges()
+  const isSaving = updateSettingsMutation.isPending
+
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
@@ -108,7 +123,12 @@ export function NotificationPreferences() {
             <Bell className="h-5 w-5" />
             Notification Channels
           </CardTitle>
-          <CardDescription>Choose how you want to receive notifications</CardDescription>
+          <CardDescription>
+            Choose how you want to receive notifications
+            {changesExist && (
+              <span className="ml-2 text-orange-600 font-medium">• Unsaved changes</span>
+            )}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -173,8 +193,10 @@ export function NotificationPreferences() {
       {/* Notification Types */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Notification Types</CardTitle>
-          <CardDescription>Choose which types of notifications you want to receive</CardDescription>
+          <CardTitle className="text-lg">Payment Notification Types</CardTitle>
+          <CardDescription>
+            Choose which payment-related notifications you want to receive
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -240,21 +262,34 @@ export function NotificationPreferences() {
         </CardContent>
       </Card>
 
-      {/* Save Button */}
-      <Card>
-        <CardContent className="pt-6">
-          <Button onClick={handleSave} disabled={saving} className="w-full">
-            {saving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Notification Preferences'
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Save Button - Only show when there are changes */}
+      {changesExist && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                disabled={isSaving}
+                className="flex-1"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Discard Changes
+              </Button>
+              <Button onClick={handleSave} disabled={isSaving} className="flex-1">
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Notification Preferences'
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

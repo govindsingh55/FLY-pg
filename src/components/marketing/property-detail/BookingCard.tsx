@@ -56,7 +56,7 @@ export default function BookingCard({ rooms, propertyId }: Props) {
     null
 
   return (
-    <aside className="sticky top-24 h-fit rounded-xl border bg-card p-4 shadow-sm">
+    <aside className="h-fit rounded-xl border bg-card p-4 shadow-sm">
       <div className="flex items-center gap-2">
         <Lucide.Home className="size-4" />
         <h3 className="font-semibold">Select Sharing Type</h3>

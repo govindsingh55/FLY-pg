@@ -23,7 +23,7 @@ export function Navbar() {
         <div className="col-span-1 flex justify-start">
           <Link
             href="/"
-            className="text-4xl font-bold tracking-wide hover:text-primary"
+            className="text-4xl font-bold tracking-wide text-primary hover:text-primary/90"
             aria-label="Go to home"
           >
             FLY <span className="text-lg font-medium text-accent">colive</span>
@@ -32,16 +32,28 @@ export function Navbar() {
 
         {/* Center: Primary nav */}
         <nav className="flex items-center justify-center gap-6 text-md">
-          <Link href="/#amenities" className="hover:text-primary">
+          <Link
+            href="/#amenities"
+            className="font-medium text-foreground/80 hover:text-primary transition-colors"
+          >
             Amenities
           </Link>
-          <Link href="/properties" className="hover:text-primary">
+          <Link
+            href="/properties"
+            className="font-medium text-foreground/80 hover:text-primary transition-colors"
+          >
             Properties
           </Link>
-          <Link href="/#community" className="hover:text-primary">
+          <Link
+            href="/#community"
+            className="font-medium text-foreground/80 hover:text-primary transition-colors"
+          >
             Community
           </Link>
-          <Link href="/about-us" className="hover:text-primary">
+          <Link
+            href="/about-us"
+            className="font-medium text-foreground/80 hover:text-primary transition-colors"
+          >
             About Us
           </Link>
         </nav>
@@ -63,17 +75,16 @@ export function Navbar() {
               <Link
                 href={`/auth/sign-in${!pathname.startsWith('/auth') ? '?redirect=' + pathname : ''}`}
               >
-                <Button asChild variant="ghost" size="lg">
-                  <span>Sign in</span>
+                <Button variant="ghost" size="default">
+                  Sign in
                 </Button>
               </Link>
               <Link href="/auth/sign-up">
                 <Button
-                  asChild
+                  size="default"
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  size="lg"
                 >
-                  <span>Sign up</span>
+                  Sign up
                 </Button>
               </Link>
             </>
@@ -81,12 +92,12 @@ export function Navbar() {
           {status !== 'loading' && isAuthenticated && (
             <div className="flex items-center gap-2">
               <Link href="/dashboard">
-                <Button variant="ghost" size="lg">
-                  <span>Dashboard</span>
+                <Button variant="ghost" size="default">
+                  Dashboard
                 </Button>
               </Link>
-              <Button asChild variant="ghost" onClick={logout}>
-                <span>Logout</span>
+              <Button variant="ghost" size="default" onClick={logout}>
+                Logout
               </Button>
             </div>
           )}
@@ -97,7 +108,7 @@ export function Navbar() {
       <div className="mx-auto flex max-w-8xl items-center justify-between px-4 py-3 md:hidden">
         <Link
           href="/"
-          className="text-4xl font-bold tracking-wide hover:text-primary"
+          className="text-4xl font-bold tracking-wide text-primary hover:text-primary/90"
           aria-label="Go to home"
         >
           FLY <span className="text-lg font-medium text-accent">colive</span>

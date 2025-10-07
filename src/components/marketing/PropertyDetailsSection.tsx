@@ -1,5 +1,3 @@
-import AmenityGridForProperty from '@/components/marketing/property-detail/AmenityGridForProperty'
-import NearbyLocations from '@/components/marketing/property-detail/NearbyLocations'
 import RichText from '@/components/RichText'
 import { Badge } from '@/components/ui/badge'
 import { Amenity } from '@/payload/payload-types'
@@ -10,6 +8,8 @@ import {
   PropertySectionDescription,
   PropertySectionTitle,
 } from '../sections/PropertySection'
+import { Marquee } from '../ui/marquee'
+import IconByName from './IconByName'
 
 interface Room {
   id: string
@@ -59,7 +59,7 @@ export default function PropertyDetailsSection({
         {/* Main Content - Simple Stacked Layout */}
         <div className="space-y-8">
           {/* About Section */}
-          {property.description && (
+          {property.description && property.description.length > 0 && (
             <div className="rounded-lg p-6">
               <div className="mb-4">
                 <h2 className="flex items-center justify-center gap-2 text-3xl font-semibold text-primary">
@@ -79,12 +79,39 @@ export default function PropertyDetailsSection({
 
           {/* Amenities */}
           {property.amenities && property.amenities.length > 0 && (
-            <div className="mx-auto max-w-6xl px-1">
-              <AmenityGridForProperty
+            <div className="mx-auto w-full px-1">
+              <h3 className="mb-3 text-3xl font-semibold text-primary text-center mb-8">
+                Amazing <span className="text-accent">Amenities</span>
+              </h3>
+              {/* <AmenityGridForProperty
                 items={property.amenities}
                 headingClassName="text-center mb-8"
                 align="center"
-              />
+              /> */}
+              <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
+                <Marquee pauseOnHover className="[--duration:20s]">
+                  {property.amenities.map((amenity: string | Amenity) => (
+                    <div
+                      key={typeof amenity === 'string' ? amenity : amenity.id}
+                      className="flex flex-col items-center justify-center gap-1 md:gap-2 rounded-lg border border-accent/35 bg-card px-2 py-3 md:px-3 md:py-4 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-2 hover:border-accent hover:bg-accent/5 w-28 min-w-28 md:w-32 md:min-w-32 flex-shrink-0"
+                    >
+                      <IconByName
+                        name={
+                          typeof amenity === 'string'
+                            ? 'CheckCircle'
+                            : amenity.iconName || 'CheckCircle'
+                        }
+                        className="size-5 md:size-6 text-primary"
+                      />
+                      <span className="text-xs md:text-sm font-medium text-primary leading-tight">
+                        {typeof amenity === 'string' ? amenity : amenity.name || 'Unknown Amenity'}
+                      </span>
+                    </div>
+                  ))}
+                </Marquee>
+                <div className="from-background pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r"></div>
+                <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l"></div>
+              </div>
             </div>
           )}
 

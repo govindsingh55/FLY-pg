@@ -1,13 +1,12 @@
 'use client'
 
-import * as React from 'react'
-import { useEffect, useState, useCallback } from 'react'
-import { X, ChevronLeft, ChevronRight, Play } from 'lucide-react'
-import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
-import RichText from '@/components/RichText'
 import { Media } from '@/components/Media'
+import RichText from '@/components/RichText'
 import { Media as MediaType } from '@/payload/payload-types'
+import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react'
 import Image from 'next/image'
+import { useCallback, useEffect, useState } from 'react'
 
 type MediaItem = {
   image: MediaType
@@ -201,7 +200,9 @@ export default function MediaGallery({
               <RichText data={addressRich} enableGutter={false} enableProse={false} />
             </div>
           ) : null}
-          {localityLine ? <div className="mt-1">{localityLine}</div> : null}
+          {localityLine ? (
+            <div className="mt-1 text-center md:text-left">{localityLine}</div>
+          ) : null}
         </div>
       )}
 

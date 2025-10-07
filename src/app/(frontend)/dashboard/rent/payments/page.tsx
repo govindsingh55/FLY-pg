@@ -16,7 +16,14 @@ import { PaymentHistory } from '@/components/dashboard/PaymentHistory'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { toast } from 'sonner'
-import { CalendarIcon, DownloadIcon, FilterIcon, SearchIcon } from 'lucide-react'
+import {
+  CalendarIcon,
+  DownloadIcon,
+  FilterIcon,
+  SearchIcon,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react'
 
 interface Payment {
   id: string
@@ -125,11 +132,14 @@ export default function PaymentsPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-red-600 mb-4">{error}</p>
-              <Button onClick={fetchPayments}>Try Again</Button>
-            </div>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="h-12 w-12 text-red-600 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Failed to Load Payment History</h3>
+            <p className="text-muted-foreground text-center mb-4">{error}</p>
+            <Button onClick={fetchPayments}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
           </CardContent>
         </Card>
       </div>

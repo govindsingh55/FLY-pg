@@ -60,6 +60,40 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
 }
 
 /* Base (light) theme */
@@ -74,22 +108,152 @@
   --popover: #ffffff;
   --popover-foreground: #1b1b1b;
 
-  /* brand palette (HEX approximations) */
-  --primary: #1c4937; /* Forest Green */
-  --primary-foreground: #e8f1ec;
+  /* Primary - Forest Green Scale (50-950) */
+  --primary-50: #f0f9f4;
+  --primary-100: #dbf0e2;
+  --primary-200: #bae0ca;
+  --primary-300: #8cc9aa;
+  --primary-400: #5bac84;
+  --primary-500: #3a8f69; /* Main brand color */
+  --primary-600: #297252;
+  --primary-700: #215b44;
+  --primary-800: #1c4937;
+  --primary-900: #183c2f;
+  --primary-950: #0c221a;
 
-  --secondary: #254457; /* Deep Blue */
-  --secondary-foreground: #e6eef3;
+  /* Legacy single values for backward compatibility */
+  --primary: var(--primary-600);
+  --primary-foreground: var(--primary-100);
 
-  --accent: #c59a2a; /* Muted Ochre */
-  --accent-foreground: #231f12;
+  /* Secondary - Deep Blue Scale (50-950) */
+  --secondary-50: #f0f4f7;
+  --secondary-100: #dce6ed;
+  --secondary-200: #b8ccda;
+  --secondary-300: #8fb0c4;
+  --secondary-400: #5d8fa8;
+  --secondary-500: #254457; /* Main brand color */
+  --secondary-600: #1f3847;
+  --secondary-700: #1a2f3b;
+  --secondary-800: #152631;
+  --secondary-900: #112028;
+  --secondary-950: #0d1a21;
 
-  --plum: #4a2a3b; /* Plum */
-  --sage: #8aa17f; /* Sage Green */
-  --rust: #a14e3b; /* Rust */
-  --taupe: #b4a38f; /* Mushroom Taupe */
-  --cream: #efe7d7; /* Warm Cream */
-  --inky: #2a3b49; /* Inky Blue */
+  /* Legacy single values for backward compatibility */
+  --secondary: var(--secondary-500);
+  --secondary-foreground: var(--secondary-50);
+
+  /* Accent - Muted Ochre Scale (50-950) */
+  --accent-50: #fdf8f0;
+  --accent-100: #faeedb;
+  --accent-200: #f4dcb7;
+  --accent-300: #ecc588;
+  --accent-400: #e2a558;
+  --accent-500: #c59a2a; /* Main brand color */
+  --accent-600: #a87f24;
+  --accent-700: #8c651e;
+  --accent-800: #704f19;
+  --accent-900: #5a4014;
+  --accent-950: #45320f;
+
+  /* Legacy single values for backward compatibility */
+  --accent: var(--accent-500);
+  --accent-foreground: var(--accent-950);
+
+  /* Plum Scale (50-950) */
+  --plum-50: #faf8f9;
+  --plum-100: #f4eef2;
+  --plum-200: #e8dde5;
+  --plum-300: #d7c3d1;
+  --plum-400: #c2a5b8;
+  --plum-500: #4a2a3b; /* Main brand color */
+  --plum-600: #3e2431;
+  --plum-700: #331f29;
+  --plum-800: #291b22;
+  --plum-900: #21171d;
+  --plum-950: #1a1418;
+
+  /* Legacy single values for backward compatibility */
+  --plum: var(--plum-500);
+
+  /* Sage Green Scale (50-950) */
+  --sage-50: #f7f8f6;
+  --sage-100: #eef1eb;
+  --sage-200: #dde3d7;
+  --sage-300: #c5d0be;
+  --sage-400: #a8b99e;
+  --sage-500: #8aa17f; /* Main brand color */
+  --sage-600: #748569;
+  --sage-700: #5f6a56;
+  --sage-800: #4d5546;
+  --sage-900: #404739;
+  --sage-950: #333a2d;
+
+  /* Legacy single values for backward compatibility */
+  --sage: var(--sage-500);
+
+  /* Rust Scale (50-950) */
+  --rust-50: #fdf6f5;
+  --rust-100: #faece9;
+  --rust-200: #f4d7d1;
+  --rust-300: #ecb8ae;
+  --rust-400: #e19485;
+  --rust-500: #a14e3b; /* Main brand color */
+  --rust-600: #864232;
+  --rust-700: #6e372a;
+  --rust-800: #592d23;
+  --rust-900: #4a251d;
+  --rust-950: #3b1e18;
+
+  /* Legacy single values for backward compatibility */
+  --rust: var(--rust-500);
+
+  /* Taupe Scale (50-950) */
+  --taupe-50: #faf9f7;
+  --taupe-100: #f4f1ed;
+  --taupe-200: #e8e2db;
+  --taupe-300: #d8cec3;
+  --taupe-400: #c6b8a7;
+  --taupe-500: #b4a38f; /* Main brand color */
+  --taupe-600: #978871;
+  --taupe-700: #7a6d5a;
+  --taupe-800: #625748;
+  --taupe-900: #51473a;
+  --taupe-950: #40392e;
+
+  /* Legacy single values for backward compatibility */
+  --taupe: var(--taupe-500);
+
+  /* Cream Scale (50-950) */
+  --cream-50: #fefcf9;
+  --cream-100: #fdf8f1;
+  --cream-200: #faefe2;
+  --cream-300: #f6e3ce;
+  --cream-400: #f1d4b5;
+  --cream-500: #efe7d7; /* Main brand color */
+  --cream-600: #d4c2a8;
+  --cream-700: #b19e89;
+  --cream-800: #8f7f6e;
+  --cream-900: #75685a;
+  --cream-950: #5c5148;
+
+  /* Legacy single values for backward compatibility */
+  --cream: var(--cream-500);
+
+  /* Inky Blue Scale (50-950) */
+  --inky-50: #f4f6f7;
+  --inky-100: #e8ecf0;
+  --inky-200: #d1d9e1;
+  --inky-300: #b1c0cd;
+  --inky-400: #8ba1b3;
+  --inky-500: #2a3b49; /* Main brand color */
+  --inky-600: #24323e;
+  --inky-700: #1e2a33;
+  --inky-800: #19232a;
+  --inky-900: #151d23;
+  --inky-950: #11181c;
+
+  /* Legacy single values for backward compatibility */
+  --inky: var(--inky-500);
 
   --muted: #f3f4f6;
   --muted-foreground: #6b7280;
@@ -126,21 +290,152 @@
   --popover: #161a1a;
   --popover-foreground: #f5f7f6;
 
-  --primary: #2a5a46; /* elevated forest */
-  --primary-foreground: #e5f0ea;
+  /* Primary - Forest Green Scale (Dark Mode) */
+  --primary-50: #0c1f1a;
+  --primary-100: #123126;
+  --primary-200: #163d2e;
+  --primary-300: #1c4937;
+  --primary-400: #2a5a46; /* Elevated for dark mode */
+  --primary-500: #2a5a46; /* Main brand color for dark */
+  --primary-600: #3a6b56;
+  --primary-700: #4a7c66;
+  --primary-800: #5a8d76;
+  --primary-900: #6a9e86;
+  --primary-950: #7aaf96;
 
-  --secondary: #2c5066;
-  --secondary-foreground: #e6eef3;
+  /* Legacy single values for backward compatibility */
+  --primary: var(--primary-500);
+  --primary-foreground: var(--primary-50);
 
-  --accent: #b3871f;
-  --accent-foreground: #f8f7f4;
+  /* Secondary - Deep Blue Scale (Dark Mode) */
+  --secondary-50: #0d1a21;
+  --secondary-100: #112028;
+  --secondary-200: #152631;
+  --secondary-300: #1a2f3b;
+  --secondary-400: #2c5066; /* Elevated for dark mode */
+  --secondary-500: #2c5066; /* Main brand color for dark */
+  --secondary-600: #3c6076;
+  --secondary-700: #4c7086;
+  --secondary-800: #5c8096;
+  --secondary-900: #6c90a6;
+  --secondary-950: #7ca0b6;
 
-  --plum: #5b3549;
-  --sage: #90a88a;
-  --rust: #b15843;
-  --taupe: #c1b29f;
-  --cream: #f0e8d9;
-  --inky: #334959;
+  /* Legacy single values for backward compatibility */
+  --secondary: var(--secondary-500);
+  --secondary-foreground: var(--secondary-50);
+
+  /* Accent - Muted Ochre Scale (Dark Mode) */
+  --accent-50: #45320f;
+  --accent-100: #5a4014;
+  --accent-200: #704f19;
+  --accent-300: #8c651e;
+  --accent-400: #b3871f; /* Elevated for dark mode */
+  --accent-500: #b3871f; /* Main brand color for dark */
+  --accent-600: #c3972f;
+  --accent-700: #d3a73f;
+  --accent-800: #e3b74f;
+  --accent-900: #f3c75f;
+  --accent-950: #f3d76f;
+
+  /* Legacy single values for backward compatibility */
+  --accent: var(--accent-500);
+  --accent-foreground: var(--accent-950);
+
+  /* Plum Scale (Dark Mode) */
+  --plum-50: #1a1418;
+  --plum-100: #21171d;
+  --plum-200: #291b22;
+  --plum-300: #331f29;
+  --plum-400: #5b3549; /* Elevated for dark mode */
+  --plum-500: #5b3549; /* Main brand color for dark */
+  --plum-600: #6b4559;
+  --plum-700: #7b5569;
+  --plum-800: #8b6579;
+  --plum-900: #9b7589;
+  --plum-950: #ab8599;
+
+  /* Legacy single values for backward compatibility */
+  --plum: var(--plum-500);
+
+  /* Sage Green Scale (Dark Mode) */
+  --sage-50: #333a2d;
+  --sage-100: #404739;
+  --sage-200: #4d5546;
+  --sage-300: #5f6a56;
+  --sage-400: #90a88a; /* Elevated for dark mode */
+  --sage-500: #90a88a; /* Main brand color for dark */
+  --sage-600: #a0b89a;
+  --sage-700: #b0c8aa;
+  --sage-800: #c0d8ba;
+  --sage-900: #d0e8ca;
+  --sage-950: #e0f8da;
+
+  /* Legacy single values for backward compatibility */
+  --sage: var(--sage-500);
+
+  /* Rust Scale (Dark Mode) */
+  --rust-50: #3b1e18;
+  --rust-100: #4a251d;
+  --rust-200: #592d23;
+  --rust-300: #6e372a;
+  --rust-400: #b15843; /* Elevated for dark mode */
+  --rust-500: #b15843; /* Main brand color for dark */
+  --rust-600: #c16853;
+  --rust-700: #d17863;
+  --rust-800: #e18873;
+  --rust-900: #f19883;
+  --rust-950: #f1a893;
+
+  /* Legacy single values for backward compatibility */
+  --rust: var(--rust-500);
+
+  /* Taupe Scale (Dark Mode) */
+  --taupe-50: #40392e;
+  --taupe-100: #51473a;
+  --taupe-200: #625748;
+  --taupe-300: #7a6d5a;
+  --taupe-400: #c1b29f; /* Elevated for dark mode */
+  --taupe-500: #c1b29f; /* Main brand color for dark */
+  --taupe-600: #d1c2af;
+  --taupe-700: #e1d2bf;
+  --taupe-800: #f1e2cf;
+  --taupe-900: #f1f2df;
+  --taupe-950: #f1f2ef;
+
+  /* Legacy single values for backward compatibility */
+  --taupe: var(--taupe-500);
+
+  /* Cream Scale (Dark Mode) */
+  --cream-50: #5c5148;
+  --cream-100: #75685a;
+  --cream-200: #8f7f6e;
+  --cream-300: #b19e89;
+  --cream-400: #f0e8d9; /* Elevated for dark mode */
+  --cream-500: #f0e8d9; /* Main brand color for dark */
+  --cream-600: #f0f8e9;
+  --cream-700: #f0f8f9;
+  --cream-800: #f0f8ff;
+  --cream-900: #f0f8ff;
+  --cream-950: #f0f8ff;
+
+  /* Legacy single values for backward compatibility */
+  --cream: var(--cream-500);
+
+  /* Inky Blue Scale (Dark Mode) */
+  --inky-50: #11181c;
+  --inky-100: #151d23;
+  --inky-200: #19232a;
+  --inky-300: #1e2a33;
+  --inky-400: #334959; /* Elevated for dark mode */
+  --inky-500: #334959; /* Main brand color for dark */
+  --inky-600: #435969;
+  --inky-700: #536979;
+  --inky-800: #637989;
+  --inky-900: #738999;
+  --inky-950: #8399a9;
+
+  /* Legacy single values for backward compatibility */
+  --inky: var(--inky-500);
 
   --muted: #232727;
   --muted-foreground: #9aa3ad;
@@ -173,12 +468,12 @@
   body {
     @apply bg-background text-foreground;
   }
-  
+
   /* Font size scaling for frontend - increase base font size */
   :root {
     --font-size-scale: 1.125; /* 12.5% larger */
   }
-  
+
   html {
     font-size: calc(1rem * var(--font-size-scale));
   }

@@ -17,7 +17,6 @@ import ContactCTASection from '@/components/marketing/ContactCTASection'
 import FeaturesSection from '@/components/marketing/FeaturesSection'
 import HeroSection from '@/components/marketing/HeroSection'
 import PropertyDetailsSection from '@/components/marketing/PropertyDetailsSection'
-import StatsSection from '@/components/marketing/StatsSection'
 import {
   PropertySection,
   PropertySectionContent,
@@ -321,7 +320,7 @@ export default async function SinglePropertyHome() {
       />
 
       {/* Quick Stats */}
-      <PropertySection className="mt-10 py-4 w-full bg-muted/30 mb-8 rounded-lg shadow-sm">
+      <PropertySection className="mt-10 py-4 w-full border mb-8 rounded-sm">
         <PropertySectionTitle className="text-center">
           Quick <span className="text-accent">Stats</span>
         </PropertySectionTitle>
@@ -344,7 +343,7 @@ export default async function SinglePropertyHome() {
 
       {/* Features Overview */}
       <FeaturesSection
-        className="rounded-lg shadow-sm"
+        className="rounded-sm border"
         title={
           <>
             Why Choose <span className="text-accent">{prop.name}?</span>

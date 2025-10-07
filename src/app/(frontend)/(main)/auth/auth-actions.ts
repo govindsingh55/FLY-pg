@@ -3,7 +3,7 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
 import { cookies } from 'next/headers'
-import { success, z } from 'zod'
+import { z } from 'zod'
 
 const signUpSchema = z.object({
   name: z.string().min(1, 'Name is required'),

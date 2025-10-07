@@ -7,7 +7,7 @@ const Customers: CollectionConfig = {
     tokenExpiration: 7200, // 2 hours
     forgotPassword: {
       generateEmailHTML: (args) => {
-        const token = (args as any)?.token
+        const token = args?.token
         const appUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
         // Frontend reset page route expected to handle token query param
         const resetUrl = `${appUrl.replace(/\/$/, '')}/auth/reset-password?token=${token}`
@@ -281,6 +281,162 @@ const Customers: CollectionConfig = {
       type: 'date',
       admin: {
         description: 'Last time auto-pay settings were updated',
+        readOnly: true,
+      },
+    },
+    // User Preferences & Settings
+    {
+      name: 'preferences',
+      type: 'group',
+      admin: {
+        description: 'User preferences and application settings',
+      },
+      fields: [
+        {
+          name: 'darkMode',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Enable dark mode theme',
+          },
+        },
+        {
+          name: 'language',
+          type: 'select',
+          defaultValue: 'en',
+          options: [
+            { label: 'English', value: 'en' },
+            { label: 'Hindi', value: 'hi' },
+            { label: 'Spanish', value: 'es' },
+            { label: 'French', value: 'fr' },
+            { label: 'German', value: 'de' },
+          ],
+          admin: {
+            description: 'Preferred language',
+          },
+        },
+        {
+          name: 'timezone',
+          type: 'text',
+          defaultValue: 'Asia/Kolkata',
+          admin: {
+            description: 'Preferred timezone (e.g., Asia/Kolkata, America/New_York)',
+          },
+        },
+        {
+          name: 'dateFormat',
+          type: 'select',
+          defaultValue: 'dd/mm/yyyy',
+          options: [
+            { label: 'DD/MM/YYYY', value: 'dd/mm/yyyy' },
+            { label: 'MM/DD/YYYY', value: 'mm/dd/yyyy' },
+            { label: 'YYYY-MM-DD', value: 'yyyy-mm-dd' },
+          ],
+          admin: {
+            description: 'Preferred date format',
+          },
+        },
+        {
+          name: 'currency',
+          type: 'select',
+          defaultValue: 'INR',
+          options: [
+            { label: 'Indian Rupee (₹)', value: 'INR' },
+            { label: 'US Dollar ($)', value: 'USD' },
+            { label: 'Euro (€)', value: 'EUR' },
+            { label: 'British Pound (£)', value: 'GBP' },
+          ],
+          admin: {
+            description: 'Preferred currency display',
+          },
+        },
+      ],
+    },
+    // Privacy & Security Settings
+    {
+      name: 'privacySettings',
+      type: 'group',
+      admin: {
+        description: 'Privacy and security settings',
+      },
+      fields: [
+        {
+          name: 'profileVisibility',
+          type: 'select',
+          defaultValue: 'private',
+          options: [
+            { label: 'Public', value: 'public' },
+            { label: 'Private', value: 'private' },
+            { label: 'Friends Only', value: 'friends' },
+          ],
+          admin: {
+            description: 'Profile visibility setting',
+          },
+        },
+        {
+          name: 'showEmail',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Show email address on public profile',
+          },
+        },
+        {
+          name: 'showPhone',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Show phone number on public profile',
+          },
+        },
+        {
+          name: 'allowMarketingEmails',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Allow marketing and promotional emails',
+          },
+        },
+        {
+          name: 'twoFactorEnabled',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Enable two-factor authentication',
+          },
+        },
+        {
+          name: 'twoFactorMethod',
+          type: 'select',
+          defaultValue: 'sms',
+          options: [
+            { label: 'SMS', value: 'sms' },
+            { label: 'Email', value: 'email' },
+            { label: 'Authenticator App', value: 'app' },
+          ],
+          admin: {
+            description: 'Two-factor authentication method',
+            condition: (data) => data.privacySettings?.twoFactorEnabled,
+          },
+        },
+        {
+          name: 'sessionTimeout',
+          type: 'number',
+          defaultValue: 30,
+          min: 5,
+          max: 1440,
+          admin: {
+            description: 'Session timeout in minutes (5-1440)',
+          },
+        },
+      ],
+    },
+    // Settings Metadata
+    {
+      name: 'settingsLastUpdated',
+      type: 'date',
+      admin: {
+        description: 'Last time settings were updated',
         readOnly: true,
       },
     },

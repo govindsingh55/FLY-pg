@@ -41,7 +41,7 @@ export function AmenityGrid() {
         showIcon={true}
         showDescription={false}
         maxItems={20}
-        speed={25}
+        duration="40s"
         pauseOnHover={true}
         className="mx-auto"
       />

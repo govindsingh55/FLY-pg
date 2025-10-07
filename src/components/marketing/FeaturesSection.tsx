@@ -40,7 +40,7 @@ export default function FeaturesSection({
   }
 
   return (
-    <section className={`py-16 bg-muted/30 ${className}`}>
+    <section className={`py-16 ${className}`}>
       <div className="mx-auto max-w-8xl px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4 text-primary">{title}</h2>
@@ -51,7 +51,7 @@ export default function FeaturesSection({
           {features.map((feature) => (
             <Card
               key={feature.id}
-              className="border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 bg-muted/40"
+              className="border hover:shadow-sm transition-all duration-300 hover:-translate-y-1 bg-muted/40"
             >
               <CardHeader className="text-center">
                 <div
