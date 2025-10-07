@@ -53,8 +53,26 @@ export async function GET(req: NextRequest) {
       notificationPreferences: customer.notificationPreferences || {},
       autoPaySettings: {
         enabled: customer.autoPayEnabled || false,
-        paymentDay: customer.autoPayDay,
-        notifications: customer.autoPayNotifications,
+        paymentMethod: customer.autoPayPaymentMethod || null,
+        day: customer.autoPayDay || 1,
+        maxAmount: customer.autoPayMaxAmount || null,
+        notifications: customer.autoPayNotifications ?? true,
+        lastUpdated: customer.autoPayLastUpdated || null,
+      },
+      preferences: customer.preferences || {
+        darkMode: false,
+        language: 'en',
+        timezone: 'Asia/Kolkata',
+        dateFormat: 'dd/mm/yyyy',
+        currency: 'INR',
+      },
+      privacySettings: {
+        profileVisibility: customer.privacySettings?.profileVisibility || 'private',
+        showEmail: customer.privacySettings?.showEmail || false,
+        showPhone: customer.privacySettings?.showPhone || false,
+        allowMarketingEmails: customer.privacySettings?.allowMarketingEmails || false,
+        // Note: Excluding 2FA details from export for security
+        sessionTimeout: customer.privacySettings?.sessionTimeout || 30,
       },
       profilePicture:
         customer.profilePicture && typeof customer.profilePicture === 'object'

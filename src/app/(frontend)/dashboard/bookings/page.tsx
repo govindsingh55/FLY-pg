@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -13,9 +13,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BookingCard } from '@/components/dashboard/BookingCard'
-import { Calendar, Filter, Search, RefreshCw } from 'lucide-react'
-import { toast } from 'sonner'
+import { Calendar, Filter, Search, RefreshCw, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { useBookings, usePrefetchBookings } from '@/hooks/useBookings'
 
 interface Booking {
   id: string
@@ -64,21 +64,7 @@ interface BookingsResponse {
 }
 
 export default function BookingsPage() {
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(true)
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-    totalDocs: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-  })
-  const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    pending: 0,
-  })
+  const [page, setPage] = useState(1)
   const [filters, setFilters] = useState({
     status: 'all',
     sortBy: 'createdAt',
@@ -86,51 +72,52 @@ export default function BookingsPage() {
     search: '',
   })
 
+  // Use React Query hook
+  const { data, isLoading, error, refetch } = useBookings({
+    page,
+    limit: 10,
+    ...filters,
+  })
+
+  const { prefetchPage } = usePrefetchBookings()
+
+  // Prefetch next page when user is on current page
   useEffect(() => {
-    fetchBookings()
-  }, [pagination.page, filters])
-
-  const fetchBookings = async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
-        ...(filters.status !== 'all' && { status: filters.status }),
-        ...(filters.search && { search: filters.search }),
+    if (data?.pagination?.hasNextPage) {
+      prefetchPage({
+        page: page + 1,
+        limit: 10,
+        ...filters,
       })
-
-      const response = await fetch(`/api/custom/customers/bookings?${params}`)
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch bookings')
-      }
-
-      const data: BookingsResponse = await response.json()
-      setBookings(data.bookings)
-      setPagination(data.pagination)
-      setStats(data.stats)
-    } catch (error) {
-      console.error('Error fetching bookings:', error)
-      toast.error('Failed to load bookings')
-    } finally {
-      setLoading(false)
     }
+  }, [data, page, filters, prefetchPage])
+
+  const bookings = data?.bookings || []
+  const pagination = data?.pagination || {
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+    totalDocs: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+  }
+  const stats = data?.stats || {
+    total: 0,
+    active: 0,
+    pending: 0,
   }
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
-    setPagination((prev) => ({ ...prev, page: 1 })) // Reset to first page
+    setPage(1) // Reset to first page
   }
 
-  const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, page }))
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
   }
 
   const handleRefresh = () => {
-    fetchBookings()
+    refetch()
   }
 
   return (
@@ -271,7 +258,21 @@ export default function BookingsPage() {
 
       {/* Bookings list */}
       <div className="space-y-4">
-        {loading ? (
+        {error ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <AlertCircle className="h-12 w-12 text-red-600 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Failed to Load Bookings</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                {error instanceof Error ? error.message : 'Failed to load bookings'}
+              </p>
+              <Button onClick={handleRefresh}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        ) : isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="animate-pulse">

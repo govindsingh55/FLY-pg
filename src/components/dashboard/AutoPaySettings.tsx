@@ -14,16 +14,17 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { CreditCard, Calendar, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { CreditCard, AlertCircle, CheckCircle, Loader2, RefreshCw } from 'lucide-react'
+import { useSettings, useUpdateSettings } from '@/hooks/useSettings'
 import { toast } from 'sonner'
 
 interface AutoPaySettings {
   enabled: boolean
-  paymentMethod: string
+  paymentMethod: string | null
   paymentDay: number
-  maxAmount: number
+  maxAmount: number | null
   notifications: boolean
-  lastUpdated?: string
+  lastUpdated?: string | null
 }
 
 interface PaymentMethod {
@@ -35,110 +36,119 @@ interface PaymentMethod {
 }
 
 export function AutoPaySettings() {
+  // React Query hooks
+  const { data: settingsData, isLoading } = useSettings()
+  const updateSettingsMutation = useUpdateSettings()
+
   const [settings, setSettings] = useState<AutoPaySettings>({
     enabled: false,
-    paymentMethod: '',
+    paymentMethod: null,
     paymentDay: 1,
-    maxAmount: 0,
+    maxAmount: null,
     notifications: true,
   })
+  const [originalSettings, setOriginalSettings] = useState<AutoPaySettings | null>(null)
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+
+  // Load settings from React Query data
+  useEffect(() => {
+    if (settingsData) {
+      const autoPayData = {
+        enabled: settingsData.autoPay.enabled ?? false,
+        paymentMethod: settingsData.autoPay.paymentMethod || null,
+        paymentDay: settingsData.autoPay.day ?? 1,
+        maxAmount: settingsData.autoPay.maxAmount || null,
+        notifications: settingsData.autoPay.notifications ?? true,
+        lastUpdated: settingsData.autoPay.lastUpdated || null,
+      }
+
+      setSettings(autoPayData)
+      setOriginalSettings(autoPayData)
+    }
+  }, [settingsData])
 
   useEffect(() => {
-    fetchAutoPaySettings()
     fetchPaymentMethods()
   }, [])
-
-  const fetchAutoPaySettings = async () => {
-    try {
-      const response = await fetch('/api/custom/customers/payments/auto-pay')
-      if (response.ok) {
-        const data = await response.json()
-        setSettings(data.settings)
-      }
-    } catch (error) {
-      console.error('Error fetching auto-pay settings:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const fetchPaymentMethods = async () => {
     try {
       const response = await fetch('/api/custom/customers/payments/methods')
       if (response.ok) {
         const data = await response.json()
-        setPaymentMethods(data.paymentMethods)
+        setPaymentMethods(data.paymentMethods || [])
       }
     } catch (error) {
       console.error('Error fetching payment methods:', error)
     }
   }
 
+  const hasChanges = () => {
+    if (!originalSettings) return false
+
+    return (
+      settings.enabled !== originalSettings.enabled ||
+      settings.paymentMethod !== originalSettings.paymentMethod ||
+      settings.paymentDay !== originalSettings.paymentDay ||
+      settings.maxAmount !== originalSettings.maxAmount ||
+      settings.notifications !== originalSettings.notifications
+    )
+  }
+
+  const handleReset = () => {
+    if (originalSettings) {
+      setSettings(originalSettings)
+      toast.info('Changes discarded')
+    }
+  }
+
   const handleToggleAutoPay = async (enabled: boolean) => {
     if (!enabled && settings.enabled) {
       // Show confirmation dialog for disabling
-      if (
-        !confirm(
-          'Are you sure you want to disable auto-pay? This will stop automatic rent payments.',
-        )
-      ) {
+      const confirmed = window.confirm(
+        'Are you sure you want to disable auto-pay? This will stop automatic rent payments.',
+      )
+      if (!confirmed) {
         return
       }
     }
 
-    setSaving(true)
-    try {
-      const response = await fetch('/api/custom/customers/payments/auto-pay', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...settings,
-          enabled,
-        }),
-      })
-
-      if (response.ok) {
-        setSettings((prev) => ({ ...prev, enabled }))
-        toast.success(enabled ? 'Auto-pay enabled successfully' : 'Auto-pay disabled successfully')
-      } else {
-        const error = await response.json()
-        toast.error(error.message || 'Failed to update auto-pay settings')
-      }
-    } catch (error) {
-      console.error('Error updating auto-pay settings:', error)
-      toast.error('Failed to update auto-pay settings')
-    } finally {
-      setSaving(false)
-    }
+    setSettings((prev) => ({ ...prev, enabled }))
   }
 
   const handleSaveSettings = async () => {
-    setSaving(true)
-    try {
-      const response = await fetch('/api/custom/customers/payments/auto-pay', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      })
-
-      if (response.ok) {
-        toast.success('Auto-pay settings saved successfully')
-      } else {
-        const error = await response.json()
-        toast.error(error.message || 'Failed to save settings')
+    // Validate settings before saving
+    if (settings.enabled) {
+      if (!settings.paymentMethod) {
+        toast.error('Please select a payment method')
+        return
       }
-    } catch (error) {
-      console.error('Error saving auto-pay settings:', error)
-      toast.error('Failed to save settings')
-    } finally {
-      setSaving(false)
+      if (settings.maxAmount && settings.maxAmount < 0) {
+        toast.error('Maximum amount cannot be negative')
+        return
+      }
     }
+
+    // Use React Query mutation with optimistic updates
+    await updateSettingsMutation.mutateAsync({
+      autoPay: {
+        enabled: settings.enabled,
+        paymentMethod: settings.paymentMethod,
+        day: settings.paymentDay,
+        maxAmount: settings.maxAmount,
+        notifications: settings.notifications,
+        lastUpdated: new Date().toISOString(), // Include for completeness
+      },
+    })
+
+    // Update original settings after successful save
+    setOriginalSettings(settings)
   }
 
-  if (loading) {
+  const changesExist = hasChanges()
+  const isSaving = updateSettingsMutation.isPending
+
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
@@ -160,7 +170,12 @@ export function AutoPaySettings() {
                 <CreditCard className="h-5 w-5" />
                 Auto-Pay Settings
               </CardTitle>
-              <CardDescription>Automatically pay your rent on the scheduled date</CardDescription>
+              <CardDescription>
+                Automatically pay your rent on the scheduled date
+                {changesExist && (
+                  <span className="ml-2 text-orange-600 font-medium">• Unsaved changes</span>
+                )}
+              </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               {settings.enabled ? (
@@ -192,7 +207,7 @@ export function AutoPaySettings() {
               id="auto-pay-toggle"
               checked={settings.enabled}
               onCheckedChange={handleToggleAutoPay}
-              disabled={saving}
+              disabled={isSaving}
             />
           </div>
 
@@ -202,7 +217,7 @@ export function AutoPaySettings() {
               <div className="space-y-2">
                 <Label htmlFor="payment-method">Payment Method</Label>
                 <Select
-                  value={settings.paymentMethod}
+                  value={settings.paymentMethod || ''}
                   onValueChange={(value) =>
                     setSettings((prev) => ({ ...prev, paymentMethod: value }))
                   }
@@ -230,15 +245,15 @@ export function AutoPaySettings() {
                   </SelectContent>
                 </Select>
                 {paymentMethods.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    No payment methods found. Please add a payment method first.
+                  <p className="text-sm text-orange-600">
+                    ⚠️ No payment methods found. Please add a payment method first.
                   </p>
                 )}
               </div>
 
               {/* Payment Day Selection */}
               <div className="space-y-2">
-                <Label htmlFor="payment-day">Payment Day</Label>
+                <Label htmlFor="payment-day">Payment Day of Month</Label>
                 <Select
                   value={settings.paymentDay.toString()}
                   onValueChange={(value) =>
@@ -251,13 +266,13 @@ export function AutoPaySettings() {
                   <SelectContent>
                     {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
                       <SelectItem key={day} value={day.toString()}>
-                        {day}st of each month
+                        Day {day} of each month
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">
-                  Rent will be automatically paid on this day of each month
+                  Rent will be automatically paid on this day each month
                 </p>
               </div>
 
@@ -267,14 +282,18 @@ export function AutoPaySettings() {
                 <Input
                   id="max-amount"
                   type="number"
-                  value={settings.maxAmount}
+                  min={0}
+                  value={settings.maxAmount || ''}
                   onChange={(e) =>
-                    setSettings((prev) => ({ ...prev, maxAmount: parseFloat(e.target.value) || 0 }))
+                    setSettings((prev) => ({
+                      ...prev,
+                      maxAmount: parseFloat(e.target.value) || null,
+                    }))
                   }
-                  placeholder="Enter maximum amount"
+                  placeholder="Enter maximum amount (optional)"
                 />
                 <p className="text-sm text-muted-foreground">
-                  Auto-pay will not process payments above this amount
+                  Auto-pay will not process payments above this amount (leave empty for no limit)
                 </p>
               </div>
 
@@ -294,22 +313,39 @@ export function AutoPaySettings() {
                   }
                 />
               </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
-              {/* Save Button */}
-              <Button onClick={handleSaveSettings} disabled={saving} className="w-full">
-                {saving ? (
+      {/* Action Buttons */}
+      {changesExist && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                disabled={isSaving}
+                className="flex-1"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Discard Changes
+              </Button>
+              <Button onClick={handleSaveSettings} disabled={isSaving} className="flex-1">
+                {isSaving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
                 ) : (
-                  'Save Settings'
+                  'Save Auto-Pay Settings'
                 )}
               </Button>
-            </>
-          )}
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Information Card */}
       <Card>
@@ -342,6 +378,13 @@ export function AutoPaySettings() {
               <li>• Changes take effect from the next billing cycle</li>
             </ul>
           </div>
+          {settings.lastUpdated && (
+            <div className="pt-4 border-t">
+              <p className="text-xs text-muted-foreground">
+                Last updated: {new Date(settings.lastUpdated).toLocaleString('en-IN')}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

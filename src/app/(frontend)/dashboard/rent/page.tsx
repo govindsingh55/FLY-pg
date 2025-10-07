@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select'
 import { PaymentCard } from '@/components/dashboard/PaymentCard'
 import { CreditCard, Filter, Search, RefreshCw, TrendingUp, AlertCircle } from 'lucide-react'
-import { toast } from 'sonner'
+import { usePayments, usePrefetchPayments } from '@/hooks/usePayments'
 
 interface Payment {
   id: string
@@ -60,23 +60,7 @@ interface PaymentsResponse {
 }
 
 export default function RentPage() {
-  const [payments, setPayments] = useState<Payment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-    totalDocs: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-  })
-  const [stats, setStats] = useState({
-    total: 0,
-    completed: 0,
-    pending: 0,
-    failed: 0,
-    totalAmount: 0,
-  })
+  const [page, setPage] = useState(1)
   const [filters, setFilters] = useState({
     status: 'all',
     sortBy: 'paymentDate',
@@ -84,69 +68,57 @@ export default function RentPage() {
     search: '',
   })
 
-  const fetchPayments = async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        page: (pagination?.page || 1).toString(),
-        limit: (pagination?.limit || 10).toString(),
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
-        ...(filters.status !== 'all' && { status: filters.status }),
-        ...(filters.search && { search: filters.search }),
+  // Use React Query hook
+  const { data, isLoading, error, refetch } = usePayments({
+    page,
+    limit: 10,
+    ...filters,
+  })
+
+  const { prefetchPage } = usePrefetchPayments()
+
+  // Prefetch next page when user is on current page
+  useEffect(() => {
+    if (data?.pagination?.hasNextPage) {
+      prefetchPage({
+        page: page + 1,
+        limit: 10,
+        ...filters,
       })
-
-      const response = await fetch(`/api/custom/customers/payments?${params}`)
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch payments')
-      }
-
-      const data: PaymentsResponse = await response.json()
-      setPayments(data.payments)
-      setPagination(data.pagination)
-      setStats(data.stats)
-    } catch (error) {
-      console.error('Error fetching payments:', error)
-      toast.error('Failed to load payments')
-    } finally {
-      setLoading(false)
     }
+  }, [data, page, filters, prefetchPage])
+
+  const payments = data?.payments || []
+  const pagination = data?.pagination || {
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+    totalDocs: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
   }
-
-  // Handle initial load
-  useEffect(() => {
-    fetchPayments()
-  }, [])
-
-  // Handle filter changes
-  useEffect(() => {
-    if (pagination) {
-      fetchPayments()
-    }
-  }, [filters])
-
-  // Handle pagination changes (but not on initial load)
-  useEffect(() => {
-    if (pagination && pagination.page > 1) {
-      fetchPayments()
-    }
-  }, [pagination?.page])
+  const stats = data?.stats || {
+    total: 0,
+    completed: 0,
+    pending: 0,
+    failed: 0,
+    totalAmount: 0,
+  }
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
-    setPagination((prev) => ({ ...prev, page: 1 })) // Reset to first page
+    setPage(1) // Reset to first page
   }
 
-  const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, page }))
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
   }
 
   const handleRefresh = () => {
-    fetchPayments()
+    refetch()
   }
 
-  const pendingPayments = (payments || []).filter((p) => p.status === 'pending')
+  const pendingPayments = payments.filter((p) => p.status === 'pending')
   const overduePayments = pendingPayments.filter(
     (p) => p.dueDate && new Date(p.dueDate) < new Date(),
   )
@@ -346,7 +318,19 @@ export default function RentPage() {
           <CardDescription>Your latest payment transactions</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {error ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <AlertCircle className="h-12 w-12 text-red-600 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Failed to Load Payments</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                {error instanceof Error ? error.message : 'Failed to load payments'}
+              </p>
+              <Button onClick={handleRefresh}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
+            </div>
+          ) : isLoading ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="animate-pulse">
@@ -364,7 +348,7 @@ export default function RentPage() {
                 </Card>
               ))}
             </div>
-          ) : (payments || []).length === 0 ? (
+          ) : payments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No payments found</h3>
@@ -380,7 +364,7 @@ export default function RentPage() {
           ) : (
             <>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {(payments || []).map((payment) => (
+                {payments.map((payment) => (
                   <PaymentCard key={payment.id} payment={payment} />
                 ))}
               </div>

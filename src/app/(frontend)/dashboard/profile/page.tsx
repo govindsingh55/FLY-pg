@@ -1,82 +1,47 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { User, Mail, Phone, MapPin, Calendar, Edit, Save, X, Camera } from 'lucide-react'
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Edit,
+  Save,
+  X,
+  Camera,
+  AlertCircle,
+  RefreshCw,
+  Settings,
+  Bell,
+  ChevronRight,
+} from 'lucide-react'
 import Link from 'next/link'
-import { useUser } from '@/lib/state/user'
-import { toast } from 'sonner'
-
-interface CustomerProfile {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  status?: string
-  createdAt?: string
-  updatedAt?: string
-  avatar?: {
-    url?: string
-  }
-}
+import { useProfile, useUpdateProfile, CustomerProfile } from '@/hooks/useProfile'
 
 export default function ProfilePage() {
-  const { user } = useUser()
-  const [profile, setProfile] = useState<CustomerProfile | null>(null)
-  const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [editData, setEditData] = useState<Partial<CustomerProfile>>({})
 
-  useEffect(() => {
-    fetchProfile()
-  }, [])
+  // Use React Query hooks
+  const { data: profile, isLoading, error, refetch } = useProfile()
+  const updateProfileMutation = useUpdateProfile()
 
-  const fetchProfile = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/custom/customers/profile')
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch profile')
-      }
-
-      const data = await response.json()
-      setProfile(data.customer)
-      setEditData(data.customer)
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-      toast.error('Failed to load profile')
-    } finally {
-      setLoading(false)
+  // Update editData when profile loads
+  React.useEffect(() => {
+    if (profile && !editing) {
+      setEditData(profile)
     }
-  }
+  }, [profile, editing])
 
   const handleSave = async () => {
-    try {
-      const response = await fetch('/api/custom/customers/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to update profile')
-      }
-
-      const data = await response.json()
-      setProfile(data.customer)
-      setEditing(false)
-      toast.success('Profile updated successfully')
-    } catch (error: any) {
-      console.error('Error updating profile:', error)
-      toast.error(error.message || 'Failed to update profile')
-    }
+    await updateProfileMutation.mutateAsync(editData)
+    setEditing(false)
   }
 
   const handleCancel = () => {
@@ -84,7 +49,35 @@ export default function ProfilePage() {
     setEditing(false)
   }
 
-  if (loading) {
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
+            <p className="text-muted-foreground">
+              Manage your account information and preferences.
+            </p>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="h-12 w-12 text-red-600 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Failed to Load Profile</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              {error instanceof Error ? error.message : 'Failed to load profile'}
+            </p>
+            <Button onClick={() => refetch()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -253,8 +246,68 @@ export default function ProfilePage() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Account Settings</CardTitle>
-            <CardDescription>Manage your account preferences and security</CardDescription>
+            <CardTitle>Preferences & Settings</CardTitle>
+            <CardDescription>
+              Manage your preferences, privacy, and notification settings
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-3">
+              <Button variant="outline" asChild className="w-full justify-start">
+                <Link href="/dashboard/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <div className="flex-1 text-left">
+                    <div className="font-medium">Account Settings</div>
+                    <div className="text-xs text-muted-foreground">
+                      Preferences, privacy, and security
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </Button>
+
+              <Button variant="outline" asChild className="w-full justify-start">
+                <Link href="/dashboard/rent/settings">
+                  <Bell className="mr-2 h-4 w-4" />
+                  <div className="flex-1 text-left">
+                    <div className="font-medium">Notification Settings</div>
+                    <div className="text-xs text-muted-foreground">Manage alerts and reminders</div>
+                  </div>
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+
+            {/* Quick Settings Summary */}
+            <div className="pt-3 border-t">
+              <div className="text-sm space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Theme</span>
+                  <span className="font-medium">
+                    {profile?.preferences?.darkMode ? 'Dark' : 'Light'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Language</span>
+                  <span className="font-medium">
+                    {profile?.preferences?.language?.toUpperCase() || 'EN'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Profile Visibility</span>
+                  <Badge variant="secondary">
+                    {profile?.privacySettings?.profileVisibility || 'Private'}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Account Security</CardTitle>
+            <CardDescription>Manage your account security settings</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button variant="outline" className="w-full justify-start">

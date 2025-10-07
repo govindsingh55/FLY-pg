@@ -656,6 +656,68 @@ export interface Customer {
    * Last time auto-pay settings were updated
    */
   autoPayLastUpdated?: string | null;
+  /**
+   * User preferences and application settings
+   */
+  preferences?: {
+    /**
+     * Enable dark mode theme
+     */
+    darkMode?: boolean | null;
+    /**
+     * Preferred language
+     */
+    language?: ('en' | 'hi' | 'es' | 'fr' | 'de') | null;
+    /**
+     * Preferred timezone (e.g., Asia/Kolkata, America/New_York)
+     */
+    timezone?: string | null;
+    /**
+     * Preferred date format
+     */
+    dateFormat?: ('dd/mm/yyyy' | 'mm/dd/yyyy' | 'yyyy-mm-dd') | null;
+    /**
+     * Preferred currency display
+     */
+    currency?: ('INR' | 'USD' | 'EUR' | 'GBP') | null;
+  };
+  /**
+   * Privacy and security settings
+   */
+  privacySettings?: {
+    /**
+     * Profile visibility setting
+     */
+    profileVisibility?: ('public' | 'private' | 'friends') | null;
+    /**
+     * Show email address on public profile
+     */
+    showEmail?: boolean | null;
+    /**
+     * Show phone number on public profile
+     */
+    showPhone?: boolean | null;
+    /**
+     * Allow marketing and promotional emails
+     */
+    allowMarketingEmails?: boolean | null;
+    /**
+     * Enable two-factor authentication
+     */
+    twoFactorEnabled?: boolean | null;
+    /**
+     * Two-factor authentication method
+     */
+    twoFactorMethod?: ('sms' | 'email' | 'app') | null;
+    /**
+     * Session timeout in minutes (5-1440)
+     */
+    sessionTimeout?: number | null;
+  };
+  /**
+   * Last time settings were updated
+   */
+  settingsLastUpdated?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -2042,6 +2104,27 @@ export interface CustomersSelect<T extends boolean = true> {
   autoPayMaxAmount?: T;
   autoPayNotifications?: T;
   autoPayLastUpdated?: T;
+  preferences?:
+    | T
+    | {
+        darkMode?: T;
+        language?: T;
+        timezone?: T;
+        dateFormat?: T;
+        currency?: T;
+      };
+  privacySettings?:
+    | T
+    | {
+        profileVisibility?: T;
+        showEmail?: T;
+        showPhone?: T;
+        allowMarketingEmails?: T;
+        twoFactorEnabled?: T;
+        twoFactorMethod?: T;
+        sessionTimeout?: T;
+      };
+  settingsLastUpdated?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

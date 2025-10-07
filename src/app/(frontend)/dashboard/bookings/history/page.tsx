@@ -86,6 +86,7 @@ interface BookingsResponse {
 export default function BookingHistoryPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -116,6 +117,7 @@ export default function BookingHistoryPage() {
   const fetchBookings = async () => {
     try {
       setLoading(true)
+      setError(null)
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
@@ -137,9 +139,11 @@ export default function BookingHistoryPage() {
       setBookings(data.bookings)
       setPagination(data.pagination)
       setStats(data.stats)
-    } catch (error) {
-      console.error('Error fetching bookings:', error)
-      toast.error('Failed to load booking history')
+    } catch (err) {
+      console.error('Error fetching bookings:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load booking history'
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -355,7 +359,17 @@ export default function BookingHistoryPage() {
           <CardDescription>Your past bookings and experiences</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {error ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <AlertCircle className="h-12 w-12 text-red-600 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Failed to Load Booking History</h3>
+              <p className="text-muted-foreground text-center mb-4">{error}</p>
+              <Button onClick={handleRefresh}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
+            </div>
+          ) : loading ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="animate-pulse">
