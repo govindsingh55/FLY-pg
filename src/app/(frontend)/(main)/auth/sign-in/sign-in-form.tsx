@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUser, useAuthActions } from '@/lib/state/user'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,6 +37,20 @@ export default function SignInForm({ onSubmit }: SignInFormProps) {
   const router = useRouter()
   const { refetchUser, updateAuthAfterLogin } = useUser()
   const { setAuthLoading, setUnauthenticated, setAuthError } = useAuthActions()
+
+  // Show success message if redirected after email verification
+  useEffect(() => {
+    if (searchParams.get('verified') === 'true') {
+      toast.success('Email verified successfully!', {
+        description: 'You can now sign in to your account.',
+      })
+      // Clean up URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete('verified')
+      window.history.replaceState({}, '', url.pathname + url.search)
+    }
+  }, [searchParams])
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
