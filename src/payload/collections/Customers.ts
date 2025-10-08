@@ -3,7 +3,18 @@ import type { CollectionConfig } from 'payload'
 const Customers: CollectionConfig = {
   slug: 'customers',
   auth: {
-    verify: process.env.NODE_ENV === 'development' ? false : true,
+    verify:
+      process.env.NODE_ENV === 'development'
+        ? false
+        : {
+            generateEmailHTML: (args) => {
+              const token = args?.token
+              const appUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+              const verifyUrl = `${appUrl.replace(/\/$/, '')}/auth/verify-email/result?token=${token}`
+              return `<!doctype html><html><body style="font-family:Arial,sans-serif;line-height:1.5;padding:24px;color:#111">\n  <h2 style="margin-top:0">Verify your email address</h2>\n  <p>Thank you for signing up! Please verify your email address to complete your account setup and start using FLY PG.</p>\n  <p style="text-align:center;margin:32px 0">\n    <a href="${verifyUrl}" style="background:#2563eb;color:#fff;padding:12px 20px;text-decoration:none;border-radius:6px;display:inline-block">Verify Email</a>\n  </p>\n  <p>If the button does not work, copy and paste this URL into your browser:</p>\n  <p style="word-break:break-all;font-size:12px;color:#555">${verifyUrl}</p>\n  <hr style="margin:32px 0;border:none;border-top:1px solid #eee" />\n  <p style="font-size:12px;color:#777">If you did not create an account with FLY PG, you can safely ignore this email.</p>\n</body></html>`
+            },
+            generateEmailSubject: () => 'Verify your email address - FLY PG',
+          },
     tokenExpiration: 7200, // 2 hours
     forgotPassword: {
       generateEmailHTML: (args) => {
