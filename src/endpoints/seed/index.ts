@@ -70,69 +70,69 @@ export const seed = async ({
       ? resolveDependencies(selectedCollections)
       : Object.keys(COLLECTION_DEFINITIONS)
 
-    console.info(`Seeding database with collections: ${collectionsToSeed.join(', ')}...`)
+    payload.logger.info(`Seeding database with collections: ${collectionsToSeed.join(', ')}...`)
 
     const collectionData: Record<string, unknown> = {}
 
     // Define seeding functions for each collection
     const seedFunctions: Record<string, () => Promise<void>> = {
       users: async () => {
-        console.info(`— Seeding users...`)
+        payload.logger.info(`— Seeding users...`)
         const users = await seedUsers(payload, req)
         collectionData['users'] = users.map((u: any) => u.id)
-        console.info(`— Users seeded successfully!`)
+        payload.logger.info(`— Users seeded successfully!`)
         await delay(1000)
       },
       customers: async () => {
-        console.info(`— Seeding customers...`)
+        payload.logger.info(`— Seeding customers...`)
         const customers = await seedCustomers(payload, req)
         collectionData['customers'] = customers.map((c: any) => c.id)
-        console.info(`— Customers seeded successfully!`)
+        payload.logger.info(`— Customers seeded successfully!`)
         await delay(1000)
       },
       foodmenu: async () => {
-        console.info(`— Seeding food menu...`)
+        payload.logger.info(`— Seeding food menu...`)
         const foodMenu = await seedFoodMenu(payload, req)
         collectionData['foodmenu'] = foodMenu.map((f: any) => f.id)
-        console.info(`— FoodMenu seeded successfully!`)
+        payload.logger.info(`— FoodMenu seeded successfully!`)
         await delay(1000)
       },
       amenities: async () => {
-        console.info(`— Seeding amenities...`)
+        payload.logger.info(`— Seeding amenities...`)
         const amenities = await seedAmenities(payload)
         collectionData['amenities'] = amenities || []
-        console.info(`— Amenities seeded successfully!`)
+        payload.logger.info(`— Amenities seeded successfully!`)
         await delay(1000)
       },
       media: async () => {
-        console.info(`— Seeding media...`)
+        payload.logger.info(`— Seeding media...`)
         try {
           const medias = await seedMedias(payload, req)
           collectionData['media'] = medias.map((media: Media) => media.id)
-          console.info(`— Media seeded successfully!`)
+          payload.logger.info(`— Media seeded successfully!`)
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : String(error)
-          console.warn(`— Media seeding encountered issues: ${errorMsg}`)
+          payload.logger.warn(`— Media seeding encountered issues: ${errorMsg}`)
           collectionData['media'] = []
         }
         await delay(2000)
       },
       supportmedia: async () => {
-        console.info(`— Seeding support media...`)
+        payload.logger.info(`— Seeding support media...`)
         const supportMedia = await seedSupportMedia(payload, req)
         collectionData['supportmedia'] = supportMedia.map((s: any) => s.id)
-        console.info(`— SupportMedia seeded successfully!`)
+        payload.logger.info(`— SupportMedia seeded successfully!`)
         await delay(1000)
       },
       rooms: async () => {
-        console.info(`— Seeding rooms...`)
+        payload.logger.info(`— Seeding rooms...`)
         const rooms = await seedRooms(payload, req, collectionData['amenities'] as string[])
         collectionData['rooms'] = rooms.map((r: any) => r._id || r.id)
-        console.info(`— Rooms seeded successfully!`)
+        payload.logger.info(`— Rooms seeded successfully!`)
         await delay(1000)
       },
       properties: async () => {
-        console.info(`— Seeding properties...`)
+        payload.logger.info(`— Seeding properties...`)
         const properties = await seedProperties(payload, req, {
           foodMenuId: (collectionData['foodmenu'] as string[])?.[0],
           roomIds: collectionData['rooms'] as string[],
@@ -140,38 +140,38 @@ export const seed = async ({
           amenityIds: collectionData['amenities'] as string[],
         })
         collectionData['properties'] = properties.map((p: any) => p.id)
-        console.info(`— Properties seeded successfully!`)
+        payload.logger.info(`— Properties seeded successfully!`)
         await delay(2000)
       },
       bookings: async () => {
-        console.info(`— Seeding bookings...`)
+        payload.logger.info(`— Seeding bookings...`)
         const bookings = await seedBookings(payload, req, {
           propertyId: (collectionData['properties'] as string[])?.[0],
           customerId: (collectionData['customers'] as string[])?.[0],
           roomId: (collectionData['rooms'] as string[])?.[0],
         })
         collectionData['bookings'] = bookings.map((b: any) => b.id)
-        console.info(`— Bookings seeded successfully!`)
+        payload.logger.info(`— Bookings seeded successfully!`)
         await delay(1500)
       },
       visitbookings: async () => {
-        console.info(`— Seeding visit bookings...`)
+        payload.logger.info(`— Seeding visit bookings...`)
         const visitBookings = await seedVisitBookings(payload, req, {
           propertyId: (collectionData['properties'] as string[])?.[0],
           customerId: (collectionData['customers'] as string[])?.[0],
         })
         collectionData['visitbookings'] = visitBookings.map((v: any) => v.id)
-        console.info(`— VisitBookings seeded successfully!`)
+        payload.logger.info(`— VisitBookings seeded successfully!`)
         await delay(1000)
       },
       supporttickets: async () => {
-        console.info(`— Seeding support tickets...`)
+        payload.logger.info(`— Seeding support tickets...`)
         const supportTickets = await seedSupportTickets(payload, req, {
           customerIds: collectionData['customers'] as string[],
           propertyIds: collectionData['properties'] as string[],
         })
         collectionData['supporttickets'] = supportTickets.map((s: any) => s.id)
-        console.info(`— SupportTickets seeded successfully!`)
+        payload.logger.info(`— SupportTickets seeded successfully!`)
         await delay(1000)
       },
     }
@@ -182,14 +182,16 @@ export const seed = async ({
       if (seedFunction) {
         await seedFunction()
       } else {
-        console.warn(`— No seeding function found for collection: ${collection}`)
+        payload.logger.warn(`— No seeding function found for collection: ${collection}`)
       }
     }
 
-    console.info(`Seeded database successfully! Collections: ${collectionsToSeed.join(', ')}`)
+    payload.logger.info(
+      `Seeded database successfully! Collections: ${collectionsToSeed.join(', ')}`,
+    )
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
-    console.error('Error during seeding:', errorMsg)
+    payload.logger.error('Error during seeding:', errorMsg)
     console.log('Error during seeding:', errorMsg)
     throw error
   }
