@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
     } catch (payErr) {
       // Do not fail the booking if payment record creation fails; log and continue
       try {
-        payload.logger?.error?.('Failed to create payment for booking', payErr)
+        payload.logger?.error?.('Failed to create payment for booking')
       } catch {}
       payment = null
     }
