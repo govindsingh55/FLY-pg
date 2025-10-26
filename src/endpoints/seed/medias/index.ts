@@ -40,18 +40,16 @@ export async function seedMedias(payload: Payload, req: PayloadRequest) {
   const baseBuffers = await Promise.all(
     baseImages.map(async (config) => {
       try {
-        payload.logger.info(`Attempting to fetch image from: ${config.url}`)
+        console.info(`Attempting to fetch image from: ${config.url}`)
         return await fetchFileByURL(config.url)
       } catch (error) {
-        payload.logger.warn(
-          `Failed to fetch ${config.url}, attempting fallback: ${config.fallback}`,
-        )
+        console.warn(`Failed to fetch ${config.url}, attempting fallback: ${config.fallback}`)
         try {
-          payload.logger.info(`Attempting to read local file: ${config.fallback}`)
+          console.info(`Attempting to read local file: ${config.fallback}`)
           return readLocalFile(config.fallback)
         } catch (fallbackError) {
-          payload.logger.warn(`Fallback file ${config.fallback} also failed: ${fallbackError}`)
-          payload.logger.info(`Creating placeholder image for: ${config.name}`)
+          console.warn(`Fallback file ${config.fallback} also failed: ${fallbackError}`)
+          console.info(`Creating placeholder image for: ${config.name}`)
           // Create a simple placeholder image buffer
           return createPlaceholderImage(config.name, config.alt)
         }
