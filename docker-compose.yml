@@ -1,28 +1,33 @@
-version: '3.8'
+version: '3.9'
 
 x-defaults: &defaults
   env_file:
     - .env
 
 services:
-  # Development service with hot-reload
+  # Development service with hot-reload (mounts source)
   web-dev:
     image: node:${NODE_VERSION:-22.12.0}-alpine
+    profiles: ["dev"]
     working_dir: /home/node/app
     user: node
     ports:
       - '3000:3000'
     environment:
       NODE_ENV: development
+      DATABASE_URI: ${DATABASE_URI:-mongodb://mongo:27017/payload}
     volumes:
       - .:/home/node/app
       - node_modules:/home/node/app/node_modules
-    command: >
-      sh -c "npm install && npm run dev"
+    command: >-
+      sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile && pnpm dev"
+    depends_on:
+      mongo:
+        condition: service_healthy
     restart: unless-stopped
     <<: *defaults
 
-  # Production service using multi-stage Dockerfile
+  # Production service using the multi-stage Dockerfile build (standalone output)
   web:
     build:
       context: .
@@ -30,13 +35,38 @@ services:
       args:
         NODE_VERSION: ${NODE_VERSION:-22.12.0}
     image: fly-pg-web:${TAG:-latest}
+    profiles: ["prod"]
     environment:
       NODE_ENV: production
       PORT: 3000
+      DATABASE_URI: ${DATABASE_URI:-mongodb://mongo:27017/payload}
     ports:
       - '3000:3000'
+    depends_on:
+      mongo:
+        condition: service_healthy
     restart: unless-stopped
     <<: *defaults
 
+  # MongoDB database
+  mongo:
+    image: mongo:${MONGO_VERSION:-7.0}
+    profiles: ["dev", "prod"]
+    ports:
+      - '27017:27017'
+    command:
+      - --storageEngine=wiredTiger
+    volumes:
+      - data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.runCommand({ ping: 1 })']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: 'none'
+    restart: unless-stopped
+
 volumes:
+  data:
   node_modules:

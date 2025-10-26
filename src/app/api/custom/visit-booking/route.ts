@@ -93,6 +93,17 @@ export async function POST(req: NextRequest) {
           textPreview: typeof text === 'string' ? text.slice(0, 1000) : undefined,
         }
 
+        // Log via Payload logger when available, and fallback to console
+        try {
+          payload.logger?.info?.('Preparing visit booking email', {
+            bookingId: booking.id || booking._id,
+            recipient,
+            property: property?.id || property?._id,
+            preview: { htmlLen: (html || '').length, textLen: (text || '').length },
+          })
+        } catch {
+          // ignore
+        }
         console.log('Visit booking email payload preview:', emailPayload)
 
         // Send and log result so we can confirm delivery and inspect adapter response
@@ -110,6 +121,16 @@ export async function POST(req: NextRequest) {
             text,
             from: fromValue,
           })
+
+          try {
+            payload.logger?.info?.('Visit booking confirmation email sent', {
+              bookingId: booking.id || booking._id,
+              recipient,
+              sendResult,
+            })
+          } catch {
+            // ignore
+          }
           console.log('Visit booking confirmation sendResult:', sendResult)
         } catch (err: any) {
           // Build detailed error info safely
@@ -134,11 +155,22 @@ export async function POST(req: NextRequest) {
             // ignore extraction errors
           }
 
-          console.error('Visit booking confirmation email failed (logger error)', {
-            bookingId: booking.id || booking._id,
-            recipient,
-            errorInfo,
-          })
+          // Log via Payload logger and console for local debugging
+          try {
+            payload.logger?.error?.('Visit booking confirmation email failed', {
+              bookingId: booking.id || booking._id,
+              recipient,
+              emailPreview: { htmlLen: (html || '').length, textLen: (text || '').length },
+              error: errorInfo,
+            })
+          } catch (logErr) {
+            console.error('Visit booking confirmation email failed (logger error)', {
+              bookingId: booking.id || booking._id,
+              recipient,
+              errorInfo,
+              logErr,
+            })
+          }
 
           try {
             console.error('Visit booking confirmation email failed', {
@@ -152,7 +184,12 @@ export async function POST(req: NextRequest) {
         }
       }
     } catch (err) {
-      console.error('Error resolving recipient for visit booking email', err)
+      // keep email failures from blocking the API response
+      try {
+        payload.logger?.error?.('Error resolving recipient for visit booking email', err)
+      } catch {
+        console.error('Error resolving recipient for visit booking email', err)
+      }
     }
 
     return NextResponse.json({ success: true, booking })
