@@ -1,7 +1,7 @@
 {
   "name": "fly-pg",
   "version": "1.0.0",
-  "description": "A blank template to get started with Payload 3.0",
+  "description": "A comprehensive property management system built with Next.js, Payload CMS, and PhonePe payment integration for PG (Paying Guest) accommodations.",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -28,7 +28,6 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
     "@payloadcms/db-mongodb": "^3.54.0",
-    "@payloadcms/db-sqlite": "^3.61.1",
     "@payloadcms/email-resend": "^3.54.0",
     "@payloadcms/next": "^3.54.0",
     "@payloadcms/payload-cloud": "^3.54.0",

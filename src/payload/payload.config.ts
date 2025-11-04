@@ -1,6 +1,4 @@
-// storage-adapter-import-placeholder
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -58,11 +56,8 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URI || '',
-      authToken: process.env.DATABASE_AUTH_TOKEN,
-    },
+  db: mongooseAdapter({
+    url: process.env.DATABASE_URI || '',
   }),
   sharp,
   plugins: [],

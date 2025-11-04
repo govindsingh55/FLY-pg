@@ -9,9 +9,17 @@ type Props = {
   genderType?: string
   mapLink?: string
   onBack?: () => void
+  shareButton?: React.ReactNode
 }
 
-export default function PropertyHeader({ name, propertyType, genderType, mapLink, onBack }: Props) {
+export default function PropertyHeader({
+  name,
+  propertyType,
+  genderType,
+  mapLink,
+  onBack,
+  shareButton,
+}: Props) {
   const router = useRouter()
 
   const handleBack = () => {
@@ -32,16 +40,19 @@ export default function PropertyHeader({ name, propertyType, genderType, mapLink
         >
           <Lucide.ArrowLeft className="size-4" />
         </button>
-        {mapLink ? (
-          <a
-            href={mapLink}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-md bg-accent text-white px-3 py-2 text-sm"
-          >
-            <Lucide.MapPin className="size-4" /> View in map
-          </a>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {mapLink ? (
+            <a
+              href={mapLink}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-md bg-accent text-white px-3 py-2 text-sm"
+            >
+              <Lucide.MapPin className="size-4" /> View in map
+            </a>
+          ) : null}
+          {shareButton}
+        </div>
       </div>
       <div className="flex flex-wrap items-start justify-between gap-3 mt-4">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3 justify-between w-full">

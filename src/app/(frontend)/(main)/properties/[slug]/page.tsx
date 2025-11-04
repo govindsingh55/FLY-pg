@@ -3,6 +3,7 @@ import BookingCard from '@/components/marketing/property-detail/BookingCard'
 import MediaGallery from '@/components/marketing/property-detail/MediaGallery'
 import NearbyLocations from '@/components/marketing/property-detail/NearbyLocations'
 import PropertyHeader from '@/components/marketing/property-detail/PropertyHeader'
+import ShareButton from '@/components/marketing/property-detail/ShareButton'
 import RichText from '@/components/RichText'
 import { PropertyDetailProvider } from '@/lib/state/propertyDetail'
 import type { Media as MediaType } from '@/payload/payload-types'
@@ -106,6 +107,7 @@ export default async function PropertyDetailPage({ params }: { params: Params })
           propertyType={prop.propertyType}
           genderType={prop.genderType}
           mapLink={prop.address?.location?.mapLink}
+          shareButton={<ShareButton propertyName={prop.name} />}
         />
         <div className="grid grid-cols-1 gap-6 px-4 pb-16 md:grid-cols-3 md:items-start">
           <div className="md:col-span-2 space-y-6">

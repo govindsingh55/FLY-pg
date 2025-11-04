@@ -15,6 +15,7 @@ import { usePropertyDetail } from '@/lib/state/propertyDetail'
 import { useUser } from '@/lib/state/user'
 import * as Lucide from 'lucide-react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
 import RoomBookingForm from './RoomBookingForm'
 import VisitBookingForm from './VisitBookingForm'
@@ -36,6 +37,8 @@ export default function BookingCard({ rooms, propertyId }: Props) {
   const [openBook, setOpenBook] = React.useState(false)
   const [selectedRoomId, setSelectedRoomId] = React.useState<string | null>(null)
   const userData = useUser()
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Room filtering logic retained for future use, but not shown in UI
 
@@ -46,6 +49,14 @@ export default function BookingCard({ rooms, propertyId }: Props) {
     mql.addEventListener('change', update)
     return () => mql.removeEventListener('change', update)
   }, [])
+
+  // Added useEffect to read room ID from URL
+  React.useEffect(() => {
+    const roomIdFromUrl = searchParams.get('room')
+    if (roomIdFromUrl && rooms.some((room) => room.id === roomIdFromUrl)) {
+      setSelectedRoomId(roomIdFromUrl)
+    }
+  }, [searchParams, rooms])
 
   const filteredRooms = rooms.filter(
     (r) => selectedSharingType === 'all' || r.roomType === selectedSharingType,
@@ -81,7 +92,10 @@ export default function BookingCard({ rooms, propertyId }: Props) {
           return (
             <button
               key={r.id}
-              onClick={() => setSelectedRoomId(r.id)}
+              onClick={() => {
+                setSelectedRoomId(r.id)
+                router.push(`?room=${r.id}`)
+              }}
               className={`w-full text-left flex items-center justify-between rounded-md border p-3 text-sm transition-colors ${
                 selected ? 'border-primary bg-primary/5' : 'hover:bg-muted'
               } ${r.available === false ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -125,7 +139,7 @@ export default function BookingCard({ rooms, propertyId }: Props) {
       {!isDesktop ? (
         <Drawer open={openVisit} onOpenChange={setOpenVisit}>
           <DrawerContent className="data-[vaul-drawer-direction=bottom]:rounded-t-2xl max-h-[80vh] flex flex-col">
-            <DrawerHeader className="flex items-center justify-between border-b px-4 py-3 flex-shrink-0">
+            <DrawerHeader className="flex items-center justify-between border-b px-4 py-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Lucide.Calendar className="size-4" />
                 <DrawerTitle className="text-sm font-medium">Schedule a visit</DrawerTitle>
@@ -155,7 +169,7 @@ export default function BookingCard({ rooms, propertyId }: Props) {
       {!isDesktop ? (
         <Drawer open={openBook} onOpenChange={setOpenBook}>
           <DrawerContent className="data-[vaul-drawer-direction=bottom]:rounded-t-2xl max-h-[80vh] flex flex-col">
-            <DrawerHeader className="flex items-center justify-between border-b px-4 py-3 flex-shrink-0">
+            <DrawerHeader className="flex items-center justify-between border-b px-4 py-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Lucide.Calendar className="size-4" />
                 <DrawerTitle className="text-sm font-medium">Book this room</DrawerTitle>
