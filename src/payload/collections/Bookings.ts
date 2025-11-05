@@ -28,7 +28,11 @@ const bookingsAccess = {
 
 const Bookings: CollectionConfig = {
   slug: 'bookings',
-  admin: { useAsTitle: 'id' },
+  admin: {
+    useAsTitle: 'id',
+    defaultColumns: ['id', 'customer', 'property', 'room', 'status', 'checkInDate'],
+    listSearchableFields: ['id'],
+  },
   access: bookingsAccess,
   hooks: {
     beforeValidate: [

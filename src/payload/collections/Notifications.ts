@@ -175,39 +175,18 @@ const Notifications: CollectionConfig = {
         description: 'Related support ticket (if this notification is about support)',
       },
     },
-    {
-      name: 'createdAt',
-      type: 'date',
-      required: true,
-      admin: {
-        readOnly: true,
-        description: 'When the notification was created',
-      },
-    },
-    {
-      name: 'updatedAt',
-      type: 'date',
-      admin: {
-        readOnly: true,
-        description: 'When the notification was last updated',
-      },
-    },
   ],
+  timestamps: true, // Use Payload's built-in timestamp fields
   hooks: {
     beforeChange: [
-      ({ data }) => {
-        // Set createdAt if not provided
-        if (!data.createdAt) {
-          data.createdAt = new Date().toISOString()
-        }
-
+      ({ data, originalDoc }) => {
         // Set readAt when isRead is set to true
         if (data.isRead && !data.readAt) {
           data.readAt = new Date().toISOString()
         }
 
-        // Clear readAt when isRead is set to false
-        if (data.isRead === false) {
+        // Clear readAt when isRead is set to false (only if it was previously true)
+        if (data.isRead === false && originalDoc?.isRead === true) {
           data.readAt = undefined
         }
 

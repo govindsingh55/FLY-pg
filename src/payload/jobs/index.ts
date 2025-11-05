@@ -24,7 +24,7 @@ const EMAIL_TEMPLATES = {
 } as const
 
 const PAYMENT_STATUS = {
-  NOTIFIED: 'pending', // Using 'pending' as the notified status since 'notified' doesn't exist in Payment type
+  NOTIFIED: 'notified', // Status when payment reminder is sent
   COMPLETED: 'completed',
   PENDING: 'pending',
   FAILED: 'failed',
@@ -123,7 +123,7 @@ const fetchActiveCustomers = async (payload: PayloadRequest['payload']) => {
       populate: {
         bookings: {},
       },
-      depth: 1,
+      depth: 2, // Increased depth to fetch nested settings
     })
 
     console.log(`✅ [TASK] Found ${result.docs.length} active customers`)
@@ -196,20 +196,35 @@ const createPaymentRecord = async (
   payload: PayloadRequest['payload'],
   context: PaymentReminderContext,
   foodAmount: number,
-): Promise<void> => {
-  const { customer, booking, lastPayment } = context
+): Promise<string> => {
+  const { customer, booking } = context
 
   try {
+    // Create booking snapshot
+    const bookingSnapshot = {
+      bookingId: booking.id,
+      propertyName: typeof booking.property === 'object' ? booking.property.name : 'Unknown',
+      roomName: typeof booking.room === 'object' ? booking.room.name : 'Unknown',
+      price: booking.price,
+      foodIncluded: booking.foodIncluded,
+      foodAmount: foodAmount,
+      checkInDate: booking.checkInDate,
+      checkOutDate: booking.checkOutDate,
+      status: booking.status,
+      snapshotDate: getCurrentDate().toISOString(),
+    }
+
     const paymentData = {
       customer: customer.id,
-      paymentDate: getCurrentDate().toISOString(),
+      // paymentDate is omitted - will be set when payment completes
       paymentForMonthAndYear: getCurrentDate().toISOString(),
+      rent: booking.price,
       amount: booking.price + foodAmount,
       payfor: booking.id,
       dueDate: getDueDate().toISOString(),
       lastUpdatedAt: getCurrentDate().toISOString(),
       status: PAYMENT_STATUS.NOTIFIED,
-      bookingSnapshot: lastPayment?.bookingSnapshot || null,
+      bookingSnapshot: bookingSnapshot,
     }
 
     console.log(`💰 [TASK] Creating payment record for customer ${customer.id}:`, {
@@ -219,10 +234,13 @@ const createPaymentRecord = async (
       foodAmount,
     })
 
-    await payload.create({
+    const createdPayment = await payload.create({
       collection: 'payments',
       data: paymentData,
+      draft: false,
     })
+
+    return createdPayment.id
 
     console.log(`✅ [TASK] Payment record created successfully for customer ${customer.id}`)
   } catch (error) {
@@ -233,6 +251,41 @@ const createPaymentRecord = async (
       timestamp: new Date().toISOString(),
     })
     throw new Error(`Failed to create payment for customer ${customer.id}`)
+  }
+}
+
+// Notification operations
+const createNotification = async (
+  payload: PayloadRequest['payload'],
+  customer: Customer,
+  template: keyof typeof EMAIL_TEMPLATES,
+  paymentId?: string,
+): Promise<void> => {
+  try {
+    console.log(`🔔 [TASK] Creating notification for customer ${customer.id}`)
+
+    await payload.create({
+      collection: 'notifications',
+      data: {
+        customer: customer.id,
+        title: EMAIL_TEMPLATES[template].subject,
+        message: EMAIL_TEMPLATES[template].text,
+        type: 'payment',
+        category: 'payment',
+        priority: template === 'LATE_PAYMENT_WARNING' ? 'high' : 'medium',
+        isRead: false,
+        ...(paymentId && { relatedPayment: paymentId }),
+      },
+    })
+
+    console.log(`✅ [TASK] Notification created successfully for customer ${customer.id}`)
+  } catch (error) {
+    console.error(`❌ [TASK] Error creating notification for customer ${customer.id}:`, {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      customerId: customer.id,
+      timestamp: new Date().toISOString(),
+    })
+    // Don't throw - notification failure shouldn't stop email
   }
 }
 
@@ -252,7 +305,7 @@ const sendEmail = async (
       subject: config.subject,
       text: config.text,
       html: config.html,
-      from: process.env.RESEND_FROM_ADDRESS || 'onboarding@resend.dev',
+      from: `${process.env.RESEND_FROM_NAME || 'FLY PG'} <${process.env.RESEND_FROM_ADDRESS || 'onboarding@resend.dev'}>`,
       ...(config.template && { template: config.template }),
     })
 
@@ -272,17 +325,39 @@ const sendPaymentReminderEmail = async (
   payload: PayloadRequest['payload'],
   customer: Customer,
   template: keyof typeof EMAIL_TEMPLATES,
+  paymentId?: string,
 ): Promise<void> => {
   console.log(
     `📧 [TASK] Preparing ${template} email for customer ${customer.id} (${customer.email})`,
   )
+
+  // Check notification preferences
+  const customerWithSettings = customer as Customer & {
+    settings?: {
+      notifications?: { paymentReminders?: boolean }
+      preferences?: { emailNotifications?: boolean }
+    }
+  }
+  if (
+    customerWithSettings?.settings?.notifications?.paymentReminders === false ||
+    customerWithSettings?.settings?.preferences?.emailNotifications === false
+  ) {
+    console.log(
+      `⏭️ [TASK] Skipping customer ${customer.id} - payment reminders disabled in preferences`,
+    )
+    return
+  }
 
   const emailConfig: EmailConfig = {
     to: customer.email,
     ...EMAIL_TEMPLATES[template],
   }
 
+  // Send email
   await sendEmail(payload, emailConfig)
+
+  // Create notification record
+  await createNotification(payload, customer, template, paymentId)
 }
 
 // Main business logic
@@ -326,20 +401,30 @@ const processCustomerBooking = async (
     // Create new payment if conditions are met
     if (shouldCreateNewPayment(context)) {
       console.log(`💰 [TASK] Creating new payment for customer ${customer.id}`)
-      await createPaymentRecord(payload, context, foodAmount)
-      await sendPaymentReminderEmail(payload, customer, 'GENTLE_REMINDER')
+      const paymentId = await createPaymentRecord(payload, context, foodAmount)
+      await sendPaymentReminderEmail(payload, customer, 'GENTLE_REMINDER', paymentId)
     }
 
     // Send late payment warning
     if (shouldSendLatePaymentWarning(context)) {
       console.log(`⚠️ [TASK] Sending late payment warning to customer ${customer.id}`)
-      await sendPaymentReminderEmail(payload, customer, 'LATE_PAYMENT_WARNING')
+      await sendPaymentReminderEmail(
+        payload,
+        customer,
+        'LATE_PAYMENT_WARNING',
+        lastPayment?.id as string,
+      )
     }
 
     // Send gentle reminder
     if (shouldSendGentleReminder(context)) {
       console.log(`💌 [TASK] Sending gentle reminder to customer ${customer.id}`)
-      await sendPaymentReminderEmail(payload, customer, 'GENTLE_REMINDER')
+      await sendPaymentReminderEmail(
+        payload,
+        customer,
+        'GENTLE_REMINDER',
+        lastPayment?.id as string,
+      )
     }
 
     console.log(`✅ [TASK] Completed processing booking ${booking.id} for customer ${customer.id}`)

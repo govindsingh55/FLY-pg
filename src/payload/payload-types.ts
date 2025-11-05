@@ -82,6 +82,7 @@ export interface Config {
     notifications: Notification;
     amenities: Amenity;
     pages: Page;
+    'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -103,6 +104,7 @@ export interface Config {
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     amenities: AmenitiesSelect<false> | AmenitiesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -894,17 +896,19 @@ export interface Booking {
   createdAt: string;
 }
 /**
+ * Manage customer payments including online, cash, and walk-in transactions
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payments".
  */
 export interface Payment {
   id: string;
-  amount: number;
   /**
    * Current status of the payment
    */
   status:
     | 'initiated'
+    | 'notified'
     | 'pending'
     | 'processing'
     | 'completed'
@@ -912,56 +916,74 @@ export interface Payment {
     | 'cancelled'
     | 'refunded'
     | 'partially-refunded';
-  customer: string | Customer;
-  payfor: string | Booking;
-  paymentForMonthAndYear: string;
-  paymentDate?: string | null;
   /**
-   * Snapshot of booking data at time of payment (click to expand)
+   * Base rent amount in INR
    */
-  bookingSnapshot?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+  rent: number;
+  /**
+   * Total payment amount (auto-calculated: rent + all charges)
+   */
+  amount: number;
+  customer: string | Customer;
+  /**
+   * Select the booking this payment is for
+   */
+  payfor: string | Booking;
+  /**
+   * Payment period (month/year)
+   */
+  paymentForMonthAndYear: string;
+  /**
+   * Payment due date
+   */
   dueDate: string;
   /**
-   * Last raw response from PhonePe (click to expand)
+   * Actual payment completion date
    */
-  phonepeLastRaw?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  gateway?: string | null;
-  merchantOrderId?: string | null;
-  phonepeLastCode?: string | null;
-  phonepeLastState?: string | null;
-  paymentMethod?: ('credit-card' | 'debit-card' | 'upi' | 'net-banking' | 'wallet' | 'cash') | null;
-  /**
-   * Enable automatic payment for future months
-   */
-  autoPayEnabled?: boolean | null;
+  paymentDate?: string | null;
   /**
    * Late fees applied to this payment
    */
   lateFees?: number | null;
   /**
-   * Utility charges included in this payment
+   * Utility charges (water, maintenance, etc.)
    */
   utilityCharges?: number | null;
   /**
-   * Payment receipt document
+   * Electricity units consumed (kWh)
+   */
+  electricityUnitsConsumed?: number | null;
+  /**
+   * Rate per unit (INR/kWh) - auto-populated from property settings
+   */
+  electricityRatePerUnit?: number | null;
+  /**
+   * Auto-calculated electricity charges
+   */
+  electricityCharges?: number | null;
+  /**
+   * Additional notes about this payment (who collected, special circumstances, etc.)
+   */
+  notes?: string | null;
+  /**
+   * Upload payment receipt or proof of payment
    */
   paymentReceipt?: (string | null) | Media;
+  /**
+   * Admin user who processed this payment
+   */
+  processedBy?: (string | null) | User;
+  /**
+   * Payment method used
+   */
+  paymentMethod?: ('credit-card' | 'debit-card' | 'upi' | 'net-banking' | 'wallet' | 'cash') | null;
+  /**
+   * Source through which payment was initiated
+   */
+  paymentSource?: ('web-dashboard' | 'mobile-app' | 'admin-panel' | 'auto-pay' | 'phone-call' | 'walk-in') | null;
+  /**
+   * Specific details about the payment method used
+   */
   paymentMethodDetails?: {
     /**
      * Last 4 digits of card (if applicable)
@@ -980,9 +1002,61 @@ export interface Payment {
      */
     bankName?: string | null;
   };
+  /**
+   * Information about the device used for online payments
+   */
+  deviceInfo?: {
+    /**
+     * Type of device used for payment
+     */
+    deviceType?: ('desktop' | 'mobile' | 'tablet' | 'unknown') | null;
+    /**
+     * User agent string
+     */
+    userAgent?: string | null;
+    /**
+     * IP address of payment initiator
+     */
+    ipAddress?: string | null;
+  };
+  /**
+   * Payment gateway used (phonepe, razorpay, etc.)
+   */
+  gateway?: string | null;
+  /**
+   * PhonePe merchant order ID
+   */
+  merchantOrderId?: string | null;
+  /**
+   * Last response code from PhonePe
+   */
+  phonepeLastCode?: string | null;
+  /**
+   * Last payment state from PhonePe
+   */
+  phonepeLastState?: string | null;
+  /**
+   * Last raw response from PhonePe (click to expand)
+   */
+  phonepeLastRaw?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Enable automatic payment for future months
+   */
+  autoPayEnabled?: boolean | null;
+  /**
+   * Configure payment reminder notifications
+   */
   reminderSettings?: {
     /**
-     * Send payment reminders
+     * Send payment reminders to customer
      */
     sendReminders?: boolean | null;
     /**
@@ -995,14 +1069,6 @@ export interface Payment {
     reminderSentAt?: string | null;
   };
   /**
-   * Additional notes about this payment
-   */
-  notes?: string | null;
-  /**
-   * Admin user who processed this payment
-   */
-  processedBy?: (string | null) | User;
-  /**
    * Time taken to process payment (in seconds)
    */
   processingTime?: number | null;
@@ -1011,31 +1077,25 @@ export interface Payment {
    */
   retryCount?: number | null;
   /**
+   * Customer satisfaction rating (1-5)
+   */
+  customerSatisfactionScore?: number | null;
+  /**
    * Last time payment was retried
    */
   lastRetryAt?: string | null;
   /**
-   * Customer satisfaction rating for payment experience
+   * Snapshot of booking data at time of payment (auto-populated from booking)
    */
-  customerSatisfactionScore?: number | null;
-  /**
-   * Source through which payment was initiated
-   */
-  paymentSource?: ('web-dashboard' | 'mobile-app' | 'admin-panel' | 'auto-pay' | 'phone-call' | 'walk-in') | null;
-  deviceInfo?: {
-    /**
-     * User agent string
-     */
-    userAgent?: string | null;
-    /**
-     * IP address of payment initiator
-     */
-    ipAddress?: string | null;
-    /**
-     * Type of device used for payment
-     */
-    deviceType?: ('desktop' | 'mobile' | 'tablet' | 'unknown') | null;
-  };
+  bookingSnapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1168,14 +1228,8 @@ export interface Notification {
    * Related support ticket (if this notification is about support)
    */
   relatedSupportTicket?: (string | null) | SupportTicket;
-  /**
-   * When the notification was created
-   */
-  createdAt: string;
-  /**
-   * When the notification was last updated
-   */
   updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1644,6 +1698,23 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: string;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs".
  */
 export interface PayloadJob {
@@ -1796,10 +1867,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pages';
         value: string | Page;
-      } | null)
-    | ({
-        relationTo: 'payload-jobs';
-        value: string | PayloadJob;
       } | null);
   globalSlug?: string | null;
   user:
@@ -2265,24 +2332,24 @@ export interface BookingsSelect<T extends boolean = true> {
  * via the `definition` "payments_select".
  */
 export interface PaymentsSelect<T extends boolean = true> {
-  amount?: T;
   status?: T;
+  rent?: T;
+  amount?: T;
   customer?: T;
   payfor?: T;
   paymentForMonthAndYear?: T;
-  paymentDate?: T;
-  bookingSnapshot?: T;
   dueDate?: T;
-  phonepeLastRaw?: T;
-  gateway?: T;
-  merchantOrderId?: T;
-  phonepeLastCode?: T;
-  phonepeLastState?: T;
-  paymentMethod?: T;
-  autoPayEnabled?: T;
+  paymentDate?: T;
   lateFees?: T;
   utilityCharges?: T;
+  electricityUnitsConsumed?: T;
+  electricityRatePerUnit?: T;
+  electricityCharges?: T;
+  notes?: T;
   paymentReceipt?: T;
+  processedBy?: T;
+  paymentMethod?: T;
+  paymentSource?: T;
   paymentMethodDetails?:
     | T
     | {
@@ -2291,6 +2358,19 @@ export interface PaymentsSelect<T extends boolean = true> {
         upiId?: T;
         bankName?: T;
       };
+  deviceInfo?:
+    | T
+    | {
+        deviceType?: T;
+        userAgent?: T;
+        ipAddress?: T;
+      };
+  gateway?: T;
+  merchantOrderId?: T;
+  phonepeLastCode?: T;
+  phonepeLastState?: T;
+  phonepeLastRaw?: T;
+  autoPayEnabled?: T;
   reminderSettings?:
     | T
     | {
@@ -2298,20 +2378,11 @@ export interface PaymentsSelect<T extends boolean = true> {
         reminderDays?: T;
         reminderSentAt?: T;
       };
-  notes?: T;
-  processedBy?: T;
   processingTime?: T;
   retryCount?: T;
-  lastRetryAt?: T;
   customerSatisfactionScore?: T;
-  paymentSource?: T;
-  deviceInfo?:
-    | T
-    | {
-        userAgent?: T;
-        ipAddress?: T;
-        deviceType?: T;
-      };
+  lastRetryAt?: T;
+  bookingSnapshot?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2409,8 +2480,8 @@ export interface NotificationsSelect<T extends boolean = true> {
   relatedBooking?: T;
   relatedPayment?: T;
   relatedSupportTicket?: T;
-  createdAt?: T;
   updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2834,6 +2905,14 @@ export interface PagesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv_select".
+ */
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

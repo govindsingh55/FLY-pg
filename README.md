@@ -84,11 +84,12 @@ src/
 - **Property Management**: Properties, rooms, amenities
 - **User Management**: Customers, staff, roles
 - **Booking Management**: Booking lifecycle, status updates
-- **Payment Management**: Payment tracking, refunds
+- **Payment Management**: Payment tracking, refunds, **manual cash/walk-in payment recording**
 - **Support Management**: Ticket resolution, customer support
 
 ### Payment Integration
 - **PhonePe Integration**: UPI, cards, net banking
+- **Manual Payments**: Record in-person cash/UPI payments via admin panel
 - **Auto-pay**: Automated rent payments
 - **Payment History**: Complete transaction records
 - **Receipts**: Downloadable payment receipts
@@ -279,6 +280,28 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - Configure production webhooks with PhonePe
 - Implement proper monitoring and error handling
 
+### Manual Payment Recording (Cash/Walk-in)
+Admins can record in-person payments directly via Payload CMS Admin Panel:
+
+1. **Navigate to**: `http://localhost:3000/admin/collections/payments`
+2. **Click**: "Create New" button
+3. **Fill required fields**:
+   - Customer (select from dropdown)
+   - Booking (select related booking)
+   - Amount
+   - Status: Select **"Completed"** for received payments
+   - Payment Method: Select **"Cash"** or **"UPI"**
+   - Payment Source: Select **"Walk-in"** or **"Admin Panel"**
+   - Payment Date: Set to today's date
+   - Due Date: Set appropriately
+4. **Optional fields**:
+   - UPI ID (for UPI payments)
+   - Upload payment receipt
+   - Add notes about who collected the payment
+5. **Save**: Booking snapshot will be auto-populated from the selected booking
+
+**Note**: For cash payments, the gateway field is automatically hidden as it's not applicable.
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -297,6 +320,47 @@ For support and questions:
 - Create an issue in the repository
 - Check the documentation files
 - Review the PhonePe integration guides
+
+---
+
+## 🐛 Bug Fixes - Payment & Notification System
+
+### Critical Bugs (P0)
+- [x] **Bug #1**: Add notification creation in payment reminder job ✅
+- [x] **Bug #2**: Fix missing `bookingSnapshot` when creating payments ✅
+- [x] **Bug #3**: Add notification preferences check before sending emails ✅
+
+### High Priority Bugs (P1)
+- [x] **Bug #4**: Fix incorrect `from` email format in sendEmail ✅
+- [x] **Bug #5**: Remove duplicate timestamp handling in Notifications collection ✅
+- [x] **Bug #6**: Fix incorrect `paymentDate` on payment creation ✅
+- [x] **Bug #7**: Add `'notified'` status option to Payments collection ✅
+
+### Medium Priority Bugs (P2)
+- [x] **Bug #8**: Fix race condition in notification read status ✅
+- [x] **Bug #9**: Improve error handling for email failures ✅
+
+### ✅ All Bugs Fixed!
+All payment and notification system bugs have been successfully resolved. The system now:
+- Creates notification records when sending payment reminders
+- Properly constructs booking snapshots for payment records
+- Respects customer notification preferences (GDPR/CAN-SPAM compliant)
+- Uses correct email format with sender name
+- Leverages Payload's built-in timestamps
+- Sets payment dates only when payments complete
+- Includes 'notified' status for tracking reminder states
+- Prevents race conditions in notification read status
+- Gracefully handles email failures without stopping the job
+
+### 🎨 Payments Collection UI Enhancement
+The Payments collection has been reorganized into **5 logical tabs** in the admin panel:
+1. **Basic Information** - Core payment details, status, amounts, dates, and notes
+2. **Payment Method & Source** - Payment method selection, source tracking, and method-specific details
+3. **PhonePe Gateway** - PhonePe integration details, merchant IDs, and admin tools
+4. **Reminders & Automation** - Auto-pay settings and payment reminder configuration
+5. **Booking Snapshot** - Auto-populated booking data snapshot
+
+This improves admin UX by grouping related fields logically and reducing clutter.
 
 ---
 
