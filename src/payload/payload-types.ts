@@ -298,6 +298,19 @@ export interface Property {
     | null;
   manager: string | User;
   /**
+   * Configure per-unit electricity cost for this property
+   */
+  electricityConfig?: {
+    /**
+     * Enable separate electricity billing for this property
+     */
+    enabled?: boolean | null;
+    /**
+     * Cost per unit of electricity (in rupees)
+     */
+    perUnitCost?: number | null;
+  };
+  /**
    * Configure security deposit requirements for this property
    */
   securityDepositConfig?: {
@@ -2008,6 +2021,12 @@ export interface PropertiesSelect<T extends boolean = true> {
         id?: T;
       };
   manager?: T;
+  electricityConfig?:
+    | T
+    | {
+        enabled?: T;
+        perUnitCost?: T;
+      };
   securityDepositConfig?:
     | T
     | {

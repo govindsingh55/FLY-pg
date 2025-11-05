@@ -179,6 +179,35 @@ const Properties: CollectionConfig = {
               ],
             },
             { name: 'manager', type: 'relationship', relationTo: 'users', required: true },
+            // Electricity Billing Configuration
+            {
+              name: 'electricityConfig',
+              type: 'group',
+              label: 'Electricity Billing Settings',
+              admin: {
+                description: 'Configure per-unit electricity cost for this property',
+              },
+              fields: [
+                {
+                  name: 'enabled',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Enable separate electricity billing for this property',
+                  },
+                },
+                {
+                  name: 'perUnitCost',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    description: 'Cost per unit of electricity (in rupees)',
+                    condition: (data) => data?.electricityConfig?.enabled,
+                  },
+                },
+
+              ],
+            },
             // Security Deposit Configuration
             {
               name: 'securityDepositConfig',
