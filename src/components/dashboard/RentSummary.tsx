@@ -1,26 +1,25 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { useLoading } from '@/hooks/useLoading'
 import {
-  CreditCard,
-  Calendar,
-  TrendingUp,
-  TrendingDown,
   AlertCircle,
+  ArrowRight,
+  Calendar,
   CheckCircle,
   Clock,
+  CreditCard,
   DollarSign,
   Home,
-  ArrowRight,
   RefreshCw,
+  TrendingUp,
 } from 'lucide-react'
-import { toast } from 'sonner'
-import { useLoading } from '@/hooks/useLoading'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 interface RentSummaryData {
   currentMonth: {
@@ -43,6 +42,10 @@ interface RentSummaryData {
     totalPending: number
     totalOverdue: number
     averageMonthlyRent: number
+    rentPaid?: number
+    rentPending?: number
+    electricityPaid?: number
+    electricityPending?: number
     paymentHistory: Array<{
       month: string
       amount: number
@@ -353,6 +356,53 @@ export function RentSummary({ className }: RentSummaryProps) {
                 </div>
               </div>
             </div>
+
+            {/* Rent & Electricity Breakdown */}
+            {(financialSummary.rentPaid !== undefined ||
+              financialSummary.electricityPaid !== undefined) && (
+              <div className="space-y-3 border-t pt-3">
+                <div className="text-sm font-medium text-muted-foreground">Payment Breakdown</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border bg-white p-3">
+                    <div className="mb-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      <span>🏠</span>
+                      <span>Rent Paid</span>
+                    </div>
+                    <div className="text-base font-semibold text-green-700">
+                      {formatCurrency(financialSummary.rentPaid || 0)}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border bg-white p-3">
+                    <div className="mb-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      <span>🏠</span>
+                      <span>Rent Pending</span>
+                    </div>
+                    <div className="text-base font-semibold text-yellow-700">
+                      {formatCurrency(financialSummary.rentPending || 0)}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border bg-white p-3">
+                    <div className="mb-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      <span>⚡</span>
+                      <span>Electricity Paid</span>
+                    </div>
+                    <div className="text-base font-semibold text-green-700">
+                      {formatCurrency(financialSummary.electricityPaid || 0)}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border bg-white p-3">
+                    <div className="mb-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      <span>⚡</span>
+                      <span>Electricity Pending</span>
+                    </div>
+                    <div className="text-base font-semibold text-yellow-700">
+                      {formatCurrency(financialSummary.electricityPending || 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="rounded-lg bg-red-50 p-3">
               <div className="text-sm text-red-600">Total Overdue</div>
               <div className="text-lg font-semibold text-red-700">

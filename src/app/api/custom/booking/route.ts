@@ -135,6 +135,7 @@ export async function POST(req: NextRequest) {
         collection: 'payments',
         data: {
           amount: price,
+          paymentType: 'rent',
           status: 'pending',
           customer: customerId,
           payfor: booking.id,
@@ -149,7 +150,7 @@ export async function POST(req: NextRequest) {
         },
         overrideAccess: true,
       })
-    } catch (payErr) {
+    } catch (_payErr) {
       // Do not fail the booking if payment record creation fails; log and continue
       try {
         payload.logger?.error?.('Failed to create payment for booking')
@@ -158,7 +159,10 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, booking, payment })
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'Internal error' }, { status: 500 })
+  } catch (err: unknown) {
+    return NextResponse.json(
+      { error: (err as Error)?.message || 'Internal error' },
+      { status: 500 },
+    )
   }
 }

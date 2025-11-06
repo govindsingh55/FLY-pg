@@ -56,13 +56,20 @@ import { useLoading } from '@/hooks/useLoading'
 interface Payment {
   id: string
   amount: number
+  rent?: number
   status: string
+  paymentType: 'rent' | 'electricity' | 'security-deposit' | 'late-fee' | 'other'
   paymentMethod: string
   paymentDate: string
   dueDate: string
   paymentForMonthAndYear: string
   lateFees: number
   utilityCharges: number
+  electricityUnitsConsumed?: number
+  electricityRatePerUnit?: number
+  electricityCharges?: number
+  billingPeriodStart?: string
+  billingPeriodEnd?: string
   notes?: string
   createdAt: string
   updatedAt: string
@@ -100,6 +107,7 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [methodFilter, setMethodFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
@@ -149,6 +157,11 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
       filtered = filtered.filter((payment) => payment.paymentMethod === methodFilter)
     }
 
+    // Apply type filter
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter((payment) => payment.paymentType === typeFilter)
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
       let aValue: any = a[sortBy as keyof Payment]
@@ -170,7 +183,7 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
     })
 
     setFilteredPayments(filtered)
-  }, [payments, searchTerm, statusFilter, methodFilter, sortBy, sortOrder])
+  }, [payments, searchTerm, statusFilter, methodFilter, typeFilter, sortBy, sortOrder])
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -190,6 +203,28 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
       <Badge variant={config.variant} className="flex items-center gap-1">
         <Icon className="h-3 w-3" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    )
+  }
+
+  const getPaymentTypeBadge = (type: string) => {
+    const typeConfig: Record<
+      string,
+      { label: string; emoji: string; variant: 'default' | 'secondary' | 'outline' }
+    > = {
+      rent: { label: 'Rent', emoji: '🏠', variant: 'default' },
+      electricity: { label: 'Electricity', emoji: '⚡', variant: 'secondary' },
+      'security-deposit': { label: 'Security', emoji: '🔒', variant: 'outline' },
+      'late-fee': { label: 'Late Fee', emoji: '⏰', variant: 'secondary' },
+      other: { label: 'Other', emoji: '📋', variant: 'outline' },
+    }
+
+    const config = typeConfig[type] || typeConfig.other
+
+    return (
+      <Badge variant={config.variant} className="flex items-center gap-1">
+        <span>{config.emoji}</span>
+        <span>{config.label}</span>
       </Badge>
     )
   }
@@ -315,6 +350,19 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
                     <SelectItem value="cash">Cash</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="rent">🏠 Rent</SelectItem>
+                    <SelectItem value="electricity">⚡ Electricity</SelectItem>
+                    <SelectItem value="security-deposit">🔒 Security</SelectItem>
+                    <SelectItem value="late-fee">⏰ Late Fee</SelectItem>
+                    <SelectItem value="other">📋 Other</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue placeholder="Sort by" />
@@ -344,6 +392,7 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Payment ID</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Method</TableHead>
@@ -355,7 +404,7 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
               <TableBody>
                 {filteredPayments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       {isLoading ? 'Loading payments...' : 'No payments found'}
                     </TableCell>
                   </TableRow>
@@ -363,13 +412,21 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
                   filteredPayments.map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell className="font-mono text-sm">{payment.id.slice(-8)}</TableCell>
+                      <TableCell>{getPaymentTypeBadge(payment.paymentType)}</TableCell>
                       <TableCell className="font-medium">
                         {formatCurrency(payment.amount)}
-                        {(payment.lateFees > 0 || payment.utilityCharges > 0) && (
-                          <div className="text-xs text-muted-foreground">
-                            +{formatCurrency(payment.lateFees + payment.utilityCharges)} fees
-                          </div>
-                        )}
+                        {payment.paymentType === 'rent' &&
+                          (payment.lateFees > 0 || payment.utilityCharges > 0) && (
+                            <div className="text-xs text-muted-foreground">
+                              +{formatCurrency(payment.lateFees + payment.utilityCharges)} fees
+                            </div>
+                          )}
+                        {payment.paymentType === 'electricity' &&
+                          payment.electricityUnitsConsumed && (
+                            <div className="text-xs text-muted-foreground">
+                              {payment.electricityUnitsConsumed} units
+                            </div>
+                          )}
                       </TableCell>
                       <TableCell>{getStatusBadge(payment.status)}</TableCell>
                       <TableCell className="flex items-center gap-2">

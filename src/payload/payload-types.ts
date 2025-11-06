@@ -800,6 +800,7 @@ export interface VisitBooking {
  */
 export interface Booking {
   id: string;
+  bookingTitle?: string | null;
   customer: string | Customer;
   property: string | Property;
   room: string | Room;
@@ -896,13 +897,17 @@ export interface Booking {
   createdAt: string;
 }
 /**
- * Manage customer payments including online, cash, and walk-in transactions
+ * Manage customer payments including rent, electricity bills, and other transactions
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payments".
  */
 export interface Payment {
   id: string;
+  /**
+   * Select payment type first - form fields will adjust based on your selection
+   */
+  paymentType: 'rent' | 'electricity' | 'security-deposit' | 'late-fee' | 'other';
   /**
    * Current status of the payment
    */
@@ -917,11 +922,47 @@ export interface Payment {
     | 'refunded'
     | 'partially-refunded';
   /**
-   * Base rent amount in INR
+   * Monthly rent amount in INR
    */
-  rent: number;
+  rent?: number | null;
   /**
-   * Total payment amount (auto-calculated: rent + all charges)
+   * Late fees (if applicable)
+   */
+  lateFees?: number | null;
+  /**
+   * Utility charges (water, maintenance, etc.)
+   */
+  utilityCharges?: number | null;
+  /**
+   * Units consumed (kWh)
+   */
+  electricityUnitsConsumed?: number | null;
+  /**
+   * Rate per unit (auto-populated)
+   */
+  electricityRatePerUnit?: number | null;
+  /**
+   * Total charges (auto-calculated)
+   */
+  electricityCharges?: number | null;
+  /**
+   * Billing period start date
+   */
+  billingPeriodStart?: string | null;
+  /**
+   * Billing period end date
+   */
+  billingPeriodEnd?: string | null;
+  /**
+   * Starting meter reading
+   */
+  meterReadingStart?: number | null;
+  /**
+   * Ending meter reading
+   */
+  meterReadingEnd?: number | null;
+  /**
+   * Total payment amount (auto-calculated based on payment type)
    */
   amount: number;
   customer: string | Customer;
@@ -941,26 +982,6 @@ export interface Payment {
    * Actual payment completion date
    */
   paymentDate?: string | null;
-  /**
-   * Late fees applied to this payment
-   */
-  lateFees?: number | null;
-  /**
-   * Utility charges (water, maintenance, etc.)
-   */
-  utilityCharges?: number | null;
-  /**
-   * Electricity units consumed (kWh)
-   */
-  electricityUnitsConsumed?: number | null;
-  /**
-   * Rate per unit (INR/kWh) - auto-populated from property settings
-   */
-  electricityRatePerUnit?: number | null;
-  /**
-   * Auto-calculated electricity charges
-   */
-  electricityCharges?: number | null;
   /**
    * Additional notes about this payment (who collected, special circumstances, etc.)
    */
@@ -2256,6 +2277,7 @@ export interface VisitBookingsSelect<T extends boolean = true> {
  * via the `definition` "bookings_select".
  */
 export interface BookingsSelect<T extends boolean = true> {
+  bookingTitle?: T;
   customer?: T;
   property?: T;
   room?: T;
@@ -2332,19 +2354,24 @@ export interface BookingsSelect<T extends boolean = true> {
  * via the `definition` "payments_select".
  */
 export interface PaymentsSelect<T extends boolean = true> {
+  paymentType?: T;
   status?: T;
   rent?: T;
+  lateFees?: T;
+  utilityCharges?: T;
+  electricityUnitsConsumed?: T;
+  electricityRatePerUnit?: T;
+  electricityCharges?: T;
+  billingPeriodStart?: T;
+  billingPeriodEnd?: T;
+  meterReadingStart?: T;
+  meterReadingEnd?: T;
   amount?: T;
   customer?: T;
   payfor?: T;
   paymentForMonthAndYear?: T;
   dueDate?: T;
   paymentDate?: T;
-  lateFees?: T;
-  utilityCharges?: T;
-  electricityUnitsConsumed?: T;
-  electricityRatePerUnit?: T;
-  electricityCharges?: T;
   notes?: T;
   paymentReceipt?: T;
   processedBy?: T;

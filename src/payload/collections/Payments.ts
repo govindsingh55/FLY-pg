@@ -6,6 +6,7 @@ const Payments: CollectionConfig = {
     useAsTitle: 'id',
     defaultColumns: [
       'id',
+      'paymentType',
       'status',
       'amount',
       'customer',
@@ -15,9 +16,28 @@ const Payments: CollectionConfig = {
       'updatedAt',
     ],
     group: 'Financial',
-    description: 'Manage customer payments including online, cash, and walk-in transactions',
+    description:
+      'Manage customer payments including rent, electricity bills, and other transactions',
   },
   fields: [
+    // ==================== PAYMENT TYPE (First Field) ====================
+    {
+      name: 'paymentType',
+      type: 'select',
+      options: [
+        { label: '🏠 Rent Payment', value: 'rent' },
+        { label: '⚡ Electricity Bill', value: 'electricity' },
+        { label: '🔒 Security Deposit', value: 'security-deposit' },
+        { label: '⏰ Late Fee', value: 'late-fee' },
+        { label: '📋 Other', value: 'other' },
+      ],
+      defaultValue: 'rent',
+      required: true,
+      index: true,
+      admin: {
+        description: 'Select payment type first - form fields will adjust based on your selection',
+      },
+    },
     // ==================== TAB: Basic Information ====================
     {
       type: 'tabs',
@@ -27,56 +47,168 @@ const Payments: CollectionConfig = {
           description: 'Core payment details and status',
           fields: [
             {
+              name: 'status',
+              type: 'select',
+              options: [
+                { label: 'Initiated', value: 'initiated' },
+                { label: 'Notified', value: 'notified' },
+                { label: 'Pending', value: 'pending' },
+                { label: 'Processing', value: 'processing' },
+                { label: 'Completed', value: 'completed' },
+                { label: 'Failed', value: 'failed' },
+                { label: 'Cancelled', value: 'cancelled' },
+                { label: 'Refunded', value: 'refunded' },
+                { label: 'Partially Refunded', value: 'partially-refunded' },
+              ],
+              required: true,
+              index: true,
+              admin: {
+                description: 'Current status of the payment',
+              },
+            },
+            // ========== RENT PAYMENT FIELDS ==========
+            {
+              name: 'rent',
+              type: 'number',
+              required: true,
+              min: 0,
+              admin: {
+                description: 'Monthly rent amount in INR',
+                condition: (data) => data?.paymentType === 'rent',
+              },
+            },
+            {
               type: 'row',
+              admin: {
+                condition: (data) => data?.paymentType === 'rent',
+              },
               fields: [
                 {
-                  name: 'status',
-                  type: 'select',
-                  options: [
-                    { label: 'Initiated', value: 'initiated' },
-                    { label: 'Notified', value: 'notified' },
-                    { label: 'Pending', value: 'pending' },
-                    { label: 'Processing', value: 'processing' },
-                    { label: 'Completed', value: 'completed' },
-                    { label: 'Failed', value: 'failed' },
-                    { label: 'Cancelled', value: 'cancelled' },
-                    { label: 'Refunded', value: 'refunded' },
-                    { label: 'Partially Refunded', value: 'partially-refunded' },
-                  ],
-                  required: true,
-                  index: true,
+                  name: 'lateFees',
+                  type: 'number',
+                  min: 0,
+                  defaultValue: 0,
                   admin: {
                     width: '50%',
-                    description: 'Current status of the payment',
+                    description: 'Late fees (if applicable)',
                   },
                 },
                 {
-                  name: 'rent',
+                  name: 'utilityCharges',
                   type: 'number',
-                  required: true,
                   min: 0,
+                  defaultValue: 0,
                   admin: {
                     width: '50%',
-                    description: 'Base rent amount in INR',
+                    description: 'Utility charges (water, maintenance, etc.)',
+                  },
+                },
+              ],
+            },
+            // ========== ELECTRICITY BILL FIELDS ==========
+            {
+              type: 'row',
+              admin: {
+                condition: (data) => data?.paymentType === 'electricity',
+              },
+              fields: [
+                {
+                  name: 'electricityUnitsConsumed',
+                  type: 'number',
+                  min: 0,
+                  required: true,
+                  admin: {
+                    width: '33%',
+                    description: 'Units consumed (kWh)',
+                    condition: (data) => data?.paymentType === 'electricity',
+                  },
+                },
+                {
+                  name: 'electricityRatePerUnit',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    width: '33%',
+                    description: 'Rate per unit (auto-populated)',
+                    readOnly: true,
+                    condition: (data) => data?.paymentType === 'electricity',
+                  },
+                },
+                {
+                  name: 'electricityCharges',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    width: '34%',
+                    description: 'Total charges (auto-calculated)',
+                    readOnly: true,
+                    condition: (data) => data?.paymentType === 'electricity',
                   },
                 },
               ],
             },
             {
               type: 'row',
+              admin: {
+                condition: (data) => data?.paymentType === 'electricity',
+              },
               fields: [
                 {
-                  name: 'amount',
-                  type: 'number',
-                  required: true,
-                  min: 0,
+                  name: 'billingPeriodStart',
+                  type: 'date',
                   admin: {
-                    width: '100%',
-                    description: 'Total payment amount (auto-calculated: rent + all charges)',
-                    readOnly: true,
+                    width: '50%',
+                    description: 'Billing period start date',
+                    condition: (data) => data?.paymentType === 'electricity',
+                  },
+                },
+                {
+                  name: 'billingPeriodEnd',
+                  type: 'date',
+                  admin: {
+                    width: '50%',
+                    description: 'Billing period end date',
+                    condition: (data) => data?.paymentType === 'electricity',
                   },
                 },
               ],
+            },
+            {
+              type: 'row',
+              admin: {
+                condition: (data) => data?.paymentType === 'electricity',
+              },
+              fields: [
+                {
+                  name: 'meterReadingStart',
+                  type: 'number',
+                  admin: {
+                    width: '50%',
+                    description: 'Starting meter reading',
+                    condition: (data) => data?.paymentType === 'electricity',
+                  },
+                },
+                {
+                  name: 'meterReadingEnd',
+                  type: 'number',
+                  admin: {
+                    width: '50%',
+                    description: 'Ending meter reading',
+                    condition: (data) => data?.paymentType === 'electricity',
+                  },
+                },
+              ],
+            },
+            // ========== TOTAL AMOUNT (All Types) ==========
+            {
+              name: 'amount',
+              type: 'number',
+              required: true,
+              min: 0,
+              admin: {
+                description: 'Total payment amount (auto-calculated based on payment type)',
+                readOnly: true,
+              },
             },
             {
               type: 'row',
@@ -143,78 +275,7 @@ const Payments: CollectionConfig = {
                 },
               ],
             },
-            {
-              type: 'collapsible',
-              label: 'Additional Charges',
-              admin: {
-                initCollapsed: true,
-              },
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'lateFees',
-                      type: 'number',
-                      min: 0,
-                      defaultValue: 0,
-                      admin: {
-                        width: '50%',
-                        description: 'Late fees applied to this payment',
-                      },
-                    },
-                    {
-                      name: 'utilityCharges',
-                      type: 'number',
-                      min: 0,
-                      defaultValue: 0,
-                      admin: {
-                        width: '50%',
-                        description: 'Utility charges (water, maintenance, etc.)',
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'electricityUnitsConsumed',
-                      type: 'number',
-                      min: 0,
-                      defaultValue: 0,
-                      admin: {
-                        width: '33%',
-                        description: 'Electricity units consumed (kWh)',
-                      },
-                    },
-                    {
-                      name: 'electricityRatePerUnit',
-                      type: 'number',
-                      min: 0,
-                      defaultValue: 0,
-                      admin: {
-                        width: '33%',
-                        description:
-                          'Rate per unit (INR/kWh) - auto-populated from property settings',
-                        readOnly: true,
-                      },
-                    },
-                    {
-                      name: 'electricityCharges',
-                      type: 'number',
-                      min: 0,
-                      defaultValue: 0,
-                      admin: {
-                        width: '34%',
-                        description: 'Auto-calculated electricity charges',
-                        readOnly: true,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
+
             {
               name: 'notes',
               type: 'textarea',
@@ -647,18 +708,26 @@ const Payments: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation }) => {
-        // Auto-populate electricityRatePerUnit from property settings
-        if (data?.payfor && (!data.electricityRatePerUnit || operation === 'create')) {
+        let booking = null
+
+        // Fetch booking data if payfor is provided
+        if (data?.payfor) {
           try {
             const payload = req.payload
-            const booking = await payload.findByID({
+            booking = await payload.findByID({
               collection: 'bookings',
               id: typeof data.payfor === 'string' ? data.payfor : data.payfor.id,
               depth: 2, // Need depth 2 to get property -> electricityConfig
             })
+          } catch (error) {
+            console.error('Error fetching booking:', error)
+          }
+        }
 
+        // Auto-populate electricityRatePerUnit from property settings
+        if (booking && (!data.electricityRatePerUnit || operation === 'create')) {
+          try {
             if (
-              booking &&
               typeof booking.property === 'object' &&
               booking.property?.electricityConfig?.enabled
             ) {
@@ -682,13 +751,36 @@ const Payments: CollectionConfig = {
           data.electricityCharges = units * rate
         }
 
-        // Auto-calculate total amount = rent + all charges
-        const rent = Number(data.rent) || 0
-        const lateFees = Number(data.lateFees) || 0
-        const utilityCharges = Number(data.utilityCharges) || 0
-        const electricityCharges = Number(data.electricityCharges) || 0
+        // Auto-calculate total amount based on payment type
+        if (data.paymentType === 'electricity') {
+          // For electricity bills, amount = electricity charges only
+          data.amount = Number(data.electricityCharges) || 0
+        } else if (data.paymentType === 'rent') {
+          // For rent payments, amount = rent + additional charges (excluding electricity)
+          const rent = Number(data.rent) || 0
+          const lateFees = Number(data.lateFees) || 0
+          const utilityCharges = Number(data.utilityCharges) || 0
 
-        data.amount = rent + lateFees + utilityCharges + electricityCharges
+          data.amount = rent + lateFees + utilityCharges
+
+          // Add note if electricity is billed separately
+          if (
+            booking &&
+            typeof booking.property === 'object' &&
+            booking.property?.electricityConfig?.enabled &&
+            operation === 'create'
+          ) {
+            const existingNotes = data.notes || ''
+            const electricityNote =
+              '\n\n⚡ Note: Electricity charges are billed separately based on actual consumption.'
+            if (!existingNotes.includes('Electricity charges are billed separately')) {
+              data.notes = existingNotes + electricityNote
+            }
+          }
+        } else {
+          // For other payment types, use the amount as provided
+          // Or apply custom logic as needed
+        }
 
         return data
       },

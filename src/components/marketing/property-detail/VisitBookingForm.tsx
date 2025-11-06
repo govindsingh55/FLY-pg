@@ -6,16 +6,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useUser } from '@/lib/state/user'
+import type { PropertySummary } from '@/types/property'
 import { Calendar1, CalendarClock } from 'lucide-react'
 import * as React from 'react'
 import { toast } from 'sonner'
 
 type Props = {
-  propertyId?: string
+  property?: PropertySummary
   onClose: () => void
 }
 
-export default function VisitBookingForm({ propertyId, onClose }: Props) {
+export default function VisitBookingForm({ property, onClose }: Props) {
   const userData = useUser()
   const [visitDate, setVisitDate] = React.useState<Date | undefined>(undefined)
   const [visitTime, setVisitTime] = React.useState('')
@@ -63,11 +64,11 @@ export default function VisitBookingForm({ propertyId, onClose }: Props) {
         isoDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00:00`
       }
 
-      const body: any = {
-        property: propertyId,
+      const body = {
+        property: property?.id,
         visitDate: isoDate,
         notes: notes || undefined,
-      }
+      } as unknown as Record<string, unknown>
       if (userData.isAuthenticated && userData.user?.id) {
         body.customer = userData.user.id
       } else {
@@ -85,15 +86,17 @@ export default function VisitBookingForm({ propertyId, onClose }: Props) {
         body: JSON.stringify(body),
       })
 
-      let result: any
+      let result: unknown
       try {
         result = await res.json()
       } catch {
         result = null
       }
 
-      if (!res.ok || (result && result.error)) {
-        const errorMsg = result?.error || `Failed with ${res.status}`
+      const maybeResult =
+        typeof result === 'object' && result !== null ? (result as { error?: string } | null) : null
+      if (!res.ok || (maybeResult && maybeResult.error)) {
+        const errorMsg = maybeResult?.error || `Failed with ${res.status}`
         setApiError(errorMsg)
         toast.error(errorMsg)
         return
@@ -101,8 +104,8 @@ export default function VisitBookingForm({ propertyId, onClose }: Props) {
 
       toast.success('Visit booked successfully!')
       onClose()
-    } catch (err: any) {
-      const errorMsg = err?.message || 'Something went wrong.'
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || String(err) || 'Something went wrong.'
       setApiError(errorMsg)
       toast.error(errorMsg)
     } finally {
@@ -115,7 +118,7 @@ export default function VisitBookingForm({ propertyId, onClose }: Props) {
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 min-h-0">
         {apiError && <div className="text-xs text-red-500 mb-2">{apiError}</div>}
         <div className="text-sm text-muted-foreground">
-          {propertyId ? `Property: ${propertyId}` : 'Property selected'}
+          {property?.id ? `Property: ${property.id}` : 'Property selected'}
         </div>
 
         {userData.isAuthenticated && userData.user?.id ? (

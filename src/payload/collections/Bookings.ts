@@ -29,9 +29,9 @@ const bookingsAccess = {
 const Bookings: CollectionConfig = {
   slug: 'bookings',
   admin: {
-    useAsTitle: 'id',
-    defaultColumns: ['id', 'customer', 'property', 'room', 'status', 'checkInDate'],
-    listSearchableFields: ['id'],
+    useAsTitle: 'bookingTitle',
+    defaultColumns: ['bookingTitle', 'customer', 'property', 'room', 'status', 'checkInDate'],
+    listSearchableFields: ['bookingTitle', 'id'],
   },
   access: bookingsAccess,
   hooks: {
@@ -50,8 +50,58 @@ const Bookings: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [
+      async ({ doc, req }) => {
+        // Populate bookingTitle after any change
+        try {
+          const payload = req.payload
+          let customerName = 'Unknown Customer'
+          let propertyName = 'Unknown Property'
+          let roomName = 'Unknown Room'
+
+          // Fetch customer name
+          if (doc.customer) {
+            const customerId = typeof doc.customer === 'string' ? doc.customer : doc.customer.id
+            const customer = await payload.findByID({ collection: 'customers', id: customerId })
+            customerName = customer?.name || customerName
+          }
+          // Fetch property name
+          if (doc.property) {
+            const propertyId = typeof doc.property === 'string' ? doc.property : doc.property.id
+            const property = await payload.findByID({ collection: 'properties', id: propertyId })
+            propertyName = property?.name || propertyName
+          }
+          // Fetch room name
+          if (doc.room) {
+            const roomId = typeof doc.room === 'string' ? doc.room : doc.room.id
+            const room = await payload.findByID({ collection: 'rooms', id: roomId })
+            roomName = room?.name || roomName
+          }
+
+          const newTitle = `${customerName} - ${propertyName} - ${roomName}`
+          // Update the booking with the new title if changed
+          if (doc.bookingTitle !== newTitle) {
+            await payload.update({
+              collection: 'bookings',
+              id: doc.id,
+              data: { bookingTitle: newTitle },
+              draft: false,
+            })
+          }
+        } catch (error) {
+          console.error('Error updating bookingTitle:', error)
+        }
+      },
+    ],
   },
   fields: [
+    {
+      name: 'bookingTitle',
+      type: 'text',
+      admin: {
+        readOnly: true,
+      },
+    },
     { name: 'customer', type: 'relationship', relationTo: 'customers', required: true },
     { name: 'property', type: 'relationship', relationTo: 'properties', required: true },
     { name: 'room', type: 'relationship', relationTo: 'rooms', required: true },

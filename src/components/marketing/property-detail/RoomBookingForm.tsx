@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { useUser } from '@/lib/state/user'
+import type { PropertySummary } from '@/types/property'
 import { toast } from 'sonner'
 
 type Room = {
@@ -14,19 +15,19 @@ type Room = {
 }
 
 type Props = {
-  propertyId?: string
+  property?: PropertySummary
   room: Room
   onClose: () => void
 }
 
-export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
+export default function RoomBookingForm({ property, room, onClose }: Props) {
   const userData = useUser()
   const [foodIncluded, setFoodIncluded] = React.useState(false)
   const [apiError, setApiError] = React.useState<string | null>(null)
   const [step, setStep] = React.useState<1 | 2 | 3>(1)
   const [loading, setLoading] = React.useState(false)
-  const [booking, setBooking] = React.useState<any>(null)
-  const [payment, setPayment] = React.useState<any>(null)
+  const [booking, setBooking] = React.useState<{ id?: string; price?: number } | null>(null)
+  const [payment, setPayment] = React.useState<{ id?: string } | null>(null)
   const apiBase = process.env.NEXT_PUBLIC_API_BASE || ''
 
   async function createBooking() {
@@ -35,7 +36,7 @@ export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
       toast.info('Please sign in to book a room.')
       return
     }
-    if (!propertyId || !room?.id) {
+    if (!property?.id || !room?.id) {
       setApiError('Missing property or room.')
       return
     }
@@ -46,7 +47,7 @@ export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          property: propertyId,
+          property: property?.id,
           room: room.id,
           foodIncluded,
           customer: userData.user.id,
@@ -62,8 +63,8 @@ export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
       setBooking(result.booking)
       setPayment(result.payment)
       setStep(2)
-    } catch (err: any) {
-      const errorMsg = err?.message || 'Something went wrong.'
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || String(err) || 'Something went wrong.'
       setApiError(errorMsg)
       toast.error(errorMsg)
     } finally {
@@ -107,8 +108,8 @@ export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
       // If no redirect URL, show error
       setApiError('Failed to get payment URL from PhonePe')
       toast.error('Failed to initiate payment')
-    } catch (err: any) {
-      const errorMsg = err?.message || 'Failed to initiate payment.'
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || String(err) || 'Failed to initiate payment.'
       setApiError(errorMsg)
       toast.error(errorMsg)
     } finally {
@@ -135,7 +136,7 @@ export default function RoomBookingForm({ propertyId, room, onClose }: Props) {
         {step === 1 && (
           <>
             <div className="text-sm text-muted-foreground">
-              {propertyId ? `Property: ${propertyId}` : 'Property selected'}
+              {property?.id ? `Property: ${property.id}` : 'Property selected'}
             </div>
 
             <div className="rounded-md border p-3 text-sm">

@@ -216,10 +216,11 @@ const createPaymentRecord = async (
 
     const paymentData = {
       customer: customer.id,
+      paymentType: 'rent' as const, // This is a rent payment, electricity is billed separately
       // paymentDate is omitted - will be set when payment completes
       paymentForMonthAndYear: getCurrentDate().toISOString(),
       rent: booking.price,
-      amount: booking.price + foodAmount,
+      amount: booking.price + foodAmount, // Rent + food only, electricity excluded
       payfor: booking.id,
       dueDate: getDueDate().toISOString(),
       lastUpdatedAt: getCurrentDate().toISOString(),
@@ -227,11 +228,14 @@ const createPaymentRecord = async (
       bookingSnapshot: bookingSnapshot,
     }
 
-    console.log(`💰 [TASK] Creating payment record for customer ${customer.id}:`, {
+    console.log(`💰 [TASK] Creating rent payment record for customer ${customer.id}:`, {
+      paymentType: 'rent',
       amount: paymentData.amount,
+      rent: booking.price,
       bookingId: booking.id,
       dueDate: paymentData.dueDate,
       foodAmount,
+      note: 'Electricity will be billed separately',
     })
 
     const createdPayment = await payload.create({

@@ -13,6 +13,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/u
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { usePropertyDetail } from '@/lib/state/propertyDetail'
 import { useUser } from '@/lib/state/user'
+import type { PropertySummary as PropertySummaryType } from '@/types/property'
 import * as Lucide from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -28,9 +29,9 @@ export type Room = {
   available?: boolean
 }
 
-type Props = { rooms: Room[]; propertyId?: string }
+type Props = { property: PropertySummaryType }
 
-export default function BookingCard({ rooms, propertyId }: Props) {
+export default function BookingCard({ property }: Props) {
   const { selectedSharingType, setSelectedSharingType } = usePropertyDetail()
   const [isDesktop, setIsDesktop] = React.useState(false)
   const [openVisit, setOpenVisit] = React.useState(false)
@@ -39,6 +40,27 @@ export default function BookingCard({ rooms, propertyId }: Props) {
   const userData = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  // derive rooms from provided property object
+  const rooms: Room[] = React.useMemo(() => {
+    if (!Array.isArray(property.rooms)) return []
+    return property.rooms.map((r: unknown) => {
+      const rr = r as Partial<{
+        id?: string
+        name?: string
+        roomType?: Room['roomType']
+        rent?: number
+        available?: boolean
+      }>
+      return {
+        id: String(rr.id ?? ''),
+        name: String(rr.name ?? ''),
+        roomType: (rr.roomType as Room['roomType']) || 'single',
+        rent: Number(rr.rent ?? 0),
+        available: rr.available ?? true,
+      }
+    })
+  }, [property.rooms])
 
   // Room filtering logic retained for future use, but not shown in UI
 
@@ -73,10 +95,10 @@ export default function BookingCard({ rooms, propertyId }: Props) {
         <h3 className="font-semibold">Select Sharing Type</h3>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
-        {['all', 'single', 'two_sharing', 'three_sharing'].map((t) => (
+        {(['all', 'single', 'two_sharing', 'three_sharing'] as const).map((t) => (
           <button
             key={t}
-            onClick={() => setSelectedSharingType(t as any)}
+            onClick={() => setSelectedSharingType(t)}
             className={`rounded-md border px-2 py-1 capitalize whitespace-nowrap ${
               selectedSharingType === t ? 'bg-primary text-primary-foreground' : 'bg-background'
             } ${t === 'all' ? 'col-span-3' : ''}`}
@@ -146,7 +168,7 @@ export default function BookingCard({ rooms, propertyId }: Props) {
               </div>
             </DrawerHeader>
             <div className="flex-1 overflow-scroll pb-20">
-              <VisitBookingForm propertyId={propertyId} onClose={() => setOpenVisit(false)} />
+              <VisitBookingForm property={property} onClose={() => setOpenVisit(false)} />
             </div>
           </DrawerContent>
         </Drawer>
@@ -159,7 +181,7 @@ export default function BookingCard({ rooms, propertyId }: Props) {
                 <SheetTitle className="text-sm font-medium">Schedule a visit</SheetTitle>
               </div>
             </SheetHeader>
-            <VisitBookingForm propertyId={propertyId} onClose={() => setOpenVisit(false)} />
+            <VisitBookingForm property={property} onClose={() => setOpenVisit(false)} />
             {/* <SheetFooter /> */}
           </SheetContent>
         </Sheet>
@@ -179,7 +201,7 @@ export default function BookingCard({ rooms, propertyId }: Props) {
               {selectedRoom ? (
                 <RoomBookingForm
                   room={selectedRoom}
-                  propertyId={propertyId}
+                  property={property}
                   onClose={() => setOpenBook(false)}
                 />
               ) : null}
@@ -198,7 +220,7 @@ export default function BookingCard({ rooms, propertyId }: Props) {
             {selectedRoom ? (
               <RoomBookingForm
                 room={selectedRoom}
-                propertyId={propertyId}
+                property={property}
                 onClose={() => setOpenBook(false)}
               />
             ) : null}
@@ -217,11 +239,11 @@ function AuthPromptDialog() {
   const [open, setOpen] = React.useState(false)
   // Expose setter via global event to avoid prop drilling
   React.useEffect(() => {
-    function onOpenAuthPrompt() {
+    function onOpenAuthPrompt(_e?: Event) {
       setOpen(true)
     }
-    window.addEventListener('open-auth-prompt', onOpenAuthPrompt as any)
-    return () => window.removeEventListener('open-auth-prompt', onOpenAuthPrompt as any)
+    window.addEventListener('open-auth-prompt', onOpenAuthPrompt)
+    return () => window.removeEventListener('open-auth-prompt', onOpenAuthPrompt)
   }, [])
 
   return (

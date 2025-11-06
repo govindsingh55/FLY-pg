@@ -11,10 +11,17 @@ interface PaymentCardProps {
   payment: {
     id: string
     amount: number
+    rent?: number
     status: string
+    paymentType: 'rent' | 'electricity' | 'security-deposit' | 'late-fee' | 'other'
     paymentDate: string
     dueDate?: string
     paymentForMonthAndYear?: string
+    lateFees?: number
+    utilityCharges?: number
+    electricityUnitsConsumed?: number
+    electricityRatePerUnit?: number
+    electricityCharges?: number
     payfor?: {
       id: string
       property?: {
@@ -79,9 +86,16 @@ export function PaymentCard({ payment, showActions = true }: PaymentCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg">{propertyName}</CardTitle>
+            <div className="flex items-center gap-2 mb-1">
+              <CardTitle className="text-lg">{propertyName}</CardTitle>
+              {payment.paymentType === 'rent' && <span className="text-lg">🏠</span>}
+              {payment.paymentType === 'electricity' && <span className="text-lg">⚡</span>}
+              {payment.paymentType === 'security-deposit' && <span className="text-lg">🔒</span>}
+              {payment.paymentType === 'late-fee' && <span className="text-lg">⏰</span>}
+              {payment.paymentType === 'other' && <span className="text-lg">📋</span>}
+            </div>
             <CardDescription className="mt-1">
-              {roomName} • {payment.paymentForMonthAndYear || 'Rent Payment'}
+              {roomName} • {payment.paymentForMonthAndYear || 'Payment'}
             </CardDescription>
           </div>
           <div className="flex flex-col items-end space-y-2">
