@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
 
     // Create payment record
     const paymentData = {
+      paymentType: 'rent' as const, // REQUIRED: Specify payment type
       amount,
       customer: customer.id,
       payfor: bookingId,
@@ -100,7 +101,9 @@ export async function POST(req: NextRequest) {
         room: booking.room,
         startDate: booking.startDate,
         endDate: booking.endDate,
-        price: booking.price,
+        roomRent: booking.roomRent, // Use roomRent instead of price
+        foodPrice: booking.foodPrice,
+        total: booking.total,
       },
       notes:
         description ||

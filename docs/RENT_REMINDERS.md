@@ -1,4 +1,26 @@
+
 # Rent Reminder Notification System
+## 🐛 Critical Bug Fixes (2025 Refactor)
+
+The rent reminder system was refactored to address 4 critical bugs:
+
+### 1. Duplicate Invoice Prevention
+- **Problem:** The job could create multiple rent invoices for the same month if run more than once or missed the 1st.
+- **Fix:** Added a guard (`hasExistingRentInvoiceForCurrentMonth`) to check for an existing rent payment for the booking and month before creating a new one.
+
+### 2. Food Cost Charged Twice
+- **Problem:** Food charges were being added twice (from both booking and property).
+- **Fix:** Now only `booking.foodPrice` is used (auto-populated from property at booking creation), never summed with property price again.
+
+### 3. Payment Query Not Filtered by Booking
+- **Problem:** Payment history queries were not filtered by booking, causing cross-booking contamination.
+- **Fix:** Payment queries now filter by both `customer`, `bookingId`, and `paymentType` to ensure only relevant payments are considered.
+
+### 4. Inactive Bookings Receiving Reminders
+- **Problem:** Cancelled or completed bookings were still processed for reminders.
+- **Fix:** The job now skips bookings with status `cancelled` or `completed`, and only processes those in the active date range and with eligible status.
+
+**See [DEVELOPMENT.md](./DEVELOPMENT.md#recent-refactoring) for code details.**
 
 A comprehensive automated rent reminder system that sends email notifications to customers based on their payment status and booking information.
 

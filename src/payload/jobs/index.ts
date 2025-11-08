@@ -91,6 +91,47 @@ const isPaymentCompletedForLastMonth = (payment: Payment | null): boolean => {
   return isSameMonth(lastPaymentDate, lastMonth)
 }
 
+const hasExistingRentInvoiceForCurrentMonth = async (
+  payload: PayloadRequest['payload'],
+  bookingId: string,
+): Promise<boolean> => {
+  try {
+    const currentDate = getCurrentDate()
+    const currentYear = currentDate.getFullYear()
+    const currentMonth = currentDate.getMonth()
+
+    console.log(
+      `🔍 [TASK] Checking for existing rent invoice for booking ${bookingId} in ${currentMonth + 1}/${currentYear}`,
+    )
+
+    const result = await payload.find({
+      collection: 'payments',
+      where: {
+        and: [{ payfor: { equals: bookingId } }, { paymentType: { equals: 'rent' } }],
+      },
+      limit: 10,
+    })
+
+    // Check if any payment is for the current month and year
+    const hasInvoice = result.docs.some((payment) => {
+      if (!payment.paymentForMonthAndYear) return false
+
+      const paymentDate = parseISO(payment.paymentForMonthAndYear)
+      return paymentDate.getFullYear() === currentYear && paymentDate.getMonth() === currentMonth
+    })
+
+    console.log(
+      `✅ [TASK] Booking ${bookingId} ${hasInvoice ? 'already has' : 'does not have'} rent invoice for current month`,
+    )
+
+    return hasInvoice
+  } catch (error) {
+    console.error(`❌ [TASK] Error checking existing rent invoice for booking ${bookingId}:`, error)
+    // Return true to prevent duplicate creation in case of error
+    return true
+  }
+}
+
 const shouldCreateNewPayment = (context: PaymentReminderContext): boolean => {
   const { lastPayment, currentDate } = context
 
@@ -141,24 +182,35 @@ const fetchActiveCustomers = async (payload: PayloadRequest['payload']) => {
 const fetchCustomerPayments = async (
   payload: PayloadRequest['payload'],
   customerId: string,
+  bookingId?: string,
 ): Promise<Payment[]> => {
   try {
-    console.log(`🔍 [TASK] Fetching payments for customer ${customerId}...`)
+    console.log(
+      `🔍 [TASK] Fetching rent payments for customer ${customerId}${bookingId ? ` and booking ${bookingId}` : ''}...`,
+    )
+
     const result = await payload.find({
       collection: 'payments',
       where: {
-        customer: { equals: customerId },
+        and: [
+          { customer: { equals: customerId } },
+          { paymentType: { equals: 'rent' } },
+          ...(bookingId ? [{ payfor: { equals: bookingId } }] : []),
+        ],
       },
       sort: '-createdAt',
       limit: PAYMENT_CONSTANTS.PAYMENT_QUERY_LIMIT,
     })
 
-    console.log(`✅ [TASK] Found ${result.docs.length} payments for customer ${customerId}`)
+    console.log(
+      `✅ [TASK] Found ${result.docs.length} rent payments for customer ${customerId}${bookingId ? ` and booking ${bookingId}` : ''}`,
+    )
     return result.docs as Payment[]
   } catch (error) {
     console.error(`❌ [TASK] Error fetching payments for customer ${customerId}:`, {
       error: error instanceof Error ? error.message : 'Unknown error',
       customerId,
+      bookingId,
       timestamp: new Date().toISOString(),
     })
     throw new Error(`Failed to fetch payments for customer ${customerId}`)
@@ -202,7 +254,11 @@ const createPaymentRecord = async (
   try {
     // Calculate monthly rent amount (room rent + food if included)
     const monthlyRoomRent = Number(booking.roomRent) || 0
-    const monthlyFoodPrice = booking.foodIncluded ? Number(booking.foodPrice) || 0 : 0
+
+    // Use booking.foodPrice if available, otherwise use fetched foodAmount from property
+    // This prevents double-charging food
+    const monthlyFoodPrice = booking.foodIncluded ? Number(booking.foodPrice) || foodAmount : 0
+
     const monthlyRent = monthlyRoomRent + monthlyFoodPrice
 
     // Create booking snapshot
@@ -218,7 +274,7 @@ const createPaymentRecord = async (
       securityDeposit: booking.securityDeposit,
       takeFirstMonthRentOnBooking: booking.takeFirstMonthRentOnBooking,
       foodIncluded: booking.foodIncluded,
-      foodAmount: foodAmount,
+      foodAmount: monthlyFoodPrice,
       startDate: booking.startDate,
       endDate: booking.endDate,
       checkInDate: booking.checkInDate,
@@ -233,7 +289,7 @@ const createPaymentRecord = async (
       // paymentDate is omitted - will be set when payment completes
       paymentForMonthAndYear: getCurrentDate().toISOString(),
       rent: monthlyRoomRent,
-      amount: monthlyRent + foodAmount, // Rent + food only, electricity excluded
+      amount: monthlyRent, // Rent + food (not double counted), electricity excluded
       payfor: booking.id,
       dueDate: getDueDate().toISOString(),
       lastUpdatedAt: getCurrentDate().toISOString(),
@@ -245,9 +301,9 @@ const createPaymentRecord = async (
       paymentType: 'rent',
       amount: paymentData.amount,
       rent: monthlyRoomRent,
+      foodAmount: monthlyFoodPrice,
       bookingId: booking.id,
       dueDate: paymentData.dueDate,
-      foodAmount,
       note: 'Electricity will be billed separately',
     })
 
@@ -257,9 +313,9 @@ const createPaymentRecord = async (
       draft: false,
     })
 
-    return createdPayment.id
-
     console.log(`✅ [TASK] Payment record created successfully for customer ${customer.id}`)
+
+    return createdPayment.id
   } catch (error) {
     console.error(`❌ [TASK] Error creating payment for customer ${customer.id}:`, {
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -388,14 +444,42 @@ const processCustomerBooking = async (
       `🔄 [TASK] Processing booking ${booking.id} for customer ${customer.id} (${customer.email})`,
     )
 
-    const payments = await fetchCustomerPayments(payload, customer.id)
+    // Skip inactive bookings
+    if (booking.status === 'cancelled' || booking.status === 'completed') {
+      console.log(`⏭️ [TASK] Skipping booking ${booking.id} - status is ${booking.status}`)
+      return
+    }
+
+    // Check if booking is within active period
+    const currentDate = getCurrentDate()
+    if (booking.startDate) {
+      const startDate = parseISO(booking.startDate)
+      if (currentDate < startDate) {
+        console.log(
+          `⏭️ [TASK] Skipping booking ${booking.id} - not started yet (starts ${booking.startDate})`,
+        )
+        return
+      }
+    }
+
+    if (booking.endDate) {
+      const endDate = parseISO(booking.endDate)
+      if (currentDate > endDate) {
+        console.log(
+          `⏭️ [TASK] Skipping booking ${booking.id} - already ended (ended ${booking.endDate})`,
+        )
+        return
+      }
+    }
+
+    const payments = await fetchCustomerPayments(payload, customer.id, booking.id)
     const lastPayment = payments[0] || null
 
     const context: PaymentReminderContext = {
       customer,
       booking,
       lastPayment,
-      currentDate: getCurrentDate(),
+      currentDate: currentDate,
     }
 
     console.log(`📊 [TASK] Payment context for customer ${customer.id}:`, {
@@ -416,11 +500,18 @@ const processCustomerBooking = async (
       console.log(`🍽️ [TASK] Food amount calculated for customer ${customer.id}: ${foodAmount}`)
     }
 
-    // Create new payment if conditions are met
-    if (shouldCreateNewPayment(context)) {
+    // Check if rent invoice already exists for current month
+    const hasExistingInvoice = await hasExistingRentInvoiceForCurrentMonth(payload, booking.id)
+
+    // Create new payment if conditions are met and no existing invoice
+    if (!hasExistingInvoice && shouldCreateNewPayment(context)) {
       console.log(`💰 [TASK] Creating new payment for customer ${customer.id}`)
       const paymentId = await createPaymentRecord(payload, context, foodAmount)
       await sendPaymentReminderEmail(payload, customer, 'GENTLE_REMINDER', paymentId)
+    } else if (hasExistingInvoice) {
+      console.log(
+        `ℹ️ [TASK] Rent invoice already exists for booking ${booking.id} for current month`,
+      )
     }
 
     // Send late payment warning
@@ -592,6 +683,7 @@ export {
   createPaymentRecord,
   fetchCustomerPayments,
   fetchPropertyDetails,
+  hasExistingRentInvoiceForCurrentMonth,
 }
 
 export default {

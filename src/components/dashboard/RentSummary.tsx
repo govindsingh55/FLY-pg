@@ -142,15 +142,18 @@ export function RentSummary({ className }: RentSummaryProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          paymentType: 'rent', // REQUIRED: Specify payment type
           amount: summaryData.currentMonth.pendingAmount + summaryData.currentMonth.lateFees,
           description: `Rent payment for ${new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}`,
           dueDate: summaryData.currentMonth.dueDate,
           paymentMethod: 'phonepe',
+          bookingId: summaryData.properties[0]?.id, // REQUIRED for rent payment type
         }),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create payment')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create payment')
       }
 
       const { payment } = await response.json()
@@ -165,13 +168,14 @@ export function RentSummary({ className }: RentSummaryProps) {
           amount: summaryData.currentMonth.pendingAmount + summaryData.currentMonth.lateFees,
           bookingId: summaryData.properties[0]?.id, // Use the first active property's booking ID
           paymentMethod: 'upi',
-          paymentForMonthAndYear: new Date().toISOString().slice(0, 7), // YYYY-MM format
+          paymentForMonthAndYear: new Date().toISOString(), // Full ISO date format
           description: `Rent payment for ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`,
         }),
       })
 
       if (!phonePeResponse.ok) {
-        throw new Error('Failed to initiate payment')
+        const errorData = await phonePeResponse.json()
+        throw new Error(errorData.error || 'Failed to initiate payment')
       }
 
       const { redirectUrl } = await phonePeResponse.json()

@@ -74,7 +74,8 @@ const Payments: CollectionConfig = {
               required: true,
               min: 0,
               admin: {
-                description: 'Monthly rent amount in INR',
+                description:
+                  'Monthly rent amount in INR. Auto-populated from booking, can be overridden if needed (e.g., discounts, custom agreements).',
                 condition: (data) => data?.paymentType === 'rent',
               },
             },
@@ -91,7 +92,8 @@ const Payments: CollectionConfig = {
                   defaultValue: 0,
                   admin: {
                     width: '50%',
-                    description: 'Late fees (if applicable)',
+                    description:
+                      'Late fees charged if payment is made after due date. Can be customized per payment.',
                   },
                 },
                 {
@@ -101,7 +103,8 @@ const Payments: CollectionConfig = {
                   defaultValue: 0,
                   admin: {
                     width: '50%',
-                    description: 'Utility charges (water, maintenance, etc.)',
+                    description:
+                      'Additional utility charges (water, maintenance, food if included in booking). Note: Electricity is billed separately.',
                   },
                 },
               ],
@@ -113,7 +116,8 @@ const Payments: CollectionConfig = {
               min: 0,
               defaultValue: 0,
               admin: {
-                description: 'One-time booking charge',
+                description:
+                  'One-time booking charge. Auto-populated from booking record, can be adjusted if needed.',
                 condition: (data) => data?.paymentType === 'booking',
               },
             },
@@ -123,7 +127,8 @@ const Payments: CollectionConfig = {
               min: 0,
               defaultValue: 0,
               admin: {
-                description: 'First month rent (if taken at booking)',
+                description:
+                  'First month rent amount (room rent + food if included). Auto-calculated from booking, can be overridden for special cases.',
                 condition: (data) => data?.paymentType === 'booking',
               },
             },
@@ -133,7 +138,8 @@ const Payments: CollectionConfig = {
               min: 0,
               defaultValue: 0,
               admin: {
-                description: 'Security deposit amount (if applicable)',
+                description:
+                  'Security deposit amount. Auto-populated from booking calculation, can be manually adjusted.',
                 condition: (data) => data?.paymentType === 'booking',
               },
             },
@@ -142,7 +148,8 @@ const Payments: CollectionConfig = {
               type: 'checkbox',
               defaultValue: true,
               admin: {
-                description: 'Whether first month rent is included in this booking payment',
+                description:
+                  'If checked, first month rent is included in this booking payment. Auto-set from booking, can be changed.',
                 condition: (data) => data?.paymentType === 'booking',
               },
             },
@@ -160,7 +167,8 @@ const Payments: CollectionConfig = {
                   required: true,
                   admin: {
                     width: '33%',
-                    description: 'Units consumed (kWh)',
+                    description:
+                      'Units consumed (kWh). Enter the total units for the billing period.',
                     condition: (data) => data?.paymentType === 'electricity',
                   },
                 },
@@ -170,8 +178,9 @@ const Payments: CollectionConfig = {
                   min: 0,
                   admin: {
                     width: '33%',
-                    description: 'Rate per unit (auto-populated)',
-                    readOnly: true,
+                    description:
+                      'Rate per unit (₹/kWh). Auto-populated from property settings, can be adjusted for variable rates.',
+                    readOnly: false,
                     condition: (data) => data?.paymentType === 'electricity',
                   },
                 },
@@ -181,8 +190,9 @@ const Payments: CollectionConfig = {
                   min: 0,
                   admin: {
                     width: '34%',
-                    description: 'Total charges (auto-calculated)',
-                    readOnly: true,
+                    description:
+                      'Total charges (auto-calculated: units × rate). Can be overridden for fixed charges or adjustments.',
+                    readOnly: false,
                     condition: (data) => data?.paymentType === 'electricity',
                   },
                 },
@@ -199,7 +209,8 @@ const Payments: CollectionConfig = {
                   type: 'date',
                   admin: {
                     width: '50%',
-                    description: 'Billing period start date',
+                    description:
+                      'Billing period start date (used to track electricity billing cycles)',
                     condition: (data) => data?.paymentType === 'electricity',
                   },
                 },
@@ -208,7 +219,7 @@ const Payments: CollectionConfig = {
                   type: 'date',
                   admin: {
                     width: '50%',
-                    description: 'Billing period end date',
+                    description: 'Billing period end date (typically monthly cycles)',
                     condition: (data) => data?.paymentType === 'electricity',
                   },
                 },
@@ -225,7 +236,7 @@ const Payments: CollectionConfig = {
                   type: 'number',
                   admin: {
                     width: '50%',
-                    description: 'Starting meter reading',
+                    description: 'Starting meter reading at period start (for verification)',
                     condition: (data) => data?.paymentType === 'electricity',
                   },
                 },
@@ -234,7 +245,8 @@ const Payments: CollectionConfig = {
                   type: 'number',
                   admin: {
                     width: '50%',
-                    description: 'Ending meter reading',
+                    description:
+                      'Ending meter reading at period end (difference gives units consumed)',
                     condition: (data) => data?.paymentType === 'electricity',
                   },
                 },
@@ -247,8 +259,9 @@ const Payments: CollectionConfig = {
               required: true,
               min: 0,
               admin: {
-                description: 'Total payment amount (auto-calculated based on payment type)',
-                readOnly: true,
+                description:
+                  'Total payment amount. Auto-calculated based on payment type: RENT (rent + lateFees + utilities), BOOKING (bookingCharge + firstMonthRent + securityDeposit), ELECTRICITY (electricityCharges). Can be manually overridden if needed.',
+                readOnly: false,
               },
             },
             {
@@ -262,6 +275,7 @@ const Payments: CollectionConfig = {
                   index: true,
                   admin: {
                     width: '50%',
+                    description: 'Select the customer making this payment',
                   },
                 },
                 {
@@ -272,11 +286,10 @@ const Payments: CollectionConfig = {
                   index: true,
                   admin: {
                     width: '50%',
-                    description: 'Select the booking this payment is for',
-                    // Set relationship depth to populate property, room, customer for displayTitle
+                    description:
+                      'Select the booking this payment is for. Pricing details will be auto-populated from the selected booking.',
                     allowCreate: false,
                   },
-                  // Filter to show only active/confirmed bookings
                   filterOptions: {
                     status: {
                       in: ['active', 'confirmed', 'pending'],
@@ -294,7 +307,8 @@ const Payments: CollectionConfig = {
                   required: true,
                   admin: {
                     width: '33%',
-                    description: 'Payment period (month/year)',
+                    description:
+                      'Payment period (month/year). Used to track which month this payment covers.',
                   },
                 },
                 {
@@ -303,7 +317,8 @@ const Payments: CollectionConfig = {
                   required: true,
                   admin: {
                     width: '33%',
-                    description: 'Payment due date',
+                    description:
+                      'Payment due date. Late fees may apply after this date (typically 7th of each month).',
                   },
                 },
                 {
@@ -311,7 +326,8 @@ const Payments: CollectionConfig = {
                   type: 'date',
                   admin: {
                     width: '34%',
-                    description: 'Actual payment completion date',
+                    description:
+                      'Actual payment completion date (set automatically when payment is completed)',
                   },
                 },
               ],
@@ -322,7 +338,7 @@ const Payments: CollectionConfig = {
               type: 'textarea',
               admin: {
                 description:
-                  'Additional notes about this payment (who collected, special circumstances, etc.)',
+                  'Additional notes about this payment (e.g., who collected, special circumstances, admin adjustments). System may auto-add notes for electricity billing.',
               },
             },
             {
@@ -330,7 +346,7 @@ const Payments: CollectionConfig = {
               type: 'upload',
               relationTo: 'media',
               admin: {
-                description: 'Upload payment receipt or proof of payment',
+                description: 'Upload payment receipt or proof of payment for record-keeping',
               },
             },
             {
@@ -338,7 +354,7 @@ const Payments: CollectionConfig = {
               type: 'relationship',
               relationTo: 'users',
               admin: {
-                description: 'Admin user who processed this payment',
+                description: 'Admin user who processed/created this payment record',
               },
             },
           ],
@@ -757,6 +773,8 @@ const Payments: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation }) => {
+        if (!data) return data
+
         let booking = null
 
         // Fetch booking data if payfor is provided
@@ -769,7 +787,35 @@ const Payments: CollectionConfig = {
               depth: 2, // Need depth 2 to get property -> electricityConfig
             })
           } catch (error) {
-            console.error('Error fetching booking:', error)
+            console.error('[PAYMENT] Error fetching booking:', error)
+          }
+        }
+
+        // Validate and auto-populate rent payment fields
+        if (data.paymentType === 'rent' && booking && operation === 'create') {
+          console.log('[PAYMENT] Auto-populating rent payment from booking data')
+
+          // Auto-populate rent if not manually set
+          if (!data.rent) {
+            data.rent = booking.roomRent || 0
+            console.log(`[PAYMENT] Auto-populated rent: ${data.rent}`)
+          } else {
+            // Warn if rent differs from booking
+            if (data.rent !== booking.roomRent) {
+              console.warn(
+                `[PAYMENT] ⚠️ Rent amount (${data.rent}) differs from booking rent (${booking.roomRent}). Admin override detected.`,
+              )
+            }
+          }
+
+          // Check if food is included and should be added
+          if (booking.foodIncluded && booking.foodPrice) {
+            const expectedFoodCharge = booking.foodPrice
+            if (!data.utilityCharges || data.utilityCharges === 0) {
+              console.log(
+                `[PAYMENT] ℹ️ Food is included in booking (${expectedFoodCharge}/month). Consider adding to utility charges or rent amount.`,
+              )
+            }
           }
         }
 
@@ -778,15 +824,20 @@ const Payments: CollectionConfig = {
           try {
             if (
               typeof booking.property === 'object' &&
-              booking.property?.electricityConfig?.enabled
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (booking.property as any).electricityConfig?.enabled
             ) {
-              const perUnitCost = booking.property.electricityConfig.perUnitCost
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const perUnitCost = (booking.property as any).electricityConfig.perUnitCost
               if (perUnitCost !== undefined && perUnitCost !== null) {
                 data.electricityRatePerUnit = perUnitCost
+                console.log(
+                  `[PAYMENT] Auto-populated electricityRatePerUnit: ${data.electricityRatePerUnit}`,
+                )
               }
             }
           } catch (error) {
-            console.error('Error fetching electricity rate from property:', error)
+            console.error('[PAYMENT] Error fetching electricity rate from property:', error)
           }
         }
 
@@ -797,7 +848,15 @@ const Payments: CollectionConfig = {
         ) {
           const units = Number(data.electricityUnitsConsumed) || 0
           const rate = Number(data.electricityRatePerUnit) || 0
-          data.electricityCharges = units * rate
+          const calculatedCharges = units * rate
+
+          if (data.electricityCharges && data.electricityCharges !== calculatedCharges) {
+            console.warn(
+              `[PAYMENT] ⚠️ Electricity charges (${data.electricityCharges}) differ from calculated value (${calculatedCharges}). Admin override detected.`,
+            )
+          } else {
+            data.electricityCharges = calculatedCharges
+          }
         }
 
         // Auto-calculate total amount based on payment type
@@ -805,6 +864,27 @@ const Payments: CollectionConfig = {
           // For electricity bills, amount = electricity charges only
           data.amount = Number(data.electricityCharges) || 0
         } else if (data.paymentType === 'booking') {
+          // Validate booking payment components
+          if (booking && operation === 'create') {
+            // Auto-populate from booking if not set
+            if (!data.bookingCharge) {
+              data.bookingCharge = booking.bookingCharge || 0
+              console.log(`[PAYMENT] Auto-populated bookingCharge: ${data.bookingCharge}`)
+            }
+            if (!data.securityDepositAmount) {
+              data.securityDepositAmount = booking.securityDeposit || 0
+              console.log(
+                `[PAYMENT] Auto-populated securityDepositAmount: ${data.securityDepositAmount}`,
+              )
+            }
+            if (data.takeFirstMonthRentOnBooking && !data.firstMonthRent) {
+              const monthlyRent =
+                (booking.roomRent || 0) + (booking.foodIncluded ? booking.foodPrice || 0 : 0)
+              data.firstMonthRent = monthlyRent
+              console.log(`[PAYMENT] Auto-populated firstMonthRent: ${data.firstMonthRent}`)
+            }
+          }
+
           // For booking payments, amount = booking charge + first month rent (if applicable) + security deposit (if applicable)
           const bookingCharge = Number(data.bookingCharge) || 0
           const firstMonthRent = data.takeFirstMonthRentOnBooking
@@ -825,7 +905,8 @@ const Payments: CollectionConfig = {
           if (
             booking &&
             typeof booking.property === 'object' &&
-            booking.property?.electricityConfig?.enabled &&
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (booking.property as any).electricityConfig?.enabled &&
             operation === 'create'
           ) {
             const existingNotes = data.notes || ''

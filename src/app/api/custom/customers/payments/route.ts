@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const payload = await getPayload({ config })
     const body = await request.json()
 
-    const { amount, description, dueDate, paymentMethod, bookingId } = body
+    const { amount, description, dueDate, paymentMethod, bookingId, paymentType } = body
 
     // Validate required fields
     if (!amount || amount <= 0) {
@@ -37,17 +37,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Due date is required' }, { status: 400 })
     }
 
+    if (!paymentType) {
+      return NextResponse.json({ error: 'Payment type is required' }, { status: 400 })
+    }
+
+    // Validate paymentType is one of the allowed values
+    const validPaymentTypes = [
+      'booking',
+      'rent',
+      'electricity',
+      'security-deposit',
+      'late-fee',
+      'other',
+    ]
+    if (!validPaymentTypes.includes(paymentType)) {
+      return NextResponse.json(
+        {
+          error: 'Invalid payment type. Must be one of: ' + validPaymentTypes.join(', '),
+        },
+        { status: 400 },
+      )
+    }
+
+    // Validate booking is required for most payment types
+    if (['booking', 'rent', 'electricity'].includes(paymentType) && !bookingId) {
+      return NextResponse.json(
+        { error: 'Booking ID is required for this payment type' },
+        { status: 400 },
+      )
+    }
+
     // Create payment record
     const payment = await payload.create({
       collection: 'payments',
       data: {
         customer: user.id,
+        paymentType: paymentType, // REQUIRED field
         amount: Number(amount),
         notes: description, // Use notes field instead of description
         dueDate: new Date(dueDate).toISOString(),
         status: 'pending',
         paymentMethod: paymentMethod || 'upi', // Use valid payment method
-        paymentForMonthAndYear: new Date().toISOString().slice(0, 7), // YYYY-MM format
+        paymentForMonthAndYear: new Date().toISOString(), // Full ISO date format (not slice)
         ...(bookingId && { payfor: bookingId }),
         bookingSnapshot: {},
       },
@@ -98,6 +129,7 @@ export async function GET(request: NextRequest) {
     const dateFilter = searchParams.get('dateFilter')
 
     // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereConditions: any[] = [{ customer: { equals: user.id } }]
 
     if (search) {

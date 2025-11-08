@@ -808,36 +808,57 @@ export interface VisitBooking {
  */
 export interface Booking {
   id: string;
+  /**
+   * Auto-generated title: Customer Name - Property Name - Room Name
+   */
   bookingTitle?: string | null;
+  /**
+   * Select the customer making this booking
+   */
   customer: string | Customer;
+  /**
+   * Select the property for this booking. Pricing will be auto-populated from property settings.
+   */
   property: string | Property;
+  /**
+   * Select the specific room. Room rent will be auto-populated.
+   */
   room: string | Room;
+  /**
+   * Check if food service is included. Food price will be added to monthly rent if enabled.
+   */
   foodIncluded?: boolean | null;
   /**
-   * Monthly room rent at time of booking
+   * Monthly room rent at time of booking. Auto-populated from room settings, but can be overridden for custom pricing.
    */
   roomRent: number;
   /**
-   * Monthly food charge (if food included)
+   * Monthly food charge (if food included). Auto-populated from property food menu price, but can be customized.
    */
   foodPrice?: number | null;
   /**
-   * One-time booking charge applied at booking time
+   * One-time booking charge applied at booking time. Auto-populated from property settings, can be adjusted.
    */
   bookingCharge?: number | null;
   /**
-   * Security deposit amount for this booking
+   * Security deposit amount for this booking. Auto-calculated based on property settings (fixed amount or rent multiplier), can be overridden.
    */
   securityDeposit?: number | null;
   /**
-   * Total booking amount (for entire period)
+   * Total booking amount for entire period. Auto-calculated: (roomRent + foodPrice) × periodInMonths + bookingCharge + securityDeposit
    */
   total: number;
   /**
-   * Whether first month rent is collected at booking
+   * If checked, first month rent is collected at booking time. Auto-set from property settings, can be changed per booking.
    */
   takeFirstMonthRentOnBooking?: boolean | null;
+  /**
+   * Current booking status. Only "confirmed" bookings will receive monthly rent reminders.
+   */
   status?: ('pending' | 'confirmed' | 'cancelled' | 'completed' | 'extended') | null;
+  /**
+   * Historical snapshot of room data at booking time (auto-populated)
+   */
   roomSnapshot?:
     | {
         [k: string]: unknown;
@@ -847,10 +868,25 @@ export interface Booking {
     | number
     | boolean
     | null;
+  /**
+   * Booking period start date. Used to calculate periodInMonths and total rent.
+   */
   startDate?: string | null;
+  /**
+   * Booking period end date. System will stop rent reminders after this date.
+   */
   endDate?: string | null;
+  /**
+   * Duration in months (auto-calculated from start and end dates)
+   */
   periodInMonths?: number | null;
+  /**
+   * Actual date when customer checked in
+   */
   checkInDate?: string | null;
+  /**
+   * Actual date when customer checked out
+   */
   checkOutDate?: string | null;
   cancellationReason?: string | null;
   cancelledAt?: string | null;
@@ -927,92 +963,95 @@ export interface Payment {
     | 'refunded'
     | 'partially-refunded';
   /**
-   * Monthly rent amount in INR
+   * Monthly rent amount in INR. Auto-populated from booking, can be overridden if needed (e.g., discounts, custom agreements).
    */
   rent?: number | null;
   /**
-   * Late fees (if applicable)
+   * Late fees charged if payment is made after due date. Can be customized per payment.
    */
   lateFees?: number | null;
   /**
-   * Utility charges (water, maintenance, etc.)
+   * Additional utility charges (water, maintenance, food if included in booking). Note: Electricity is billed separately.
    */
   utilityCharges?: number | null;
   /**
-   * One-time booking charge
+   * One-time booking charge. Auto-populated from booking record, can be adjusted if needed.
    */
   bookingCharge?: number | null;
   /**
-   * First month rent (if taken at booking)
+   * First month rent amount (room rent + food if included). Auto-calculated from booking, can be overridden for special cases.
    */
   firstMonthRent?: number | null;
   /**
-   * Security deposit amount (if applicable)
+   * Security deposit amount. Auto-populated from booking calculation, can be manually adjusted.
    */
   securityDepositAmount?: number | null;
   /**
-   * Whether first month rent is included in this booking payment
+   * If checked, first month rent is included in this booking payment. Auto-set from booking, can be changed.
    */
   takeFirstMonthRentOnBooking?: boolean | null;
   /**
-   * Units consumed (kWh)
+   * Units consumed (kWh). Enter the total units for the billing period.
    */
   electricityUnitsConsumed?: number | null;
   /**
-   * Rate per unit (auto-populated)
+   * Rate per unit (₹/kWh). Auto-populated from property settings, can be adjusted for variable rates.
    */
   electricityRatePerUnit?: number | null;
   /**
-   * Total charges (auto-calculated)
+   * Total charges (auto-calculated: units × rate). Can be overridden for fixed charges or adjustments.
    */
   electricityCharges?: number | null;
   /**
-   * Billing period start date
+   * Billing period start date (used to track electricity billing cycles)
    */
   billingPeriodStart?: string | null;
   /**
-   * Billing period end date
+   * Billing period end date (typically monthly cycles)
    */
   billingPeriodEnd?: string | null;
   /**
-   * Starting meter reading
+   * Starting meter reading at period start (for verification)
    */
   meterReadingStart?: number | null;
   /**
-   * Ending meter reading
+   * Ending meter reading at period end (difference gives units consumed)
    */
   meterReadingEnd?: number | null;
   /**
-   * Total payment amount (auto-calculated based on payment type)
+   * Total payment amount. Auto-calculated based on payment type: RENT (rent + lateFees + utilities), BOOKING (bookingCharge + firstMonthRent + securityDeposit), ELECTRICITY (electricityCharges). Can be manually overridden if needed.
    */
   amount: number;
+  /**
+   * Select the customer making this payment
+   */
   customer: string | Customer;
   /**
-   * Select the booking this payment is for
+   * Select the booking this payment is for. Pricing details will be auto-populated from the selected booking.
    */
   payfor: string | Booking;
   /**
-   * Payment period (month/year)
+   * Payment period (month/year). Used to track which month this payment covers.
    */
   paymentForMonthAndYear: string;
   /**
-   * Payment due date
+   * Payment due date. Late fees may apply after this date (typically 7th of each month).
    */
   dueDate: string;
   /**
-   * Actual payment completion date
+   * Actual payment completion date (set automatically when payment is completed)
    */
   paymentDate?: string | null;
   /**
-   * Additional notes about this payment (who collected, special circumstances, etc.)
+   * Additional notes about this payment (e.g., who collected, special circumstances, admin adjustments). System may auto-add notes for electricity billing.
    */
   notes?: string | null;
   /**
-   * Upload payment receipt or proof of payment
+   * Upload payment receipt or proof of payment for record-keeping
    */
   paymentReceipt?: (string | null) | Media;
   /**
-   * Admin user who processed this payment
+   * Admin user who processed/created this payment record
    */
   processedBy?: (string | null) | User;
   /**
