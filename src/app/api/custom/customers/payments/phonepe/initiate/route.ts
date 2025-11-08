@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     // Determine redirect URL based on payment type
     const redirectUrl = payment.payfor
-      ? `${siteUrl}/payments/success?paymentId=${encodeURIComponent(payment.id)}`
+      ? `${siteUrl}/payments/success?paymentId=${encodeURIComponent(payment.id)}&bookingId=${encodeURIComponent(String(payment.payfor))}`
       : `${siteUrl}/dashboard/rent/payments/success?paymentId=${encodeURIComponent(payment.id)}&transactionId=${encodeURIComponent(merchantOrderId)}`
 
     console.log('[Customer PhonePe Initiate] Payment parameters:', {
@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
       amountPaise,
       amountOriginal: payment.amount,
       redirectUrl,
+      paymentType: payment.payfor ? 'booking' : 'rent',
     })
 
     const result = await phonePeCreatePayment({

@@ -26,8 +26,22 @@ export default function RoomBookingForm({ property, room, onClose }: Props) {
   const [apiError, setApiError] = React.useState<string | null>(null)
   const [step, setStep] = React.useState<1 | 2 | 3>(1)
   const [loading, setLoading] = React.useState(false)
-  const [booking, setBooking] = React.useState<{ id?: string; price?: number } | null>(null)
-  const [payment, setPayment] = React.useState<{ id?: string } | null>(null)
+  const [booking, setBooking] = React.useState<{
+    id?: string
+    total?: number
+    roomRent?: number
+    foodPrice?: number
+    bookingCharge?: number
+    securityDeposit?: number
+    takeFirstMonthRentOnBooking?: boolean
+    foodIncluded?: boolean
+  } | null>(null)
+  const [payment, setPayment] = React.useState<{
+    id?: string
+    amount?: number
+    dueDate?: string
+    status?: string
+  } | null>(null)
   const apiBase = process.env.NEXT_PUBLIC_API_BASE || ''
 
   async function createBooking() {
@@ -156,25 +170,53 @@ export default function RoomBookingForm({ property, room, onClose }: Props) {
                 onChange={(e) => setFoodIncluded(e.target.checked)}
               />
               <Label htmlFor="foodIncluded" className="text-sm">
-                Add food to my booking
+                Include food in my booking
               </Label>
             </div>
 
             <div className="text-xs text-muted-foreground">
-              Note: Price is calculated as (room rent × months) + (food charge × months if
-              included).
+              Initial payment includes: booking charge + security deposit. First month rent and food
+              (if selected) may be included based on property settings.
             </div>
           </>
         )}
 
         {step === 2 && (
           <>
-            <div className="rounded-md border p-3 text-sm">
+            <div className="rounded-md border p-3 text-sm space-y-2">
               <div className="font-medium">Payment summary</div>
-              <div className="text-muted-foreground">Booking ID: {booking?.id}</div>
-              <div className="text-muted-foreground">Payment ID: {payment?.id}</div>
-              <div className="mt-1 font-semibold">
-                Amount: ₹{Number(booking?.price || 0).toLocaleString()}
+              <div className="text-muted-foreground text-xs">Booking ID: {booking?.id}</div>
+              <div className="text-muted-foreground text-xs">Payment ID: {payment?.id}</div>
+
+              <div className="border-t pt-2 mt-2 space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span>Booking Charge:</span>
+                  <span>₹{Number(booking?.bookingCharge || 0).toLocaleString()}</span>
+                </div>
+                {booking?.takeFirstMonthRentOnBooking && (
+                  <>
+                    <div className="flex justify-between text-xs">
+                      <span>Room Rent (1st month):</span>
+                      <span>₹{Number(booking?.roomRent || 0).toLocaleString()}</span>
+                    </div>
+                    {booking?.foodIncluded && (booking?.foodPrice ?? 0) > 0 && (
+                      <div className="flex justify-between text-xs">
+                        <span>Food Charge (1st month):</span>
+                        <span>₹{Number(booking?.foodPrice || 0).toLocaleString()}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+                {(booking?.securityDeposit ?? 0) > 0 && (
+                  <div className="flex justify-between text-xs">
+                    <span>Security Deposit:</span>
+                    <span>₹{Number(booking?.securityDeposit || 0).toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-semibold border-t pt-1 mt-1">
+                  <span>Total Amount:</span>
+                  <span>₹{Number(booking?.total || 0).toLocaleString()}</span>
+                </div>
               </div>
             </div>
 

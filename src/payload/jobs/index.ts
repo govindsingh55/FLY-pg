@@ -200,14 +200,27 @@ const createPaymentRecord = async (
   const { customer, booking } = context
 
   try {
+    // Calculate monthly rent amount (room rent + food if included)
+    const monthlyRoomRent = Number(booking.roomRent) || 0
+    const monthlyFoodPrice = booking.foodIncluded ? Number(booking.foodPrice) || 0 : 0
+    const monthlyRent = monthlyRoomRent + monthlyFoodPrice
+
     // Create booking snapshot
     const bookingSnapshot = {
       bookingId: booking.id,
       propertyName: typeof booking.property === 'object' ? booking.property.name : 'Unknown',
       roomName: typeof booking.room === 'object' ? booking.room.name : 'Unknown',
-      price: booking.price,
+      roomRent: booking.roomRent,
+      foodPrice: booking.foodPrice,
+      total: booking.total,
+      periodInMonths: booking.periodInMonths,
+      bookingCharge: booking.bookingCharge,
+      securityDeposit: booking.securityDeposit,
+      takeFirstMonthRentOnBooking: booking.takeFirstMonthRentOnBooking,
       foodIncluded: booking.foodIncluded,
       foodAmount: foodAmount,
+      startDate: booking.startDate,
+      endDate: booking.endDate,
       checkInDate: booking.checkInDate,
       checkOutDate: booking.checkOutDate,
       status: booking.status,
@@ -219,8 +232,8 @@ const createPaymentRecord = async (
       paymentType: 'rent' as const, // This is a rent payment, electricity is billed separately
       // paymentDate is omitted - will be set when payment completes
       paymentForMonthAndYear: getCurrentDate().toISOString(),
-      rent: booking.price,
-      amount: booking.price + foodAmount, // Rent + food only, electricity excluded
+      rent: monthlyRoomRent,
+      amount: monthlyRent + foodAmount, // Rent + food only, electricity excluded
       payfor: booking.id,
       dueDate: getDueDate().toISOString(),
       lastUpdatedAt: getCurrentDate().toISOString(),
@@ -231,7 +244,7 @@ const createPaymentRecord = async (
     console.log(`💰 [TASK] Creating rent payment record for customer ${customer.id}:`, {
       paymentType: 'rent',
       amount: paymentData.amount,
-      rent: booking.price,
+      rent: monthlyRoomRent,
       bookingId: booking.id,
       dueDate: paymentData.dueDate,
       foodAmount,
@@ -390,7 +403,8 @@ const processCustomerBooking = async (
       lastPaymentStatus: lastPayment?.status || 'none',
       lastPaymentDate: lastPayment?.paymentDate || 'none',
       currentDate: getCurrentDate().toISOString(),
-      bookingPrice: booking.price,
+      bookingRoomRent: booking.roomRent,
+      bookingFoodPrice: booking.foodPrice,
       foodIncluded: booking.foodIncluded,
     })
 

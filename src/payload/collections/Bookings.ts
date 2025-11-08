@@ -106,74 +106,45 @@ const Bookings: CollectionConfig = {
     { name: 'property', type: 'relationship', relationTo: 'properties', required: true },
     { name: 'room', type: 'relationship', relationTo: 'rooms', required: true },
     { name: 'foodIncluded', type: 'checkbox', defaultValue: false },
-    { name: 'price', type: 'number', required: true },
-    // Security Deposit Fields
+    // Pricing breakdown
+    {
+      name: 'roomRent',
+      type: 'number',
+      required: true,
+      admin: { description: 'Monthly room rent at time of booking', readOnly: true },
+    },
+    {
+      name: 'foodPrice',
+      type: 'number',
+      defaultValue: 0,
+      admin: { description: 'Monthly food charge (if food included)', readOnly: true },
+    },
+    {
+      name: 'bookingCharge',
+      type: 'number',
+      defaultValue: 0,
+      admin: { description: 'One-time booking charge applied at booking time', readOnly: true },
+    },
     {
       name: 'securityDeposit',
-      type: 'group',
-      label: 'Security Deposit',
+      type: 'number',
+      defaultValue: 0,
+      admin: { description: 'Security deposit amount for this booking', readOnly: true },
+    },
+    {
+      name: 'total',
+      type: 'number',
+      required: true,
       admin: {
-        description: 'Security deposit details for this booking',
+        description: 'Total booking amount (for entire period)',
+        readOnly: true,
       },
-      fields: [
-        {
-          name: 'amount',
-          type: 'number',
-          min: 0,
-          admin: {
-            description: 'Security deposit amount (0 if not required)',
-          },
-        },
-        {
-          name: 'status',
-          type: 'select',
-          options: [
-            { label: 'Not Required', value: 'not-required' },
-            { label: 'Pending', value: 'pending' },
-            { label: 'Paid', value: 'paid' },
-            { label: 'Refunded', value: 'refunded' },
-            { label: 'Partially Refunded', value: 'partially-refunded' },
-            { label: 'Forfeited', value: 'forfeited' },
-          ],
-          defaultValue: 'not-required',
-        },
-        {
-          name: 'paidDate',
-          type: 'date',
-          admin: {
-            description: 'Date when security deposit was paid',
-            condition: (data) => data?.securityDeposit?.status === 'paid',
-          },
-        },
-        {
-          name: 'refundedDate',
-          type: 'date',
-          admin: {
-            description: 'Date when security deposit was refunded',
-            condition: (data) =>
-              data?.securityDeposit?.status === 'refunded' ||
-              data?.securityDeposit?.status === 'partially-refunded',
-          },
-        },
-        {
-          name: 'refundAmount',
-          type: 'number',
-          min: 0,
-          admin: {
-            description: 'Amount refunded (if different from original amount)',
-            condition: (data) =>
-              data?.securityDeposit?.status === 'refunded' ||
-              data?.securityDeposit?.status === 'partially-refunded',
-          },
-        },
-        {
-          name: 'notes',
-          type: 'textarea',
-          admin: {
-            description: 'Additional notes about security deposit',
-          },
-        },
-      ],
+    },
+    {
+      name: 'takeFirstMonthRentOnBooking',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: { description: 'Whether first month rent is collected at booking', readOnly: true },
     },
     {
       name: 'status',
@@ -188,12 +159,15 @@ const Bookings: CollectionConfig = {
       defaultValue: 'pending',
     },
     { name: 'roomSnapshot', type: 'json' },
-    // Booking Management Extensions
-    { name: 'startDate', type: 'date', required: true },
-    { name: 'endDate', type: 'date', required: true },
+
+    // Booking Date Management (optional fields for manual tracking if needed)
+    { name: 'startDate', type: 'date', required: false },
+    { name: 'endDate', type: 'date', required: false },
     { name: 'periodInMonths', type: 'number', admin: { readOnly: true } },
     { name: 'checkInDate', type: 'date' },
     { name: 'checkOutDate', type: 'date' },
+
+    // Cancellation Details
     { name: 'cancellationReason', type: 'textarea' },
     { name: 'cancelledAt', type: 'date' },
     { name: 'cancelledBy', type: 'relationship', relationTo: 'customers' },

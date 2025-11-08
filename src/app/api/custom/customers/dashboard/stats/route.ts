@@ -52,8 +52,10 @@ export async function GET(request: NextRequest) {
     let monthlyRent = 0
     if (activeBookings.docs.length > 0) {
       monthlyRent = activeBookings.docs.reduce((sum, booking) => {
-        // Use the booking price (which should be monthly)
-        return sum + (booking.price || 0)
+        // Calculate monthly rent: roomRent + foodPrice (if food included)
+        const roomRent = Number(booking.roomRent) || 0
+        const foodPrice = booking.foodIncluded ? Number(booking.foodPrice) || 0 : 0
+        return sum + (roomRent + foodPrice)
       }, 0)
     }
 

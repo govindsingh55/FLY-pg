@@ -170,6 +170,26 @@ const Properties: CollectionConfig = {
                 },
               ],
             },
+            // Booking charge and first month rent fields
+            {
+              name: 'bookingCharge',
+              type: 'number',
+              label: 'Booking Charge',
+              min: 0,
+              defaultValue: 0,
+              admin: {
+                description: 'Default booking charge (one-time, on booking)',
+              },
+            },
+            {
+              name: 'takeFirstMonthRentOnBooking',
+              type: 'checkbox',
+              label: 'Take First Month Rent On Booking',
+              defaultValue: true,
+              admin: {
+                description: 'Whether to collect first month rent at booking time',
+              },
+            },
             {
               name: 'nearbyLocations',
               type: 'array',
@@ -205,7 +225,6 @@ const Properties: CollectionConfig = {
                     condition: (data) => data?.electricityConfig?.enabled,
                   },
                 },
-
               ],
             },
             // Security Deposit Configuration

@@ -25,6 +25,7 @@ const Payments: CollectionConfig = {
       name: 'paymentType',
       type: 'select',
       options: [
+        { label: '📝 Booking Payment', value: 'booking' },
         { label: '🏠 Rent Payment', value: 'rent' },
         { label: '⚡ Electricity Bill', value: 'electricity' },
         { label: '🔒 Security Deposit', value: 'security-deposit' },
@@ -104,6 +105,46 @@ const Payments: CollectionConfig = {
                   },
                 },
               ],
+            },
+            // ========== BOOKING PAYMENT FIELDS ==========
+            {
+              name: 'bookingCharge',
+              type: 'number',
+              min: 0,
+              defaultValue: 0,
+              admin: {
+                description: 'One-time booking charge',
+                condition: (data) => data?.paymentType === 'booking',
+              },
+            },
+            {
+              name: 'firstMonthRent',
+              type: 'number',
+              min: 0,
+              defaultValue: 0,
+              admin: {
+                description: 'First month rent (if taken at booking)',
+                condition: (data) => data?.paymentType === 'booking',
+              },
+            },
+            {
+              name: 'securityDepositAmount',
+              type: 'number',
+              min: 0,
+              defaultValue: 0,
+              admin: {
+                description: 'Security deposit amount (if applicable)',
+                condition: (data) => data?.paymentType === 'booking',
+              },
+            },
+            {
+              name: 'takeFirstMonthRentOnBooking',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                description: 'Whether first month rent is included in this booking payment',
+                condition: (data) => data?.paymentType === 'booking',
+              },
             },
             // ========== ELECTRICITY BILL FIELDS ==========
             {
@@ -683,8 +724,16 @@ const Payments: CollectionConfig = {
                                 : 'Unknown',
                             roomName:
                               typeof booking.room === 'object' ? booking.room.name : 'Unknown',
-                            price: booking.price,
+                            roomRent: booking.roomRent,
+                            foodPrice: booking.foodPrice,
+                            total: booking.total,
+                            periodInMonths: booking.periodInMonths,
+                            bookingCharge: booking.bookingCharge,
+                            securityDeposit: booking.securityDeposit,
+                            takeFirstMonthRentOnBooking: booking.takeFirstMonthRentOnBooking,
                             foodIncluded: booking.foodIncluded,
+                            startDate: booking.startDate,
+                            endDate: booking.endDate,
                             checkInDate: booking.checkInDate,
                             checkOutDate: booking.checkOutDate,
                             status: booking.status,
@@ -755,6 +804,15 @@ const Payments: CollectionConfig = {
         if (data.paymentType === 'electricity') {
           // For electricity bills, amount = electricity charges only
           data.amount = Number(data.electricityCharges) || 0
+        } else if (data.paymentType === 'booking') {
+          // For booking payments, amount = booking charge + first month rent (if applicable) + security deposit (if applicable)
+          const bookingCharge = Number(data.bookingCharge) || 0
+          const firstMonthRent = data.takeFirstMonthRentOnBooking
+            ? Number(data.firstMonthRent) || 0
+            : 0
+          const securityDeposit = Number(data.securityDepositAmount) || 0
+
+          data.amount = bookingCharge + firstMonthRent + securityDeposit
         } else if (data.paymentType === 'rent') {
           // For rent payments, amount = rent + additional charges (excluding electricity)
           const rent = Number(data.rent) || 0
@@ -777,6 +835,10 @@ const Payments: CollectionConfig = {
               data.notes = existingNotes + electricityNote
             }
           }
+        } else if (data.paymentType === 'security-deposit') {
+          // For security deposit, amount should already be set
+          // But ensure it's a valid number
+          data.amount = Number(data.amount) || 0
         } else {
           // For other payment types, use the amount as provided
           // Or apply custom logic as needed

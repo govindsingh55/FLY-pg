@@ -20,8 +20,74 @@ export type PhonePeCreateResult = {
 export type PhonePeStatusResult = {
   success: boolean
   code?: string
-  state?: 'PAYMENT_SUCCESS' | 'PAYMENT_PENDING' | 'PAYMENT_ERROR' | string
+  state?: 'PAYMENT_SUCCESS' | 'PAYMENT_PENDING' | 'PAYMENT_ERROR' | 'COMPLETED' | 'FAILED' | string
   raw: any
+}
+
+/**
+ * Unified helper to detect payment success from PhonePe responses
+ * Handles all response variations from PhonePe API:
+ * - state: 'COMPLETED', 'PAYMENT_SUCCESS', 'SUCCESS'
+ * - code: 'PAYMENT_SUCCESS', 'SUCCESS'
+ * - success: true
+ */
+export function isPhonePePaymentSuccess(response: any): boolean {
+  if (!response) return false
+
+  const code = response?.code || response?.data?.code
+  const state = response?.state || response?.data?.state || response?.data?.responseState
+  const success = response?.success
+
+  const isSuccess =
+    // State-based checks
+    state === 'COMPLETED' ||
+    state === 'PAYMENT_SUCCESS' ||
+    state === 'SUCCESS' ||
+    // Code-based checks
+    code === 'PAYMENT_SUCCESS' ||
+    code === 'SUCCESS' ||
+    // Direct success flag
+    success === true
+
+  return isSuccess
+}
+
+/**
+ * Check if payment is in a final failed state
+ */
+export function isPhonePePaymentFailed(response: any): boolean {
+  if (!response) return false
+
+  const code = response?.code || response?.data?.code
+  const state = response?.state || response?.data?.state
+
+  return (
+    code === 'PAYMENT_ERROR' ||
+    code === 'PAYMENT_DECLINED' ||
+    code === 'PAYMENT_CANCELLED' ||
+    state === 'PAYMENT_ERROR' ||
+    state === 'FAILED' ||
+    state === 'DECLINED' ||
+    state === 'CANCELLED'
+  )
+}
+
+/**
+ * Check if payment is still pending/processing
+ */
+export function isPhonePePaymentPending(response: any): boolean {
+  if (!response) return true
+
+  const code = response?.code || response?.data?.code
+  const state = response?.state || response?.data?.state
+
+  return (
+    code === 'PAYMENT_PENDING' ||
+    code === 'PENDING' ||
+    state === 'PAYMENT_PENDING' ||
+    state === 'PENDING' ||
+    state === 'PROCESSING'
+  )
 }
 
 export function getPhonePeConfig() {
@@ -146,29 +212,50 @@ export async function phonePeCheckStatus(merchantOrderId: string): Promise<Phone
         success: false,
         code: 'EMPTY_RESPONSE',
         state: 'PENDING',
-        raw: response || '',
+        raw: response || {},
       }
     }
 
-    // Extract status information from response
-    const state = response.state
-    const code = response.state // Use state as code for consistency
+    // Normalize response structure for consistent handling
+    // Cast to unknown first then to Record since SDK types don't match actual API responses
+    const responseData = response as unknown as Record<string, unknown>
+    const dataObj = responseData.data as Record<string, unknown> | undefined
 
-    console.log('[PhonePe Library] Extracted status:', { state, code })
+    const state = (responseData.state || dataObj?.state || dataObj?.responseState) as
+      | string
+      | undefined
+    const code = (responseData.code || dataObj?.code || state) as string | undefined
+
+    // Create normalized raw structure that matches what callback/status routes expect
+    const normalizedRaw = {
+      ...response,
+      code: code,
+      state: state,
+      data: dataObj || {
+        state: state,
+        code: code,
+        merchantTransactionId: (responseData.merchantTransactionId as string) || merchantOrderId,
+      },
+    }
+
+    console.log('[PhonePe Library] Normalized status:', { state, code })
 
     return {
-      success: state === 'COMPLETED',
+      success: isPhonePePaymentSuccess(normalizedRaw),
       code,
       state,
-      raw: response,
+      raw: normalizedRaw,
     }
-  } catch (error: any) {
-    console.error('[PhonePe Library] Error checking status:', error)
+  } catch (error) {
+    console.error(
+      '[PhonePe Library] Error checking status:',
+      error instanceof Error ? error.message : String(error),
+    )
     return {
       success: false,
       code: 'ERROR',
       state: 'PAYMENT_ERROR',
-      raw: { error: error?.message || 'Unknown error' },
+      raw: { error: error instanceof Error ? error.message : 'Unknown error' },
     }
   }
 }
@@ -206,11 +293,10 @@ export function verifyCallbackSignature({
 export function verifyCallbackSignatureRaw({
   rawJsonText,
   headerXVerify,
-  endpointPath,
 }: {
   rawJsonText: string
   headerXVerify?: string | null
-  endpointPath?: string
+  _endpointPath?: string
 }) {
   try {
     const body = JSON.parse(rawJsonText)
@@ -225,6 +311,6 @@ export function toBase64(obj: unknown) {
   return Buffer.from(JSON.stringify(obj)).toString('base64')
 }
 
-export function fromBase64<T = any>(b64: string): T {
+export function fromBase64<T = Record<string, unknown>>(b64: string): T {
   return JSON.parse(Buffer.from(b64, 'base64').toString('utf-8')) as T
 }

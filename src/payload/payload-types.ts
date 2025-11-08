@@ -291,6 +291,14 @@ export interface Property {
      */
     price?: number | null;
   };
+  /**
+   * Default booking charge (one-time, on booking)
+   */
+  bookingCharge?: number | null;
+  /**
+   * Whether to collect first month rent at booking time
+   */
+  takeFirstMonthRentOnBooking?: boolean | null;
   nearbyLocations?:
     | {
         name?: string | null;
@@ -805,33 +813,30 @@ export interface Booking {
   property: string | Property;
   room: string | Room;
   foodIncluded?: boolean | null;
-  price: number;
   /**
-   * Security deposit details for this booking
+   * Monthly room rent at time of booking
    */
-  securityDeposit?: {
-    /**
-     * Security deposit amount (0 if not required)
-     */
-    amount?: number | null;
-    status?: ('not-required' | 'pending' | 'paid' | 'refunded' | 'partially-refunded' | 'forfeited') | null;
-    /**
-     * Date when security deposit was paid
-     */
-    paidDate?: string | null;
-    /**
-     * Date when security deposit was refunded
-     */
-    refundedDate?: string | null;
-    /**
-     * Amount refunded (if different from original amount)
-     */
-    refundAmount?: number | null;
-    /**
-     * Additional notes about security deposit
-     */
-    notes?: string | null;
-  };
+  roomRent: number;
+  /**
+   * Monthly food charge (if food included)
+   */
+  foodPrice?: number | null;
+  /**
+   * One-time booking charge applied at booking time
+   */
+  bookingCharge?: number | null;
+  /**
+   * Security deposit amount for this booking
+   */
+  securityDeposit?: number | null;
+  /**
+   * Total booking amount (for entire period)
+   */
+  total: number;
+  /**
+   * Whether first month rent is collected at booking
+   */
+  takeFirstMonthRentOnBooking?: boolean | null;
   status?: ('pending' | 'confirmed' | 'cancelled' | 'completed' | 'extended') | null;
   roomSnapshot?:
     | {
@@ -842,8 +847,8 @@ export interface Booking {
     | number
     | boolean
     | null;
-  startDate: string;
-  endDate: string;
+  startDate?: string | null;
+  endDate?: string | null;
   periodInMonths?: number | null;
   checkInDate?: string | null;
   checkOutDate?: string | null;
@@ -907,7 +912,7 @@ export interface Payment {
   /**
    * Select payment type first - form fields will adjust based on your selection
    */
-  paymentType: 'rent' | 'electricity' | 'security-deposit' | 'late-fee' | 'other';
+  paymentType: 'booking' | 'rent' | 'electricity' | 'security-deposit' | 'late-fee' | 'other';
   /**
    * Current status of the payment
    */
@@ -933,6 +938,22 @@ export interface Payment {
    * Utility charges (water, maintenance, etc.)
    */
   utilityCharges?: number | null;
+  /**
+   * One-time booking charge
+   */
+  bookingCharge?: number | null;
+  /**
+   * First month rent (if taken at booking)
+   */
+  firstMonthRent?: number | null;
+  /**
+   * Security deposit amount (if applicable)
+   */
+  securityDepositAmount?: number | null;
+  /**
+   * Whether first month rent is included in this booking payment
+   */
+  takeFirstMonthRentOnBooking?: boolean | null;
   /**
    * Units consumed (kWh)
    */
@@ -2101,6 +2122,8 @@ export interface PropertiesSelect<T extends boolean = true> {
         menu?: T;
         price?: T;
       };
+  bookingCharge?: T;
+  takeFirstMonthRentOnBooking?: T;
   nearbyLocations?:
     | T
     | {
@@ -2282,17 +2305,12 @@ export interface BookingsSelect<T extends boolean = true> {
   property?: T;
   room?: T;
   foodIncluded?: T;
-  price?: T;
-  securityDeposit?:
-    | T
-    | {
-        amount?: T;
-        status?: T;
-        paidDate?: T;
-        refundedDate?: T;
-        refundAmount?: T;
-        notes?: T;
-      };
+  roomRent?: T;
+  foodPrice?: T;
+  bookingCharge?: T;
+  securityDeposit?: T;
+  total?: T;
+  takeFirstMonthRentOnBooking?: T;
   status?: T;
   roomSnapshot?: T;
   startDate?: T;
@@ -2359,6 +2377,10 @@ export interface PaymentsSelect<T extends boolean = true> {
   rent?: T;
   lateFees?: T;
   utilityCharges?: T;
+  bookingCharge?: T;
+  firstMonthRent?: T;
+  securityDepositAmount?: T;
+  takeFirstMonthRentOnBooking?: T;
   electricityUnitsConsumed?: T;
   electricityRatePerUnit?: T;
   electricityCharges?: T;

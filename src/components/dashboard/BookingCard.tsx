@@ -11,7 +11,9 @@ interface BookingCardProps {
   booking: {
     id: string
     status: string
-    price: number
+    roomRent: number
+    foodPrice?: number
+    total: number
     periodInMonths: number
     foodIncluded: boolean
     createdAt: string
@@ -74,7 +76,10 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
   const roomType = booking.room?.type || booking.roomSnapshot?.type || 'Standard'
   const propertyName = booking.property?.name || 'Property'
   const propertyLocation = booking.property?.location || 'Location not specified'
-  const roomPrice = booking.roomSnapshot?.price || booking.price
+  // Calculate monthly price: roomRent + foodPrice (if food included)
+  const roomRent = Number(booking.roomRent) || 0
+  const foodPrice = booking.foodIncluded ? Number(booking.foodPrice) || 0 : 0
+  const roomPrice = roomRent + foodPrice
 
   return (
     <Card className="hover:shadow-md transition-shadow">

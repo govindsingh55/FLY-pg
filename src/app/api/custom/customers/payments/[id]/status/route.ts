@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { validateCustomerSession, customerRateLimiter } from '@/lib/auth/customer-auth'
-import { phonePeCheckStatus } from '@/lib/payments/phonepe'
+import {
+  phonePeCheckStatus,
+  isPhonePePaymentSuccess,
+  isPhonePePaymentFailed,
+} from '@/lib/payments/phonepe'
 
 // GET /api/custom/customers/payments/[id]/status
 // Check payment status and update local records (customer-authenticated)
@@ -76,12 +80,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         console.log('[Customer Payment Status] PhonePe status result:', statusResult)
 
-        if (statusResult.success && statusResult.raw) {
-          const isSuccess =
-            statusResult.raw.code === 'PAYMENT_SUCCESS' ||
-            statusResult.raw.code === 'SUCCESS' ||
-            statusResult.raw.data?.state === 'PAYMENT_SUCCESS' ||
-            statusResult.raw.data?.state === 'SUCCESS'
+        if (statusResult.success || statusResult.raw) {
+          // Use standardized success/fail detection
+          const isSuccess = isPhonePePaymentSuccess(statusResult.raw)
+          const isFailed = isPhonePePaymentFailed(statusResult.raw)
 
           let newStatus = 'pending'
           let paymentDate = null
@@ -89,10 +91,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           if (isSuccess) {
             newStatus = 'completed'
             paymentDate = new Date().toISOString()
-          } else if (
-            statusResult.raw.code === 'PAYMENT_ERROR' ||
-            statusResult.raw.data?.state === 'PAYMENT_ERROR'
-          ) {
+          } else if (isFailed) {
             newStatus = 'failed'
           }
 
