@@ -17,15 +17,50 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { message } = body
+    const payload = await getPayload({ config })
+    const { id: ticketId } = await params
+    const contentType = request.headers.get('content-type') || ''
+
+    let message: string
+    let imageId: string | undefined
+
+    // Handle multipart form data (with file upload)
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData()
+      message = formData.get('message') as string
+      const imageFile = formData.get('image') as File | null
+
+      // Upload image to support-media collection if provided
+      if (imageFile && imageFile.size > 0) {
+        try {
+          const buffer = Buffer.from(await imageFile.arrayBuffer())
+          const uploadedMedia = await payload.create({
+            collection: 'support-media',
+            data: {
+              alt: `Support ticket message image`,
+            },
+            file: {
+              data: buffer,
+              mimetype: imageFile.type,
+              name: imageFile.name,
+              size: imageFile.size,
+            },
+          })
+          imageId = uploadedMedia.id
+        } catch (uploadError) {
+          console.error('Error uploading image:', uploadError)
+          // Continue without image if upload fails
+        }
+      }
+    } else {
+      // Handle JSON
+      const body = await request.json()
+      message = body.message
+    }
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
     }
-
-    const payload = await getPayload({ config })
-    const { id: ticketId } = await params
 
     // Get the existing ticket
     const existingTicket = await payload.findByID({
@@ -43,10 +78,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     // Add the new message to conversation
-    const newMessage = {
-      sender: user.id,
+    const newMessage: {
+      sender: { relationTo: 'customers'; value: string }
+      message: string
+      createdAt: string
+      image?: string
+    } = {
+      sender: {
+        relationTo: 'customers' as const,
+        value: user.id,
+      },
       message,
       createdAt: new Date().toISOString(),
+    }
+
+    if (imageId) {
+      newMessage.image = imageId
     }
 
     const updatedTicket = await payload.update({
@@ -56,7 +103,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         conversation: [...(existingTicket.conversation || []), newMessage],
         updatedAt: new Date().toISOString(),
       },
-      depth: 1,
+      depth: 2,
     })
 
     return NextResponse.json({ ticket: updatedTicket })

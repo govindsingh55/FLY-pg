@@ -1189,13 +1189,21 @@ export interface SupportTicket {
   customer: string | Customer;
   property?: (string | null) | Property;
   staff?: (string | null) | User;
-  type: 'manager' | 'chef' | 'cleaning' | 'security';
+  type: 'manager' | 'chef' | 'cleaning' | 'maintenance' | 'security';
   description: string;
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
   progress?:
     | {
         status: 'open' | 'in_progress' | 'resolved' | 'closed';
-        updatedBy: string | User;
+        updatedBy:
+          | {
+              relationTo: 'users';
+              value: string | User;
+            }
+          | {
+              relationTo: 'customers';
+              value: string | Customer;
+            };
         note?: string | null;
         updatedAt: string;
         id?: string | null;
@@ -1203,7 +1211,15 @@ export interface SupportTicket {
     | null;
   conversation?:
     | {
-        sender: string | User;
+        sender:
+          | {
+              relationTo: 'users';
+              value: string | User;
+            }
+          | {
+              relationTo: 'customers';
+              value: string | Customer;
+            };
         message?: string | null;
         image?: (string | null) | SupportMedia;
         createdAt: string;

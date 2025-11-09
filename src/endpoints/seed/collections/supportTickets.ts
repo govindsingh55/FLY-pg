@@ -3,7 +3,7 @@ import { Payload, PayloadRequest } from 'payload'
 export async function seedSupportTickets(
   payload: Payload,
   req: PayloadRequest,
-  rel?: { customerIds?: string[]; propertyIds?: string[] },
+  rel?: { customerIds?: string[]; propertyIds?: string[]; userIds?: string[] },
 ) {
   await payload.delete({
     collection: 'support-tickets',
@@ -16,31 +16,42 @@ export async function seedSupportTickets(
       : 'mock-customer-id'
     const now = new Date().toISOString()
     const propertyId = rel?.propertyIds ? rel.propertyIds[i % rel.propertyIds.length] : undefined
+    const ticketType = (['manager', 'chef', 'cleaning', 'security', 'maintenance'] as const)[i % 5]
+
+    // Build conversation array with polymorphic senders
+    const conversation =
+      i % 3 === 0
+        ? [
+            {
+              sender: {
+                relationTo: 'customers' as const,
+                value: customerId,
+              },
+              message: `Initial request for support ticket #${i}`,
+              createdAt: now,
+            },
+            {
+              sender: {
+                relationTo: 'users' as const,
+                value: rel?.userIds ? rel.userIds[0] : customerId,
+              },
+              message: `We have received your request and are working on it. Ticket #${i} is being processed.`,
+              createdAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour later
+            },
+          ]
+        : []
+
     const supportTicket = await payload.create({
       collection: 'support-tickets',
       data: {
-        type: (['manager', 'chef', 'cleaning', 'security'] as const)[i % 4],
+        type: ticketType,
         customer: customerId,
         property: propertyId,
-        description: `This is a test support ticket #${i} for ${['management', 'food', 'cleaning', 'security'][i % 4]} issues.`,
+        description: `This is a test support ticket #${i} for ${ticketType} issues.`,
         status: (['open', 'in_progress', 'resolved', 'closed'] as const)[i % 4],
         createdAt: now,
         updatedAt: now,
-        conversation:
-          i % 3 === 0
-            ? [
-                {
-                  sender: customerId,
-                  message: `Initial request for support ticket #${i}`,
-                  createdAt: now,
-                },
-                {
-                  sender: rel?.customerIds ? rel.customerIds[0] : customerId, // Simulate staff response
-                  message: `We have received your request and are working on it. Ticket #${i} is being processed.`,
-                  createdAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour later
-                },
-              ]
-            : [],
+        conversation,
       },
     })
     supportTickets.push(supportTicket)

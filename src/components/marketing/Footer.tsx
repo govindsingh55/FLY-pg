@@ -26,16 +26,19 @@ export function Footer() {
             </div>
           </div>
           <div>
-            <div className="text-sm font-semibold">Product</div>
+            <div className="text-sm font-semibold">Legal</div>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
               <li>
-                <Link href="#">Features</Link>
+                <Link href="#">Privacy</Link>
               </li>
               <li>
-                <Link href="#">Pricing</Link>
+                <Link href="#">Terms</Link>
               </li>
               <li>
-                <Link href="#">Mobile App</Link>
+                <Link href="#">Cookies</Link>
+              </li>
+              <li>
+                <Link href="/staff/login">Staff Portal</Link>
               </li>
             </ul>
           </div>
@@ -64,6 +67,11 @@ export function Footer() {
               </li>
               <li>
                 <Link href="#">Cookies</Link>
+              </li>
+              <li>
+                <Link href="/staff/login" className="text-primary hover:underline">
+                  Staff Portal
+                </Link>
               </li>
             </ul>
           </div>

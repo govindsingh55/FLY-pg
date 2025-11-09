@@ -12,6 +12,7 @@
 - [Payment APIs](#payment-apis)
 - [Booking APIs](#booking-apis)
 - [Dashboard APIs](#dashboard-apis)
+- [Support Ticket APIs](#support-ticket-apis)
 - [Job Trigger APIs](#job-trigger-apis)
 - [Common Patterns](#common-patterns)
 - [Error Handling](#error-handling)
@@ -691,6 +692,215 @@ Cookie: payload-token=...
   "recentPayments": [
     /* last 5 payments */
   ]
+}
+```
+
+---
+
+## 🎫 Support Ticket APIs
+
+### **Customer Support APIs**
+
+#### **Get Customer Tickets**
+
+```http
+GET /api/custom/customers/support/tickets
+Cookie: payload-token=...
+```
+
+**Response**:
+```json
+{
+  "tickets": [
+    {
+      "id": "65abc123...",
+      "type": "maintenance",
+      "description": "The AC is not working properly",
+      "status": "in_progress",
+      "staff": {
+        "id": "65def456...",
+        "name": "John Staff",
+        "role": "maintenance"
+      },
+      "property": {
+        "id": "65ghi789...",
+        "name": "Green Valley PG"
+      },
+      "conversation": [
+        {
+          "sender": {
+            "relationTo": "customers",
+            "value": {
+              "id": "65cust01...",
+              "name": "Customer Name"
+            }
+          },
+          "message": "The AC is not working",
+          "createdAt": "2025-01-15T10:00:00.000Z"
+        },
+        {
+          "sender": {
+            "relationTo": "users",
+            "value": {
+              "id": "65staff01...",
+              "name": "Staff Name",
+              "role": "maintenance"
+            }
+          },
+          "message": "We'll check it today",
+          "createdAt": "2025-01-15T11:00:00.000Z"
+        }
+      ],
+      "createdAt": "2025-01-15T10:00:00.000Z",
+      "updatedAt": "2025-01-15T11:00:00.000Z"
+    }
+  ],
+  "total": 5
+}
+```
+
+#### **Create Support Ticket**
+
+```http
+POST /api/custom/customers/support/tickets
+Cookie: payload-token=...
+Content-Type: application/json
+
+{
+  "type": "maintenance",
+  "description": "The AC is not cooling properly",
+  "property": "65ghi789..."
+}
+```
+
+**Response**:
+```json
+{
+  "ticket": {
+    "id": "65abc123...",
+    "type": "maintenance",
+    "description": "The AC is not cooling properly",
+    "status": "open",
+    "customer": "65cust01...",
+    "property": "65ghi789...",
+    "conversation": [],
+    "createdAt": "2025-01-15T10:00:00.000Z"
+  }
+}
+```
+
+#### **Send Message to Ticket**
+
+```http
+POST /api/custom/customers/support/tickets/{id}/message
+Cookie: payload-token=...
+Content-Type: application/json
+
+{
+  "message": "Is there any update on this?"
+}
+```
+
+**Response**:
+```json
+{
+  "ticket": {
+    /* Updated ticket with new message in conversation */
+  }
+}
+```
+
+### **Staff Support APIs**
+
+Staff members (chef, cleaning, security, maintenance, manager, admin) can access these endpoints.
+
+#### **Get Staff Tickets**
+
+```http
+GET /api/custom/staff/support/tickets?status=open&page=1&limit=10
+Cookie: payload-token=...
+```
+
+**Query Parameters**:
+- `status` (optional): Filter by status (`open`, `in_progress`, `resolved`, `closed`)
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 10)
+
+**Response**:
+```json
+{
+  "tickets": [
+    /* Array of tickets visible to this staff member */
+  ],
+  "total": 15,
+  "page": 1,
+  "totalPages": 2,
+  "hasNextPage": true,
+  "hasPrevPage": false
+}
+```
+
+**Access Rules**:
+- Admin/Manager: See all tickets
+- Chef/Cleaning/Security/Maintenance: See tickets assigned to them OR unassigned tickets matching their role
+
+#### **Claim/Assign Ticket**
+
+```http
+PATCH /api/custom/staff/support/tickets/{id}/assign
+Cookie: payload-token=...
+Content-Type: application/json
+
+{
+  "action": "claim",
+  "status": "in_progress",
+  "note": "Starting work on this issue"
+}
+```
+
+**Actions**:
+- `claim`: Staff member assigns ticket to themselves
+- `assign`: Manager/admin assigns to specific staff (requires `staffId`)
+- `unassign`: Remove staff assignment
+
+**Request Body**:
+```json
+{
+  "action": "claim" | "assign" | "unassign",
+  "staffId": "65staff01..." /* Required for "assign" action */,
+  "status": "in_progress" /* Optional: update status */,
+  "note": "Optional note for progress history"
+}
+```
+
+**Response**:
+```json
+{
+  "ticket": {
+    /* Updated ticket with staff assignment and progress entry */
+  }
+}
+```
+
+#### **Send Staff Message**
+
+```http
+POST /api/custom/staff/support/tickets/{id}/message
+Cookie: payload-token=...
+Content-Type: application/json
+
+{
+  "message": "We have fixed the AC. Please check.",
+  "imageId": "65media01..." /* Optional: ID of uploaded support-media */
+}
+```
+
+**Response**:
+```json
+{
+  "ticket": {
+    /* Updated ticket with new staff message */
+  }
 }
 ```
 

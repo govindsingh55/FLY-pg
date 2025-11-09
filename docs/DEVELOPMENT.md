@@ -856,6 +856,222 @@ const payment = await payload.create({
 
 ---
 
+## 🎫 Support Ticket System
+
+### **Overview**
+
+The support ticket system allows customers to report issues and request assistance. Staff members can claim, respond to, and resolve tickets based on their role.
+
+### **Ticket Types & Staff Roles**
+
+| Ticket Type | Assigned To | Description |
+|------------|-------------|-------------|
+| `maintenance` | Maintenance staff or Managers | Property maintenance, repairs, AC/electrical issues |
+| `chef` | Chef staff | Food quality, menu, dining issues |
+| `cleaning` | Cleaning staff | Room cleaning, housekeeping requests |
+| `security` | Security staff | Safety concerns, access issues |
+| `manager` | Managers | General management, billing, policy questions |
+
+### **Workflow**
+
+#### **1. Customer Creates Ticket**
+```typescript
+POST /api/custom/customers/support/tickets
+{
+  "type": "maintenance",
+  "description": "AC not working in room 101",
+  "property": "property-id"
+}
+```
+
+- Ticket starts with status `open`
+- No staff assigned initially
+- Conversation array is empty
+
+#### **2. Staff Discovers & Claims Ticket**
+
+**Access Rules**:
+- Each staff member sees:
+  - Tickets assigned to them
+  - Unassigned tickets matching their role (chef sees chef tickets, etc.)
+- Managers and admins see all tickets
+
+```typescript
+// Staff views available tickets
+GET /api/custom/staff/support/tickets?status=open
+
+// Staff claims ticket
+PATCH /api/custom/staff/support/tickets/{id}/assign
+{
+  "action": "claim",
+  "status": "in_progress"
+}
+```
+
+- Staff is auto-assigned when claiming
+- Status typically changes to `in_progress`
+- Progress history entry is created
+
+#### **3. Communication**
+
+Both customers and staff can send messages:
+
+```typescript
+// Customer sends message
+POST /api/custom/customers/support/tickets/{id}/message
+{ "message": "Is there an update?" }
+
+// Staff replies
+POST /api/custom/staff/support/tickets/{id}/message
+{ 
+  "message": "We're working on it. Will be fixed by 5 PM.",
+  "imageId": "optional-media-id"
+}
+```
+
+**Conversation Structure**:
+```typescript
+conversation: [
+  {
+    sender: {
+      relationTo: 'customers',
+      value: { id, name }
+    },
+    message: "AC not working",
+    createdAt: "2025-01-15T10:00:00Z"
+  },
+  {
+    sender: {
+      relationTo: 'users',
+      value: { id, name, role: 'maintenance' }
+    },
+    message: "We'll check it today",
+    createdAt: "2025-01-15T11:00:00Z"
+  }
+]
+```
+
+#### **4. Status Updates**
+
+Staff can update ticket status through the assign endpoint:
+
+```typescript
+PATCH /api/custom/staff/support/tickets/{id}/assign
+{
+  "status": "resolved",
+  "note": "AC filter cleaned and coolant refilled"
+}
+```
+
+**Status Flow**:
+- `open` → Staff claims → `in_progress`
+- `in_progress` → Work completed → `resolved`
+- `resolved` → Customer/Manager confirms → `closed`
+
+**Progress History**:
+Each status change is recorded in the `progress` array:
+```typescript
+progress: [
+  {
+    status: 'in_progress',
+    updatedBy: { relationTo: 'users', value: staff-id },
+    note: 'Starting work',
+    updatedAt: '2025-01-15T11:00:00Z'
+  },
+  {
+    status: 'resolved',
+    updatedBy: { relationTo: 'users', value: staff-id },
+    note: 'Issue fixed',
+    updatedAt: '2025-01-15T15:00:00Z'
+  }
+]
+```
+
+#### **5. Ticket Closure**
+
+Only managers or the ticket owner (customer) can close tickets:
+- Prevents accidental closure by other staff
+- Ensures proper resolution verification
+- Implemented via `preventUnauthorizedClose` hook
+
+### **Access Control**
+
+#### **Create**
+- Customers: ✅
+- All staff roles: ✅
+- Managers/Admins: ✅
+
+#### **Read**
+- Customers: Own tickets only
+- Staff: Assigned tickets + unassigned tickets matching their role
+- Managers/Admins: All tickets
+
+#### **Update**
+- Customers: Own tickets (limited fields)
+- Staff: Assigned tickets + can claim unassigned tickets matching their role
+- Managers/Admins: All tickets
+
+#### **Delete**
+- Only Admins and Managers
+
+### **Validation Rules**
+
+1. **Type-Role Matching** (`validateStaffAssignment` hook):
+   - Chef staff can only be assigned to `chef` tickets
+   - Cleaning staff → `cleaning` tickets
+   - Security staff → `security` tickets
+   - Maintenance staff or managers → `maintenance` tickets
+   - Managers can be assigned to any ticket type
+
+2. **Status Closure** (`preventUnauthorizedClose` hook):
+   - Only managers or ticket owner can set status to `closed`
+   - Prevents staff from closing tickets without proper resolution
+
+### **Collection Schema**
+
+```typescript
+{
+  customer: relationship('customers', required),
+  property: relationship('properties', optional),
+  staff: relationship('users', optional),
+  type: select(['manager', 'chef', 'cleaning', 'maintenance', 'security']),
+  description: textarea(required),
+  status: select(['open', 'in_progress', 'resolved', 'closed']),
+  
+  conversation: [{
+    sender: polymorphic(['users', 'customers']),
+    message: textarea,
+    image: upload('support-media'),
+    createdAt: date
+  }],
+  
+  progress: [{
+    status: select,
+    updatedBy: polymorphic(['users', 'customers']),
+    note: textarea,
+    updatedAt: date
+  }]
+}
+```
+
+### **Media Attachments**
+
+Customers and staff can attach images to messages:
+1. Upload image to `support-media` collection
+2. Include `imageId` in message request
+3. Image is linked via polymorphic relation
+
+### **Implementation Files**
+
+- **Collection**: `src/payload/collections/SupportTickets.ts`
+- **Customer APIs**: `src/app/api/custom/customers/support/tickets/`
+- **Staff APIs**: `src/app/api/custom/staff/support/tickets/`
+- **Customer UI**: `src/components/dashboard/SupportCenter.tsx`
+- **Staff Auth**: `src/lib/auth/staff-auth.ts`
+- **Seeding**: `src/endpoints/seed/collections/supportTickets.ts`
+
+---
+
 ## 🔗 Related Documentation
 
 - **[API.md](./API.md)** - Complete API reference

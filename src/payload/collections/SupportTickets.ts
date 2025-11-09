@@ -9,8 +9,16 @@ const supportTicketsAccess = {
     const user = req.user as { role?: string; id?: string | number } | undefined
     if (!user) return false
     if (user.role === 'manager' || user.role === 'admin') return true
-    if (user.role === 'chef' || user.role === 'cleaning' || user.role === 'security') {
-      return Object.assign({}, { staff: { equals: user.id } })
+    if (
+      user.role === 'chef' ||
+      user.role === 'cleaning' ||
+      user.role === 'security' ||
+      user.role === 'maintenance'
+    ) {
+      // Allow staff to update tickets where they are assigned OR where staff is null (to claim tickets)
+      return {
+        or: [{ staff: { equals: user.id } }, { staff: { exists: false } }],
+      }
     }
     if (user.role === 'customer') {
       return Object.assign({}, { customer: { equals: user.id } })
@@ -25,8 +33,22 @@ const supportTicketsAccess = {
     const user = req.user as { role?: string; id?: string | number } | undefined
     if (!user) return false
     if (user.role === 'manager' || user.role === 'admin') return true
-    if (user.role === 'chef' || user.role === 'cleaning' || user.role === 'security') {
-      return Object.assign({}, { staff: { equals: user.id } })
+    if (
+      user.role === 'chef' ||
+      user.role === 'cleaning' ||
+      user.role === 'security' ||
+      user.role === 'maintenance'
+    ) {
+      // Allow staff to see tickets where they are assigned OR unassigned tickets matching their role
+      return {
+        or: [
+          { staff: { equals: user.id } },
+          {
+            staff: { exists: false },
+            type: { equals: user.role },
+          },
+        ],
+      }
     }
     if (user.role === 'customer') {
       return Object.assign({}, { customer: { equals: user.id } })
@@ -65,12 +87,47 @@ const preventUnauthorizedClose = async ({
   throw new Error('Only a manager or the ticket owner can close this support ticket.')
 }
 
+// Validate staff assignment matches ticket type
+const validateStaffAssignment = async ({
+  req,
+  data,
+}: {
+  req: { user?: { role?: string; id?: string | number } | null | undefined }
+  data?: { type?: string; staff?: string | number | null }
+}) => {
+  // Skip validation if no staff is being assigned
+  if (!data?.staff) return { ...data }
+
+  const user = req.user as { role?: string; id?: string | number } | null | undefined
+  // Allow all changes if no user (e.g., during seeding) or if admin/manager
+  if (!user || user.role === 'admin' || user.role === 'manager') return { ...data }
+
+  // If staff is assigning themselves, validate they match the ticket type
+  if (String(data.staff) === String(user.id)) {
+    const ticketType = data.type
+    const userRole = user.role
+
+    // Map maintenance tickets to manager role or allow maintenance role
+    if (ticketType === 'maintenance' && userRole !== 'manager' && userRole !== 'maintenance') {
+      throw new Error('Only managers or maintenance staff can be assigned to maintenance tickets.')
+    }
+
+    // For other types, role must match type
+    if (ticketType !== 'maintenance' && ticketType !== userRole) {
+      throw new Error(`Only ${ticketType} staff can be assigned to ${ticketType} tickets.`)
+    }
+  }
+
+  return { ...data }
+}
+
 const SupportTickets: CollectionConfig = {
   slug: 'support-tickets',
   admin: { useAsTitle: 'id' },
+  // @ts-expect-error - Complex or queries in access control don't match Payload's strict Where types
   access: supportTicketsAccess,
   hooks: {
-    beforeChange: [preventUnauthorizedClose],
+    beforeChange: [preventUnauthorizedClose, validateStaffAssignment],
   },
   fields: [
     { name: 'customer', type: 'relationship', relationTo: 'customers', required: true },
@@ -84,7 +141,7 @@ const SupportTickets: CollectionConfig = {
         { label: 'Management', value: 'manager' },
         { label: 'Chef (Food)', value: 'chef' },
         { label: 'Cleaning', value: 'cleaning' },
-        { label: 'Maintenance', value: 'manager' },
+        { label: 'Maintenance', value: 'maintenance' },
         { label: 'Security', value: 'security' },
       ],
       required: true,
@@ -119,7 +176,12 @@ const SupportTickets: CollectionConfig = {
           ],
           required: true,
         },
-        { name: 'updatedBy', type: 'relationship', relationTo: 'users', required: true },
+        {
+          name: 'updatedBy',
+          type: 'relationship',
+          relationTo: ['users', 'customers'],
+          required: true,
+        },
         { name: 'note', type: 'textarea' },
         { name: 'updatedAt', type: 'date', required: true },
       ],
@@ -130,7 +192,12 @@ const SupportTickets: CollectionConfig = {
       label: 'Chat/Conversation',
       type: 'array',
       fields: [
-        { name: 'sender', type: 'relationship', relationTo: 'users', required: true },
+        {
+          name: 'sender',
+          type: 'relationship',
+          relationTo: ['users', 'customers'],
+          required: true,
+        },
         { name: 'message', type: 'textarea' },
         { name: 'image', type: 'upload', relationTo: 'support-media' },
         { name: 'createdAt', type: 'date', required: true },

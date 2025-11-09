@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import {
   MessageSquare,
   Plus,
@@ -30,10 +29,9 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Upload,
   Send,
-  FileText,
-  Image as ImageIcon,
+  Upload,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -48,15 +46,39 @@ interface SupportTicket {
     id: string
     name: string
   }
+  progress?: Array<{
+    status: string
+    updatedBy: {
+      relationTo: 'users' | 'customers'
+      value: {
+        id: string
+        name: string
+        role?: string
+      }
+    }
+    note?: string
+    updatedAt: string
+  }>
   conversation?: Array<{
     id: string
-    sender: {
-      id: string
-      name: string
-      role: string
-    }
+    sender:
+      | {
+          relationTo: 'users'
+          value: {
+            id: string
+            name: string
+            role: string
+          }
+        }
+      | {
+          relationTo: 'customers'
+          value: {
+            id: string
+            name: string
+          }
+        }
     message: string
-    image?: string
+    image?: string | { url?: string; thumbnailURL?: string }
     createdAt: string
   }>
 }
@@ -75,6 +97,8 @@ export function SupportCenter() {
   const [isTicketDialogOpen, setIsTicketDialogOpen] = useState(false)
   const [newMessage, setNewMessage] = useState('')
   const [sendingMessage, setSendingMessage] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [replyFile, setReplyFile] = useState<File | null>(null)
   const [createTicketData, setCreateTicketData] = useState<CreateTicketData>({
     type: 'maintenance',
     description: '',
@@ -106,11 +130,28 @@ export function SupportCenter() {
 
     setCreatingTicket(true)
     try {
-      const response = await fetch('/api/custom/customers/support/tickets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(createTicketData),
-      })
+      // Use FormData if there's a file, otherwise JSON
+      let response
+      if (selectedFile) {
+        const formData = new FormData()
+        formData.append('type', createTicketData.type)
+        formData.append('description', createTicketData.description)
+        if (createTicketData.property) {
+          formData.append('property', createTicketData.property)
+        }
+        formData.append('image', selectedFile)
+
+        response = await fetch('/api/custom/customers/support/tickets', {
+          method: 'POST',
+          body: formData,
+        })
+      } else {
+        response = await fetch('/api/custom/customers/support/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(createTicketData),
+        })
+      }
 
       if (!response.ok) throw new Error('Failed to create ticket')
 
@@ -118,6 +159,7 @@ export function SupportCenter() {
       setTickets((prev) => [newTicket.ticket, ...prev])
       setIsCreateDialogOpen(false)
       setCreateTicketData({ type: 'maintenance', description: '', property: '' })
+      setSelectedFile(null)
       toast.success('Support ticket created successfully')
     } catch (error) {
       console.error('Error creating ticket:', error)
@@ -133,14 +175,29 @@ export function SupportCenter() {
 
     setSendingMessage(true)
     try {
-      const response = await fetch(
-        `/api/custom/customers/support/tickets/${selectedTicket.id}/message`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: newMessage }),
-        },
-      )
+      let response
+      if (replyFile) {
+        const formData = new FormData()
+        formData.append('message', newMessage)
+        formData.append('image', replyFile)
+
+        response = await fetch(
+          `/api/custom/customers/support/tickets/${selectedTicket.id}/message`,
+          {
+            method: 'POST',
+            body: formData,
+          },
+        )
+      } else {
+        response = await fetch(
+          `/api/custom/customers/support/tickets/${selectedTicket.id}/message`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: newMessage }),
+          },
+        )
+      }
 
       if (!response.ok) throw new Error('Failed to send message')
 
@@ -148,6 +205,7 @@ export function SupportCenter() {
       setSelectedTicket(updatedTicket.ticket)
       setTickets((prev) => prev.map((t) => (t.id === selectedTicket.id ? updatedTicket.ticket : t)))
       setNewMessage('')
+      setReplyFile(null)
       toast.success('Message sent successfully')
     } catch (error) {
       console.error('Error sending message:', error)
@@ -234,7 +292,10 @@ export function SupportCenter() {
                 <Select
                   value={createTicketData.type}
                   onValueChange={(value) =>
-                    setCreateTicketData((prev) => ({ ...prev, type: value as any }))
+                    setCreateTicketData((prev) => ({
+                      ...prev,
+                      type: value as CreateTicketData['type'],
+                    }))
                   }
                 >
                   <SelectTrigger>
@@ -260,6 +321,54 @@ export function SupportCenter() {
                   }
                   rows={4}
                 />
+              </div>
+              <div>
+                <Label htmlFor="image">Attach Image (Optional)</Label>
+                <div className="mt-2">
+                  {selectedFile ? (
+                    <div className="flex items-center gap-2 p-3 border rounded-lg bg-muted/50">
+                      <Upload className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm flex-1">{selectedFile.name}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedFile(null)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              toast.error('File size must be less than 5MB')
+                              return
+                            }
+                            setSelectedFile(file)
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById('image')?.click()}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Choose File
+                      </Button>
+                      <span className="text-xs text-muted-foreground">Max 5MB</span>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
@@ -353,6 +462,54 @@ export function SupportCenter() {
                   <p className="text-sm text-muted-foreground mt-1">{selectedTicket.description}</p>
                 </div>
 
+                {/* Progress History - Simple view for customers */}
+                {selectedTicket.progress && selectedTicket.progress.length > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium">Status History</Label>
+                    <div className="mt-2 space-y-2 max-h-32 overflow-y-auto">
+                      {selectedTicket.progress
+                        .slice()
+                        .reverse()
+                        .map((entry, idx) => {
+                          const updatedByData =
+                            typeof entry.updatedBy === 'object' && 'value' in entry.updatedBy
+                              ? entry.updatedBy.value
+                              : null
+                          const updatedByName =
+                            typeof updatedByData === 'object' &&
+                            updatedByData &&
+                            'name' in updatedByData
+                              ? updatedByData.name
+                              : 'Staff'
+
+                          return (
+                            <div
+                              key={idx}
+                              className="text-xs p-2 bg-muted/50 rounded border-l-2 border-primary"
+                            >
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-medium">
+                                  {entry.status.replace('_', ' ').toUpperCase()}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {new Date(entry.updatedAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              {entry.note && (
+                                <div className="text-muted-foreground italic mt-1">
+                                  Note: {entry.note}
+                                </div>
+                              )}
+                              <div className="text-muted-foreground">
+                                Updated by: {updatedByName}
+                              </div>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  </div>
+                )}
+
                 <Separator />
 
                 {/* Conversation */}
@@ -361,36 +518,60 @@ export function SupportCenter() {
                   <ScrollArea className="h-[300px] mt-2">
                     <div className="space-y-3">
                       {selectedTicket.conversation && selectedTicket.conversation.length > 0 ? (
-                        selectedTicket.conversation.map((message, index) => (
-                          <div key={index} className="flex gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-xs font-medium">
-                                {message.sender.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-sm font-medium">{message.sender.name}</span>
-                                <Badge variant="outline" className="text-xs">
-                                  {message.sender.role}
-                                </Badge>
-                                <span className="text-xs text-muted-foreground">
-                                  {new Date(message.createdAt).toLocaleString()}
+                        selectedTicket.conversation.map((message, index) => {
+                          // Handle polymorphic sender
+                          const senderData =
+                            typeof message.sender === 'object' && 'value' in message.sender
+                              ? message.sender.value
+                              : null
+                          const senderName =
+                            typeof senderData === 'object' && senderData && 'name' in senderData
+                              ? senderData.name
+                              : 'Unknown'
+                          const senderRole =
+                            typeof senderData === 'object' &&
+                            senderData &&
+                            'role' in senderData &&
+                            message.sender.relationTo === 'users'
+                              ? (senderData.role as string)
+                              : 'customer'
+
+                          return (
+                            <div key={index} className="flex gap-3">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <span className="text-xs font-medium">
+                                  {senderName.charAt(0).toUpperCase()}
                                 </span>
                               </div>
-                              <p className="text-sm">{message.message}</p>
-                              {message.image && (
-                                <div className="mt-2">
-                                  <img
-                                    src={message.image}
-                                    alt="Attachment"
-                                    className="max-w-full h-auto rounded border"
-                                  />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-medium">{senderName}</span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {senderRole}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(message.createdAt).toLocaleString()}
+                                  </span>
                                 </div>
-                              )}
+                                <p className="text-sm">{message.message}</p>
+                                {message.image && (
+                                  <div className="mt-2">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={
+                                        typeof message.image === 'string'
+                                          ? message.image
+                                          : message.image?.url || ''
+                                      }
+                                      alt="Attachment"
+                                      className="max-w-full h-auto rounded border"
+                                    />
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))
+                          )
+                        })
                       ) : (
                         <p className="text-sm text-muted-foreground">No messages yet</p>
                       )}
@@ -402,8 +583,22 @@ export function SupportCenter() {
                 {selectedTicket.status !== 'closed' && (
                   <>
                     <Separator />
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Label htmlFor="new-message">Add Message</Label>
+                      {replyFile && (
+                        <div className="flex items-center gap-2 p-2 border rounded-lg bg-muted/50">
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm flex-1">{replyFile.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setReplyFile(null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                       <div className="flex gap-2">
                         <Textarea
                           id="new-message"
@@ -413,13 +608,39 @@ export function SupportCenter() {
                           rows={2}
                           className="flex-1"
                         />
-                        <Button
-                          onClick={sendMessage}
-                          disabled={sendingMessage || !newMessage.trim()}
-                          size="lg"
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <input
+                            id="reply-image"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error('File size must be less than 5MB')
+                                  return
+                                }
+                                setReplyFile(file)
+                              }
+                            }}
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            onClick={() => document.getElementById('reply-image')?.click()}
+                          >
+                            <Upload className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={sendMessage}
+                            disabled={sendingMessage || !newMessage.trim()}
+                            size="lg"
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </>

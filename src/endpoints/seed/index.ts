@@ -169,6 +169,7 @@ export const seed = async ({
         const supportTickets = await seedSupportTickets(payload, req, {
           customerIds: collectionData['customers'] as string[],
           propertyIds: collectionData['properties'] as string[],
+          userIds: collectionData['users'] as string[],
         })
         collectionData['supporttickets'] = supportTickets.map((s: any) => s.id)
         console.info(`— SupportTickets seeded successfully!`)
