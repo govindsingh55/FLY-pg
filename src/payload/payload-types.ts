@@ -210,7 +210,7 @@ export interface Property {
   id: string;
   name: string;
   /**
-   * Auto-generated from name, editable.
+   * URL-friendly slug (lowercase, hyphens only). Click "Format Slug" to generate from name.
    */
   slug: string;
   images?:

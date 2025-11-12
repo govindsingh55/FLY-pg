@@ -40,13 +40,14 @@ async function fetchProperty(slug: string): Promise<PropertySummary | null> {
       res = await payload.find({
         collection: 'properties',
         where: {
-          and: [{ slug: { equals: slug } }, { _status: { equals: 'published' } }],
+          and: [{ _status: { equals: 'published' } }, { slug: { equals: slug } }],
         },
         depth: 2,
         limit: 1,
+        pagination: false,
       })
     }
-
+    console.log('[property detail] fetchProperty res:', res, slug)
     const doc = res.docs[0]
     if (!doc) return null
 

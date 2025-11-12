@@ -66,7 +66,34 @@ const Properties: CollectionConfig = {
               type: 'text',
               unique: true,
               required: true,
-              admin: { position: 'sidebar', description: 'Auto-generated from name, editable.' },
+              admin: {
+                description:
+                  'URL-friendly slug (lowercase, hyphens only). Click "Format Slug" to generate from name.',
+                components: {
+                  Field: '@/payload/collections/Properties/components/SlugField',
+                },
+              },
+              validate: (value: unknown) => {
+                if (!value || typeof value !== 'string') return 'Slug is required'
+
+                // Check for valid slug format: lowercase letters, numbers, and hyphens only
+                const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+                if (!slugRegex.test(value)) {
+                  return 'Slug must be lowercase letters, numbers, and hyphens only (e.g., "my-property-name")'
+                }
+
+                // Check if starts or ends with hyphen
+                if (value.startsWith('-') || value.endsWith('-')) {
+                  return 'Slug cannot start or end with a hyphen'
+                }
+
+                // Check for consecutive hyphens
+                if (value.includes('--')) {
+                  return 'Slug cannot contain consecutive hyphens'
+                }
+
+                return true
+              },
             },
             {
               name: 'images',
