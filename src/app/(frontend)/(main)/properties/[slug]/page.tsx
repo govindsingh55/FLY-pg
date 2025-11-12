@@ -40,8 +40,7 @@ async function fetchProperty(slug: string): Promise<PropertySummary | null> {
       res = await payload.find({
         collection: 'properties',
         where: {
-          slug: { equals: slug },
-          _status: { equals: 'published' },
+          and: [{ slug: { equals: slug } }, { _status: { equals: 'published' } }],
         },
         depth: 2,
         limit: 1,
