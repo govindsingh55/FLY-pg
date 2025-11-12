@@ -102,7 +102,7 @@ async function fetchProperty(slug: string): Promise<PropertySummary | null> {
 export default async function PropertyDetailPage({ params }: { params: Params }) {
   const { slug } = await params
   const propertyData = await fetchProperty(slug)
-  console.log({ propertyData, slug })
+  console.log('property detail', { propertyData, slug })
   if (!propertyData) return <div className="mx-auto max-w-8xl px-4 py-8">Property not found.</div>
   const sector =
     typeof propertyData.address?.location?.sector === 'string'
