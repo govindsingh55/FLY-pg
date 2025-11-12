@@ -111,7 +111,9 @@ export async function GET(req: NextRequest) {
         status: booking.status,
         startDate: booking.startDate,
         endDate: booking.endDate,
-        price: booking.price,
+        roomRent: booking.roomRent,
+        foodPrice: booking.foodPrice,
+        total: booking.total,
         periodInMonths: booking.periodInMonths,
         foodIncluded: booking.foodIncluded,
         createdAt: booking.createdAt,
@@ -178,6 +180,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertToCSV(data: any): string {
   const lines: string[] = []
 
@@ -218,8 +221,9 @@ function convertToCSV(data: any): string {
     lines.push('')
     lines.push('BOOKINGS')
     lines.push(
-      'ID,Status,Start Date,End Date,Price,Period (Months),Food Included,Property,Room,Created At',
+      'ID,Status,Start Date,End Date,Room Rent,Food Price,Total,Period (Months),Food Included,Property,Room,Created At',
     )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data.bookings.forEach((booking: any) => {
       lines.push(
         [
@@ -227,7 +231,9 @@ function convertToCSV(data: any): string {
           booking.status,
           booking.startDate,
           booking.endDate,
-          booking.price,
+          booking.roomRent,
+          booking.foodPrice || 0,
+          booking.total,
           booking.periodInMonths,
           booking.foodIncluded ? 'Yes' : 'No',
           booking.property?.name || '',
@@ -243,6 +249,7 @@ function convertToCSV(data: any): string {
     lines.push('')
     lines.push('PAYMENTS')
     lines.push('ID,Amount,Status,Payment Method,Due Date,Paid At,Created At')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data.payments.forEach((payment: any) => {
       lines.push(
         [

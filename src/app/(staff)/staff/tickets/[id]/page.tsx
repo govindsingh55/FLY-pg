@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { use } from 'react'
 
+export const dynamic = 'force-dynamic'
+
 interface StaffUser {
   id: string
   name: string

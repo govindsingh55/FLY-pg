@@ -17,52 +17,6 @@ import { Calendar, Filter, Search, RefreshCw, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useBookings, usePrefetchBookings } from '@/hooks/useBookings'
 
-interface Booking {
-  id: string
-  status: string
-  price: number
-  periodInMonths: number
-  foodIncluded: boolean
-  createdAt: string
-  property?: {
-    id: string
-    name: string
-    location?: string
-    images?: Array<{
-      id: string
-      url: string
-      alt?: string
-    }>
-  }
-  room?: {
-    id: string
-    name: string
-    type?: string
-  }
-  roomSnapshot?: {
-    name: string
-    type?: string
-    price?: number
-  }
-}
-
-interface BookingsResponse {
-  bookings: Booking[]
-  pagination: {
-    page: number
-    limit: number
-    totalPages: number
-    totalDocs: number
-    hasNextPage: boolean
-    hasPrevPage: boolean
-  }
-  stats: {
-    total: number
-    active: number
-    pending: number
-  }
-}
-
 export default function BookingsPage() {
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState({

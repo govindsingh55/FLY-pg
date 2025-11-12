@@ -42,25 +42,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Check cancellation policy (example: can't cancel within 7 days of start date)
-    const startDate = new Date(currentBooking.startDate)
-    const today = new Date()
-    const daysUntilStart = Math.ceil(
-      (startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-    )
-
-    if (daysUntilStart <= 7) {
-      return NextResponse.json(
-        {
-          error: 'Cannot cancel booking within 7 days of start date',
-          daysUntilStart,
-        },
-        { status: 400 },
+    if (currentBooking.startDate) {
+      const startDate = new Date(currentBooking.startDate)
+      const today = new Date()
+      const daysUntilStart = Math.ceil(
+        (startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
       )
+
+      if (daysUntilStart <= 7) {
+        return NextResponse.json(
+          {
+            error: 'Cannot cancel booking within 7 days of start date',
+            daysUntilStart,
+          },
+          { status: 400 },
+        )
+      }
     }
 
     // Update the booking status to cancelled
-    const updateData: any = {
-      status: 'cancelled',
+    const updateData = {
+      status: 'cancelled' as const,
       cancellationReason: reason || 'Cancelled by customer',
       cancelledAt: new Date().toISOString(),
       cancelledBy: customer.id,

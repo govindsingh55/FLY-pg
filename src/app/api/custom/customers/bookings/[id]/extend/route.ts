@@ -49,6 +49,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Validate requested end date
+    if (!currentBooking.endDate) {
+      return NextResponse.json({ error: 'Booking has no end date set' }, { status: 400 })
+    }
+
     const newEndDate = new Date(requestedEndDate)
     const currentEndDate = new Date(currentBooking.endDate)
 
@@ -61,7 +65,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     // Check if there's already a pending extension request
     const existingRequests = currentBooking.extensionRequests || []
-    const pendingRequest = existingRequests.find((req: any) => req.status === 'pending')
+    const pendingRequest = existingRequests.find(
+      (req: { status?: string | null }) => req.status === 'pending',
+    )
 
     if (pendingRequest) {
       return NextResponse.json(

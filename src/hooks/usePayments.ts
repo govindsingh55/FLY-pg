@@ -6,10 +6,17 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 interface Payment {
   id: string
   amount: number
+  rent?: number
   status: string
+  paymentType: 'rent' | 'electricity' | 'security-deposit' | 'late-fee' | 'other'
   paymentDate: string
   dueDate?: string
   paymentForMonthAndYear?: string
+  lateFees?: number
+  utilityCharges?: number
+  electricityUnitsConsumed?: number
+  electricityRatePerUnit?: number
+  electricityCharges?: number
   payfor?: {
     id: string
     property?: {

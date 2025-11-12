@@ -17,48 +17,6 @@ import { PaymentCard } from '@/components/dashboard/PaymentCard'
 import { CreditCard, Filter, Search, RefreshCw, TrendingUp, AlertCircle } from 'lucide-react'
 import { usePayments, usePrefetchPayments } from '@/hooks/usePayments'
 
-interface Payment {
-  id: string
-  amount: number
-  status: string
-  paymentDate: string
-  dueDate?: string
-  paymentForMonthAndYear?: string
-  payfor?: {
-    id: string
-    property?: {
-      name: string
-      location?: string
-    }
-    roomSnapshot?: {
-      name: string
-    }
-  }
-  bookingSnapshot?: {
-    propertyName?: string
-    roomName?: string
-  }
-}
-
-interface PaymentsResponse {
-  payments: Payment[]
-  pagination: {
-    page: number
-    limit: number
-    totalPages: number
-    totalDocs: number
-    hasNextPage: boolean
-    hasPrevPage: boolean
-  }
-  stats: {
-    total: number
-    completed: number
-    pending: number
-    failed: number
-    totalAmount: number
-  }
-}
-
 export default function RentPage() {
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState({

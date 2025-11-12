@@ -80,6 +80,11 @@ export async function GET(req: NextRequest) {
 
     // Calculate rent from active bookings
     for (const booking of activeBookings.docs) {
+      // Skip bookings without dates
+      if (!booking.startDate || !booking.endDate) {
+        continue
+      }
+
       const bookingStart = new Date(booking.startDate)
       const bookingEnd = new Date(booking.endDate)
 
@@ -94,7 +99,7 @@ export async function GET(req: NextRequest) {
         const totalDays = Math.ceil(
           (bookingEnd.getTime() - bookingStart.getTime()) / (1000 * 60 * 60 * 24),
         )
-        const monthlyRent = (booking.price / totalDays) * overlapDays
+        const monthlyRent = (booking.roomRent / totalDays) * overlapDays
         totalRent += monthlyRent
       }
     }

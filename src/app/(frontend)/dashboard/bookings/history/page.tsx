@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -21,7 +20,6 @@ import {
   ArrowLeft,
   Download,
   Star,
-  Clock,
   CheckCircle,
   AlertCircle,
   CreditCard,
@@ -32,9 +30,11 @@ import Link from 'next/link'
 interface Booking {
   id: string
   status: string
-  startDate: string
-  endDate: string
-  price: number
+  startDate?: string
+  endDate?: string
+  roomRent: number
+  foodPrice?: number
+  total: number
   periodInMonths: number
   foodIncluded: boolean
   createdAt: string
@@ -54,13 +54,12 @@ interface Booking {
   room?: {
     id: string
     name: string
-    type: string
-    price: number
+    type?: string
   }
   roomSnapshot?: {
     name: string
-    type: string
-    price: number
+    type?: string
+    price?: number
   }
 }
 
@@ -112,6 +111,7 @@ export default function BookingHistoryPage() {
 
   useEffect(() => {
     fetchBookings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page, filters])
 
   const fetchBookings = async () => {
@@ -166,9 +166,6 @@ export default function BookingHistoryPage() {
     // TODO: Implement CSV/PDF export functionality
     toast.info('Export functionality coming soon!')
   }
-
-  const completedBookings = bookings.filter((b) => b.status === 'completed')
-  const cancelledBookings = bookings.filter((b) => b.status === 'cancelled')
 
   return (
     <div className="space-y-6">
