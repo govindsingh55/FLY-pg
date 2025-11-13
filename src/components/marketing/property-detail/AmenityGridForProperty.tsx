@@ -1,4 +1,5 @@
 import * as React from 'react'
+import Image from 'next/image'
 import IconByName from '@/components/marketing/IconByName'
 import type { Amenity } from '@/payload/payload-types'
 import { cn } from '@/lib/utils'
@@ -30,16 +31,41 @@ export default function AmenityGridForProperty({
       >
         {items.map((item, index) => {
           const amenityName = typeof item === 'string' ? item : item.name || 'Unknown Amenity'
+          const amenityLogo = typeof item === 'string' ? null : item.logo
           const amenityIcon =
             typeof item === 'string' ? 'CheckCircle' : item.iconName || 'CheckCircle'
           const key = typeof item === 'string' ? item : item.id || index
 
+          // Check if amenityLogo is a valid string or an object with a non-empty url
+          const logoUrl =
+            typeof amenityLogo === 'string'
+              ? amenityLogo
+              : amenityLogo &&
+                  typeof amenityLogo === 'object' &&
+                  typeof amenityLogo.url === 'string' &&
+                  amenityLogo.url.trim() !== ''
+                ? amenityLogo.url
+                : null
+
           return (
             <div
               key={key}
-              className="flex flex-col items-center justify-center gap-1 md:gap-2 rounded-lg border border-accent/35 bg-card px-2 py-3 md:px-3 md:py-4 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-2 hover:border-accent hover:bg-accent/5 w-28 min-w-28 md:w-32 md:min-w-32 flex-shrink-0"
+              className="flex flex-col items-center justify-center gap-1 md:gap-2 rounded-lg border border-accent/35 bg-card px-2 py-3 md:px-3 md:py-4 text-center shadow-sm transition-all duration-200 hover:shadow-md hover:border-2 hover:border-accent hover:bg-accent/5 w-28 min-w-28 md:w-32 md:min-w-32 shrink-0"
             >
-              <IconByName name={amenityIcon} className="size-5 md:size-6 text-primary" />
+              {logoUrl ? (
+                <span className="relative size-5 md:size-6">
+                  <Image
+                    src={logoUrl}
+                    alt={amenityName}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 768px) 20px, 24px"
+                    style={{ objectFit: 'contain' }}
+                  />
+                </span>
+              ) : (
+                <IconByName name={amenityIcon} className="size-5 md:size-6 text-primary" />
+              )}
               <span className="text-xs md:text-sm font-medium text-primary leading-tight">
                 {amenityName}
               </span>
