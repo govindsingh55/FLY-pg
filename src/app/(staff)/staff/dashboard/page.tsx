@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { StaffRole } from '@/lib/constants/staff-roles'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +11,7 @@ interface StaffUser {
   id: string
   email: string
   name: string
-  role: string
+  role: StaffRole
 }
 
 interface TicketStats {
@@ -102,7 +103,7 @@ export default function StaffDashboardPage() {
   }
 
   const roleConfig: Record<
-    string,
+    StaffRole,
     { color: string; icon: string; label: string; bgClass: string; textClass: string }
   > = {
     chef: {

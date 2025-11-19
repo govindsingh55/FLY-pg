@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { STAFF_ROLES } from '../constants/staff-roles'
 
 export interface StaffSession {
   user: {
@@ -62,8 +63,7 @@ export async function validateStaffSession(req: Request): Promise<{
     }
 
     // Ensure user has a staff role
-    const staffRoles = ['admin', 'manager', 'chef', 'cleaning', 'security', 'maintenance']
-    if (!staffRoles.includes(user.role)) {
+    if (!STAFF_ROLES.includes(user.role as any)) {
       return {
         user: null,
         error: 'Unauthorized - Not a staff member',

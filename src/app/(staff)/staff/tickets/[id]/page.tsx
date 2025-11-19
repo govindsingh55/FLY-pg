@@ -180,6 +180,25 @@ export default function StaffTicketDetailPage({ params }: { params: Promise<{ id
     }
   }
 
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!user) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/custom/staff/support/tickets/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (res.ok) {
+        await fetchTicket()
+      }
+    } catch (error) {
+      console.error('Failed to update status:', error)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const statusBadgeClass = {
     open: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
     in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
@@ -260,13 +279,60 @@ export default function StaffTicketDetailPage({ params }: { params: Promise<{ id
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Status</p>
-                <span
-                  className={`inline-block px-3 py-1 text-sm font-medium rounded ${
-                    statusBadgeClass[ticket.status]
-                  }`}
-                >
-                  {ticket.status.replace('_', ' ').toUpperCase()}
-                </span>
+                <div className="flex flex-col space-y-2">
+                  <span
+                    className={`inline-block px-3 py-1 text-sm font-medium rounded w-fit ${
+                      statusBadgeClass[ticket.status]
+                    }`}
+                  >
+                    {ticket.status.replace('_', ' ').toUpperCase()}
+                  </span>
+
+                  {/* Status Actions */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {ticket.status === 'open' && (
+                      <button
+                        onClick={() => handleStatusUpdate('in_progress')}
+                        disabled={submitting}
+                        className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded text-xs font-medium hover:bg-blue-200 dark:hover:bg-blue-900/50"
+                      >
+                        Mark In Progress
+                      </button>
+                    )}
+
+                    {ticket.status === 'in_progress' && (
+                      <button
+                        onClick={() => handleStatusUpdate('resolved')}
+                        disabled={submitting}
+                        className="px-3 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded text-xs font-medium hover:bg-green-200 dark:hover:bg-green-900/50"
+                      >
+                        Mark Resolved
+                      </button>
+                    )}
+
+                    {(ticket.status === 'resolved' || ticket.status === 'in_progress') &&
+                      (user?.role === 'manager' || user?.role === 'admin') && (
+                        <button
+                          onClick={() => handleStatusUpdate('closed')}
+                          disabled={submitting}
+                          className="px-3 py-1 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-600"
+                        >
+                          Close Ticket
+                        </button>
+                      )}
+
+                    {ticket.status === 'closed' &&
+                      (user?.role === 'manager' || user?.role === 'admin') && (
+                        <button
+                          onClick={() => handleStatusUpdate('open')}
+                          disabled={submitting}
+                          className="px-3 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 rounded text-xs font-medium hover:bg-yellow-200 dark:hover:bg-yellow-900/50"
+                        >
+                          Reopen
+                        </button>
+                      )}
+                  </div>
+                </div>
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Type</p>

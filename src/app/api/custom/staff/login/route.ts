@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { STAFF_ROLES } from '@/lib/constants/staff-roles'
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,8 +27,7 @@ export async function POST(req: NextRequest) {
     const user = result.user as any
 
     // Verify the user is staff (not a customer or regular user)
-    const allowedRoles = ['chef', 'cleaning', 'security', 'maintenance', 'manager', 'admin']
-    if (!user.role || !allowedRoles.includes(user.role)) {
+    if (!user.role || !STAFF_ROLES.includes(user.role)) {
       return NextResponse.json({ message: 'Unauthorized - Staff access only' }, { status: 403 })
     }
 
