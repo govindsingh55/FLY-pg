@@ -105,10 +105,10 @@ export function Navbar() {
       </div>
 
       {/* Mobile single row (only logo centered) */}
-      <div className="mx-auto flex max-w-8xl items-center justify-between px-4 py-3 md:hidden">
+      <div className="mx-auto flex max-w-8xl items-center justify-between px-2 py-2 md:hidden">
         <Link
           href="/"
-          className="text-4xl font-bold tracking-wide text-primary hover:text-primary/90"
+          className="text-2xl font-bold tracking-wide text-primary hover:text-primary/90"
           aria-label="Go to home"
         >
           FLY <span className="text-lg font-medium text-accent">colive</span>
@@ -116,7 +116,7 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           {isAuthenticated && (
             <Link href="/dashboard">
-              <Button variant="ghost" size="sm">
+              <Button variant="outline" size="sm">
                 Dashboard
               </Button>
             </Link>

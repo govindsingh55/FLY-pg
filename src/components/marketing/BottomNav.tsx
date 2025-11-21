@@ -7,18 +7,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useUser } from '@/lib/state/user'
+import { cn } from '@/lib/utils'
 import { Building2, Home, Search, User } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useFilterActions, useFilterState } from './FilterContext'
-import { cn } from '@/lib/utils'
+import { useFilterActions } from './FilterContext'
 
 export function BottomNav() {
   const pathname = usePathname()
   const actions = useFilterActions()
-  const navState = useFilterState()
   return (
-    <nav className="fixed z-[100] inset-x-0 bottom-0 h-16 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+    <nav className="fixed z-[100] inset-x-0 bottom-0 h-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
       <div className="container flex h-full items-center justify-center px-4">
         <div className="flex w-full max-w-md items-center justify-around">
           <Link

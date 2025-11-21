@@ -1,21 +1,31 @@
 'use client'
+import { useEffect, useState } from 'react'
 
-import * as React from 'react'
-import * as Lucide from 'lucide-react'
+import { Sun, Moon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useUser } from '@/lib/state/user'
+import { Button } from '../ui/button'
 
 export default function ThemeToggleBtn() {
-  const { theme, setTheme } = useTheme()
+  const { setTheme, resolvedTheme } = useTheme()
   const { user } = useUser()
-  const [mounted, setMounted] = React.useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Derive isDark only after mount to avoid SSR/CSR mismatch
-  const isDark = mounted ? theme === 'dark' : false
+  // Avoid hydration mismatch by rendering a placeholder until mounted
+  if (!mounted) {
+    return (
+      <Button size="sm" aria-label="Toggle theme" variant="outline">
+        <Sun className="size-4" />
+        <span className="hidden sm:inline">Light</span>
+      </Button>
+    )
+  }
+
+  const isDark = resolvedTheme === 'dark'
 
   const handleToggle = async () => {
     const newTheme = isDark ? 'light' : 'dark'
@@ -41,25 +51,9 @@ export default function ThemeToggleBtn() {
   }
 
   return (
-    <button
-      aria-label="Toggle theme"
-      onClick={handleToggle}
-      className="inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-md hover:bg-muted"
-      suppressHydrationWarning
-    >
-      {/* Stable SSR placeholder; real icon after mount */}
-      {mounted ? (
-        isDark ? (
-          <Lucide.Moon className="size-4" />
-        ) : (
-          <Lucide.Sun className="size-4" />
-        )
-      ) : (
-        <span className="size-4 inline-block" />
-      )}
-      <span className="hidden sm:inline" suppressHydrationWarning>
-        {mounted ? (isDark ? 'Dark' : 'Light') : 'Light'}
-      </span>
-    </button>
+    <Button size="sm" aria-label="Toggle theme" onClick={handleToggle} variant="outline">
+      {isDark ? <Moon className="size-4" /> : <Sun className="size-4" />}
+      <span className="hidden sm:inline">{isDark ? 'Dark' : 'Light'}</span>
+    </Button>
   )
 }
