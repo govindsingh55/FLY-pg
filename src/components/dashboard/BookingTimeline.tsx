@@ -29,6 +29,7 @@ interface TimelineEvent {
 interface BookingTimelineProps {
   booking: {
     id: string
+    bookingTitle?: string
     status: string
     startDate: string
     endDate: string

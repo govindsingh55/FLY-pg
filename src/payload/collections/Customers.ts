@@ -49,6 +49,7 @@ const Customers: CollectionConfig = {
       unique: true,
       validate: (value: string | null | undefined) => {
         if (value && !/^[6-9]\d{9}$/.test(value)) {
+          console.log('Invalid phone number from collection:', value)
           return 'Please enter a valid 10-digit Indian mobile number'
         }
         return true

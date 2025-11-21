@@ -5,13 +5,23 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
  */
 interface Booking {
   id: string
+  bookingTitle?: string
   status: string
   roomRent: number
   foodPrice?: number
+  bookingCharge?: number
+  securityDeposit?: number
   total: number
   periodInMonths: number
   foodIncluded: boolean
+  takeFirstMonthRentOnBooking?: boolean
   createdAt: string
+  checkInDate?: string
+  checkOutDate?: string
+  bookingSource?: string
+  totalNights?: number
+  averageDailyRate?: number
+  customerSatisfactionScore?: number
   property?: {
     id: string
     name: string

@@ -1,5 +1,3 @@
-
-
 # FLY-pg - Property Management System
 
 > **Production Ready** · Last updated: November 2025
@@ -63,8 +61,8 @@ tests/           # Unit and E2E tests
 2. **Configure environment:** Copy `.env.example` to `.env` and update values
 3. **Start dev server:** `npm run dev`
 4. **Access:**
-	 - Frontend: [http://localhost:3000](http://localhost:3000)
-	 - Admin: [http://localhost:3000/admin](http://localhost:3000/admin)
+   - Frontend: [http://localhost:3000](http://localhost:3000)
+   - Admin: [http://localhost:3000/admin](http://localhost:3000/admin)
 5. **Seed data:** Use "Seed Test Data" in admin or `curl -X POST http://localhost:3000/api/seed`
 
 For full setup, see [docs/SETUP.md](docs/SETUP.md)
@@ -99,12 +97,9 @@ src/
 
 ---
 
-
 ---
 
-
 ---
-
 
 ---
 
@@ -112,19 +107,20 @@ docker run -p 3000:3000 fly-pg
 
 ---
 
+---
 
 ---
 
-
 ---
 
-
 ---
-
-
----
-
 
 ---
 
 **All dashboard tasks completed. System is production ready.** ✅
+
+TODO:
+
+- [ ] staff dashboard and pages are not matching with admin dashboard and pages
+- [ ] staff dashboard tickets and assinging to staff list is not filtered properly (property wise and only staff user must be listed)
+- [ ] customer dashboard and other pages proper links not avaialbe specially for mobile view

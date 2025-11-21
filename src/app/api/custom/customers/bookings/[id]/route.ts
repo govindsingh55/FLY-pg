@@ -26,7 +26,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     // Ensure the customer can only access their own bookings
-    if (booking.customer !== customer.id) {
+    if (
+      (typeof booking.customer === 'string' ? booking.customer : booking.customer.id) !==
+      customer.id
+    ) {
+      console.log('Booking customer:', booking.customer)
+      console.log('Customer ID:', customer.id)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

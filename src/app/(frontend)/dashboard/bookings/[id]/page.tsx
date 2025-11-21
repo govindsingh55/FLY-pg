@@ -1,29 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import {
-  Calendar,
-  MapPin,
-  Building2,
-  Bed,
-  DollarSign,
-  Clock,
-  AlertCircle,
-  Star,
-  MessageSquare,
-  FileText,
-  Download,
-  X,
-  Plus,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react'
-import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -33,17 +12,51 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Amenity } from '@/payload/payload-types'
+import {
+  AlertCircle,
+  Building2,
+  Calendar,
+  Clock,
+  CreditCard,
+  DollarSign,
+  Download,
+  FileText,
+  MapPin,
+  MessageSquare,
+  Plus,
+  Star,
+  X,
+  XCircle,
+} from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return 'N/A'
+  const date = new Date(dateString)
+  return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString()
+}
 
 interface Booking {
   id: string
+  bookingTitle?: string
   status: string
   startDate: string
   endDate: string
-  price: number
+  // Pricing fields
+  roomRent: number
+  foodPrice?: number
+  bookingCharge?: number
+  securityDeposit?: number
+  total: number
+  foodIncluded: boolean
+  takeFirstMonthRentOnBooking?: boolean
+
   periodInMonths: number
   checkInDate?: string
   checkOutDate?: string
@@ -83,7 +96,15 @@ interface Booking {
   property: {
     id: string
     name: string
-    address: string
+    address:
+      | string
+      | {
+          location?: {
+            sector?: string
+            city?: string
+            state?: string
+          }
+        }
     images?: Array<{ url: string }>
   }
   room: {
@@ -92,6 +113,12 @@ interface Booking {
     type: string
     amenities: string[]
   }
+  // Analytics fields
+  totalNights?: number
+  averageDailyRate?: number
+  customerSatisfactionScore?: number
+  bookingSource?: string
+  roomSnapshot?: any
 }
 
 export default function BookingDetailPage() {
@@ -108,6 +135,18 @@ export default function BookingDetailPage() {
   const [extendReason, setExtendReason] = useState('')
   const [rating, setRating] = useState(5)
   const [review, setReview] = useState('')
+  const [payment, setPayment] = useState<{
+    id: string
+    amount: number
+    status: string
+    paymentType?: string
+    paymentMethod?: string
+    dueDate?: string
+    bookingCharge?: number
+    firstMonthRent?: number
+    securityDepositAmount?: number
+  } | null>(null)
+  const [paymentLoading, setPaymentLoading] = useState(false)
 
   const bookingId = params.id as string
 
@@ -123,6 +162,24 @@ export default function BookingDetailPage() {
       }
       const data = await response.json()
       setBooking(data.booking)
+
+      // If booking is pending, fetch the associated payment record
+      if (data.booking?.status === 'pending') {
+        try {
+          const paymentResponse = await fetch(
+            `/api/custom/customers/payments?bookingId=${bookingId}`,
+          )
+          if (paymentResponse.ok) {
+            const paymentData = await paymentResponse.json()
+            if (paymentData.payments && paymentData.payments.length > 0) {
+              setPayment(paymentData.payments[0])
+            }
+          }
+        } catch (paymentError) {
+          console.error('Error fetching payment:', paymentError)
+          // Don't show error toast for payment fetch failure
+        }
+      }
     } catch (error) {
       console.error('Error fetching booking:', error)
       toast.error('Failed to load booking details')
@@ -229,6 +286,45 @@ export default function BookingDetailPage() {
     }
   }
 
+  const handlePayNow = async () => {
+    if (!payment?.id) {
+      toast.error('Payment information not found')
+      return
+    }
+
+    setPaymentLoading(true)
+    try {
+      const response = await fetch('/api/custom/customers/payments/phonepe/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId: payment.id }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to initiate payment')
+      }
+
+      const data = await response.json()
+
+      if (data.redirectUrl) {
+        // Store payment info in sessionStorage for callback handling
+        sessionStorage.setItem('phonepe_payment_id', payment.id)
+        sessionStorage.setItem('phonepe_booking_id', bookingId)
+
+        // Redirect to PhonePe payment page
+        window.location.href = data.redirectUrl
+        return
+      }
+
+      toast.error('Failed to get payment URL from PhonePe')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to initiate payment')
+    } finally {
+      setPaymentLoading(false)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -320,7 +416,11 @@ export default function BookingDetailPage() {
                   <p className="font-medium">{booking.property.name}</p>
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
-                    {booking.property.address}
+                    {typeof booking.property.address === 'string'
+                      ? booking.property.address
+                      : `${booking.property.address?.location?.sector || ''}, ${booking.property.address?.location?.city || ''}, ${booking.property.address?.location?.state || ''}`
+                          .replace(/^,\s*|,\s*$/g, '')
+                          .replace(/,\s*,/g, ',')}
                   </p>
                 </div>
                 <div>
@@ -336,7 +436,7 @@ export default function BookingDetailPage() {
                   <div className="flex flex-wrap gap-2 mt-1">
                     {booking.room.amenities.map((amenity, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
-                        {typeof amenity !== 'string'
+                        {typeof amenity === 'string'
                           ? amenity
                           : (amenity as unknown as Amenity).name || 'Unknown Amenity'}
                       </Badge>
@@ -359,11 +459,11 @@ export default function BookingDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Start Date</Label>
-                  <p className="font-medium">{new Date(booking.startDate).toLocaleDateString()}</p>
+                  <p className="font-medium">{formatDate(booking.startDate)}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">End Date</Label>
-                  <p className="font-medium">{new Date(booking.endDate).toLocaleDateString()}</p>
+                  <p className="font-medium">{formatDate(booking.endDate)}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
@@ -374,9 +474,7 @@ export default function BookingDetailPage() {
               {booking.checkInDate && (
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Check-in Date</Label>
-                  <p className="font-medium">
-                    {new Date(booking.checkInDate).toLocaleDateString()}
-                  </p>
+                  <p className="font-medium">{formatDate(booking.checkInDate)}</p>
                 </div>
               )}
             </CardContent>
@@ -390,14 +488,39 @@ export default function BookingDetailPage() {
                 Pricing Details
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">₹{booking.price.toLocaleString()}</span>
-                <span className="text-muted-foreground">per month</span>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Room Rent</Label>
+                  <p className="font-medium">₹{booking.roomRent?.toLocaleString()}/month</p>
+                </div>
+                {booking.foodIncluded && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Food Price</Label>
+                    <p className="font-medium">₹{booking.foodPrice?.toLocaleString()}/month</p>
+                  </div>
+                )}
+                {booking.bookingCharge && booking.bookingCharge > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Booking Charge
+                    </Label>
+                    <p className="font-medium">₹{booking.bookingCharge.toLocaleString()}</p>
+                  </div>
+                )}
+                {booking.securityDeposit && booking.securityDeposit > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Security Deposit
+                    </Label>
+                    <p className="font-medium">₹{booking.securityDeposit.toLocaleString()}</p>
+                  </div>
+                )}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Total: ₹{(booking.price * booking.periodInMonths).toLocaleString()}
-              </p>
+              <div className="pt-4 border-t flex items-center justify-between">
+                <span className="text-lg font-semibold">Total Amount</span>
+                <span className="text-2xl font-bold">₹{booking.total?.toLocaleString()}</span>
+              </div>
             </CardContent>
           </Card>
 
@@ -415,14 +538,12 @@ export default function BookingDetailPage() {
                   {booking.extensionRequests.map((request, index) => (
                     <div key={index} className="border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">
-                          {new Date(request.requestedEndDate).toLocaleDateString()}
-                        </span>
+                        <span className="font-medium">{formatDate(request.requestedEndDate)}</span>
                         <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">{request.reason}</p>
                       <p className="text-xs text-muted-foreground">
-                        Requested: {new Date(request.requestedAt).toLocaleDateString()}
+                        Requested: {formatDate(request.requestedAt)}
                       </p>
                       {request.responseNote && (
                         <p className="text-sm mt-2 p-2 bg-muted rounded">
@@ -460,7 +581,7 @@ export default function BookingDetailPage() {
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">{request.description}</p>
                       <p className="text-xs text-muted-foreground">
-                        Requested: {new Date(request.requestedAt).toLocaleDateString()}
+                        Requested: {formatDate(request.requestedAt)}
                       </p>
                       {request.resolutionNote && (
                         <p className="text-sm mt-2 p-2 bg-muted rounded">
@@ -493,7 +614,7 @@ export default function BookingDetailPage() {
                       <div>
                         <p className="font-medium">{doc.document.filename}</p>
                         <p className="text-sm text-muted-foreground">
-                          {doc.type} • {new Date(doc.uploadedAt).toLocaleDateString()}
+                          {doc.type} • {formatDate(doc.uploadedAt)}
                         </p>
                       </div>
                       <Button variant="outline" size="lg" asChild>
@@ -528,7 +649,7 @@ export default function BookingDetailPage() {
                     />
                   ))}
                   <span className="text-sm text-muted-foreground">
-                    {new Date(booking.reviewedAt!).toLocaleDateString()}
+                    {formatDate(booking.reviewedAt)}
                   </span>
                 </div>
                 <p className="text-sm">{booking.review}</p>
@@ -545,6 +666,31 @@ export default function BookingDetailPage() {
               <CardTitle>Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {booking.status === 'pending' && payment && (
+                <div className="space-y-3">
+                  <div className="rounded-md border p-3 bg-yellow-50 dark:bg-yellow-950">
+                    <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-1">
+                      Payment Pending
+                    </p>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                      Complete your payment to confirm this booking
+                    </p>
+                    <div className="mt-2 text-sm font-semibold text-yellow-900 dark:text-yellow-100">
+                      Amount: ₹{payment.amount?.toLocaleString()}
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handlePayNow}
+                    disabled={paymentLoading}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    {paymentLoading ? 'Initiating Payment...' : 'Pay Now'}
+                  </Button>
+                </div>
+              )}
+
               {booking.status === 'confirmed' && (
                 <>
                   <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
@@ -610,7 +756,11 @@ export default function BookingDetailPage() {
                             type="date"
                             value={extendDate}
                             onChange={(e) => setExtendDate(e.target.value)}
-                            min={new Date(booking.endDate).toISOString().split('T')[0]}
+                            min={
+                              booking.endDate && !isNaN(new Date(booking.endDate).getTime())
+                                ? new Date(booking.endDate).toISOString().split('T')[0]
+                                : ''
+                            }
                           />
                         </div>
                         <div>

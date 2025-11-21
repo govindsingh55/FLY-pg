@@ -127,6 +127,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
     const status = searchParams.get('status')
     const dateFilter = searchParams.get('dateFilter')
+    const bookingId = searchParams.get('bookingId')
 
     // Build where clause
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -143,6 +144,10 @@ export async function GET(request: NextRequest) {
 
     if (status && status !== 'all') {
       whereConditions.push({ status: { equals: status } })
+    }
+
+    if (bookingId) {
+      whereConditions.push({ payfor: { equals: bookingId } })
     }
 
     if (dateFilter && dateFilter !== 'all') {
@@ -203,14 +208,35 @@ export async function GET(request: NextRequest) {
       success: true,
       payments: payments.docs.map((payment) => ({
         id: payment.id,
+        paymentType: payment.paymentType,
         amount: payment.amount,
         status: payment.status,
         paymentMethod: payment.paymentMethod,
         dueDate: payment.dueDate,
         paymentDate: payment.paymentDate, // Use paymentDate instead of paidDate
         notes: payment.notes, // Use notes instead of description
+
+        // Rent fields
+        rent: payment.rent,
         lateFees: payment.lateFees,
         utilityCharges: payment.utilityCharges,
+
+        // Booking fields
+        bookingCharge: payment.bookingCharge,
+        firstMonthRent: payment.firstMonthRent,
+        securityDepositAmount: payment.securityDepositAmount,
+        takeFirstMonthRentOnBooking: payment.takeFirstMonthRentOnBooking,
+
+        // Electricity fields
+        electricityCharges: payment.electricityCharges,
+        electricityUnitsConsumed: payment.electricityUnitsConsumed,
+        electricityRatePerUnit: payment.electricityRatePerUnit,
+        billingPeriodStart: payment.billingPeriodStart,
+        billingPeriodEnd: payment.billingPeriodEnd,
+        meterReadingStart: payment.meterReadingStart,
+        meterReadingEnd: payment.meterReadingEnd,
+
+        payfor: payment.payfor,
         paymentReceipt: payment.paymentReceipt, // Use paymentReceipt instead of receiptUrl
         createdAt: payment.createdAt,
         updatedAt: payment.updatedAt,

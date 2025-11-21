@@ -113,7 +113,16 @@ export function Navbar() {
         >
           FLY <span className="text-lg font-medium text-accent">colive</span>
         </Link>
-        <ThemeToggleBtn />
+        <div className="flex items-center gap-2">
+          {isAuthenticated && (
+            <Link href="/dashboard">
+              <Button variant="ghost" size="sm">
+                Dashboard
+              </Button>
+            </Link>
+          )}
+          <ThemeToggleBtn />
+        </div>
       </div>
     </header>
   )

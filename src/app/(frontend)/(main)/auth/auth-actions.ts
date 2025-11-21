@@ -11,8 +11,12 @@ const signUpSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   phone: z
     .string()
+    .transform((val) => (val?.trim() === '' ? undefined : val?.trim()))
     .optional()
-    .refine((val) => !val || /^\+?[0-9]{10,15}$/.test(val), 'Invalid phone number format'),
+    .refine(
+      (val) => !val || /^[6-9]\d{9}$/.test(val),
+      'Please enter a valid 10-digit Indian mobile number',
+    ),
 })
 
 /**
@@ -36,22 +40,43 @@ function extractErrorInfo(err: unknown): { message: string; status?: number | st
 export async function signUpAction(formData: FormData) {
   const payload = await getPayload({ config })
   const data = Object.fromEntries(formData.entries())
+
+  // Debug logging
+  console.log('Sign up form data:', data)
+  console.log(
+    'Phone value:',
+    data.phone,
+    'Type:',
+    typeof data.phone,
+    'Length:',
+    (data.phone as string)?.length,
+  )
+
   const parsed = signUpSchema.safeParse(data)
   if (!parsed.success) {
+    console.log('Validation errors:', parsed.error.flatten().fieldErrors)
     return { error: parsed.error.flatten().fieldErrors }
   }
+
+  console.log('Parsed data:', parsed.data)
+  console.log('Phone after parsing:', parsed.data.phone, 'Type:', typeof parsed.data.phone)
+
   try {
+    const customerData = {
+      name: parsed.data.name,
+      email: parsed.data.email,
+      password: parsed.data.password,
+      phone: parsed.data.phone || undefined,
+    }
+    console.log('Customer data to create:', customerData)
+
     await payload.create({
       collection: 'customers',
-      data: {
-        name: parsed.data.name,
-        email: parsed.data.email,
-        password: parsed.data.password,
-        phone: parsed.data.phone || undefined,
-      },
+      data: customerData,
     })
     return { success: true }
   } catch (err: unknown) {
+    console.log('Error creating customer:', err)
     const { message } = extractErrorInfo(err)
     if (/duplicate key/i.test(message) || /E11000/.test(message)) {
       return { error: 'An account with that email already exists.' }

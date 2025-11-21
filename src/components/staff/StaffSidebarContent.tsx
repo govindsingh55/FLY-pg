@@ -2,22 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useUser } from '@/lib/state/user'
-import { logoutAction } from '@/app/(frontend)/(main)/auth/auth-actions'
+import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import {
-  Home,
-  User,
-  Calendar,
-  CreditCard,
-  Settings,
-  LogOut,
-  Bell,
-  MessageSquare,
-  Globe,
-} from 'lucide-react'
+import { Home, Ticket, LogOut } from 'lucide-react'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -28,26 +15,19 @@ import {
 } from '@/components/ui/sidebar'
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Profile', href: '/dashboard/profile', icon: User },
-  { name: 'Bookings', href: '/dashboard/bookings', icon: Calendar },
-  { name: 'Rent & Payments', href: '/dashboard/rent', icon: CreditCard },
-  { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
-  { name: 'Support', href: '/dashboard/support', icon: MessageSquare },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Dashboard', href: '/staff/dashboard', icon: Home },
+  { name: 'Tickets', href: '/staff/tickets', icon: Ticket },
 ]
 
-export function DashboardSidebarContent() {
+export function StaffSidebarContent() {
   const pathname = usePathname()
-  const { logout } = useUser()
   const router = useRouter()
 
   const handleLogout = async () => {
     try {
-      await logoutAction()
-      await logout()
+      await fetch('/api/custom/staff/logout', { method: 'POST' })
       toast.success('Logged out successfully!')
-      router.push('/')
+      router.push('/staff/login')
     } catch (error) {
       console.error('Logout failed:', error)
       toast.error('Failed to log out.')
@@ -57,22 +37,7 @@ export function DashboardSidebarContent() {
   return (
     <>
       <SidebarGroup>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href="/">
-                  <Globe />
-                  <span>Back to Home</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
-
-      <SidebarGroup>
-        <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+        <SidebarGroupLabel>Staff Portal</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
             {navigation.map((item) => {
@@ -93,7 +58,7 @@ export function DashboardSidebarContent() {
       </SidebarGroup>
 
       <SidebarGroup>
-        <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
+        <SidebarGroupLabel>Account</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>

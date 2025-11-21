@@ -56,7 +56,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Build sort clause
-    const sort = `${sortOrder === 'desc' ? '-' : ''}${sortBy}`
+    let sortField = sortBy
+    if (sortBy === 'price') sortField = 'total' // Handle legacy sort param
+
+    const sort = `${sortOrder === 'desc' ? '-' : ''}${sortField}`
 
     // Fetch bookings
     const bookings = await payload.find({

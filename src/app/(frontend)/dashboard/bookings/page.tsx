@@ -172,7 +172,7 @@ export default function BookingsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="createdAt">Booking Date</SelectItem>
-                  <SelectItem value="price">Price</SelectItem>
+                  <SelectItem value="total">Total Amount</SelectItem>
                   <SelectItem value="status">Status</SelectItem>
                 </SelectContent>
               </Select>

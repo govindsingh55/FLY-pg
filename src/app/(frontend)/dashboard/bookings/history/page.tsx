@@ -29,15 +29,25 @@ import Link from 'next/link'
 
 interface Booking {
   id: string
+  bookingTitle?: string
   status: string
   startDate?: string
   endDate?: string
   roomRent: number
   foodPrice?: number
+  bookingCharge?: number
+  securityDeposit?: number
   total: number
   periodInMonths: number
   foodIncluded: boolean
+  takeFirstMonthRentOnBooking?: boolean
   createdAt: string
+  checkInDate?: string
+  checkOutDate?: string
+  bookingSource?: string
+  totalNights?: number
+  averageDailyRate?: number
+  customerSatisfactionScore?: number
   rating?: number
   review?: string
   cancellationReason?: string

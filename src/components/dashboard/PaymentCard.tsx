@@ -13,15 +13,32 @@ interface PaymentCardProps {
     amount: number
     rent?: number
     status: string
-    paymentType: 'rent' | 'electricity' | 'security-deposit' | 'late-fee' | 'other'
+    paymentType: 'rent' | 'electricity' | 'security-deposit' | 'late-fee' | 'other' | 'booking'
+    paymentMethod?: string
     paymentDate: string
     dueDate?: string
     paymentForMonthAndYear?: string
+    notes?: string
+
+    // Rent fields
     lateFees?: number
     utilityCharges?: number
+
+    // Booking fields
+    bookingCharge?: number
+    firstMonthRent?: number
+    securityDepositAmount?: number
+    takeFirstMonthRentOnBooking?: boolean
+
+    // Electricity fields
     electricityUnitsConsumed?: number
     electricityRatePerUnit?: number
     electricityCharges?: number
+    billingPeriodStart?: string
+    billingPeriodEnd?: string
+    meterReadingStart?: number
+    meterReadingEnd?: number
+
     payfor?: {
       id: string
       property?: {
