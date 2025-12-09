@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Home, Ticket, LogOut } from 'lucide-react'
+import { Home, Ticket, LogOut, Calendar, Users, Building2 } from 'lucide-react'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -17,11 +17,30 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/staff/dashboard', icon: Home },
   { name: 'Tickets', href: '/staff/tickets', icon: Ticket },
+  { name: 'Bookings', href: '/staff/bookings', icon: Calendar },
+  { name: 'Customers', href: '/staff/customers', icon: Users },
+  { name: 'Properties', href: '/staff/properties', icon: Building2 },
 ]
 
 export function StaffSidebarContent() {
   const pathname = usePathname()
   const router = useRouter()
+  const [userRole, setUserRole] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch('/api/users/me')
+        if (res.ok) {
+          const data = await res.json()
+          setUserRole(data?.user?.role || null)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      }
+    }
+    fetchUser()
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -34,13 +53,20 @@ export function StaffSidebarContent() {
     }
   }
 
+  const filteredNavigation = navigation.filter((item) => {
+    if (['Bookings', 'Customers', 'Properties'].includes(item.name)) {
+      return userRole === 'manager' || userRole === 'admin'
+    }
+    return true
+  })
+
   return (
     <>
       <SidebarGroup>
         <SidebarGroupLabel>Staff Portal</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {navigation.map((item) => {
+            {filteredNavigation.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
               return (
                 <SidebarMenuItem key={item.name}>

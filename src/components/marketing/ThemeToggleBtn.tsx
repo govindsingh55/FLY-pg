@@ -53,7 +53,7 @@ export default function ThemeToggleBtn() {
   return (
     <Button size="sm" aria-label="Toggle theme" onClick={handleToggle} variant="outline">
       {isDark ? <Moon className="size-4" /> : <Sun className="size-4" />}
-      <span className="hidden sm:inline">{isDark ? 'Dark' : 'Light'}</span>
+      <span className="hidden lg:inline">{isDark ? 'Dark' : 'Light'}</span>
     </Button>
   )
 }

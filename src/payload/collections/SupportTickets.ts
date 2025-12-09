@@ -132,7 +132,50 @@ const SupportTickets: CollectionConfig = {
   fields: [
     { name: 'customer', type: 'relationship', relationTo: 'customers', required: true },
     { name: 'property', type: 'relationship', relationTo: 'properties', required: false },
-    { name: 'staff', type: 'relationship', relationTo: 'users' },
+    {
+      name: 'staff',
+      type: 'relationship',
+      relationTo: 'users',
+      filterOptions: ({ data, siblingData, relationTo, user }) => {
+        const ticketType = (data as any)?.type || (siblingData as any)?.type
+        const propertyId =
+          typeof (data as any)?.property === 'object'
+            ? (data as any)?.property?.id
+            : (data as any)?.property ||
+              (typeof (siblingData as any)?.property === 'object'
+                ? (siblingData as any)?.property?.id
+                : (siblingData as any)?.property)
+
+        // Base filter: Always allow admins and managers
+        const baseFilter: any = {
+          role: { in: ['admin', 'manager'] },
+        }
+
+        // If ticket type is selected, allow staff with matching role
+        // BUT they must also belong to the property if a property is selected
+        if (ticketType) {
+          const typeFilter: any = {
+            role: { equals: ticketType },
+          }
+
+          // If property is selected, ensure staff is assigned to that property
+          if (propertyId) {
+            typeFilter.property = { equals: propertyId }
+          }
+
+          // Return OR query: either admin/manager OR (matching role AND matching property)
+          return {
+            or: [baseFilter, typeFilter],
+          }
+        }
+
+        // If no type selected yet, just return base filter + valid staff roles
+        // limiting to generally valid staff roles to avoid showing random users if any
+        return {
+          or: [baseFilter, { role: { in: ['chef', 'cleaning', 'security', 'maintenance'] } }],
+        }
+      },
+    },
     {
       name: 'type',
       label: 'Support Required For',

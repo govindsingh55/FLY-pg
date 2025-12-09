@@ -75,8 +75,34 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       depth: 2,
     })
 
-    // TODO: Update related payment records if needed
-    // This could involve creating refund records or updating payment status
+    // Cancel any pending/notified payments associated with this booking
+    const pendingPayments = await payload.find({
+      collection: 'payments',
+      where: {
+        and: [{ payfor: { equals: bookingId } }, { status: { in: ['pending', 'notified'] } }],
+      },
+      limit: 100,
+    })
+
+    if (pendingPayments.docs.length > 0) {
+      console.log(
+        `[CancelBooking] Voiding ${pendingPayments.docs.length} pending payments for booking ${bookingId}`,
+      )
+
+      await Promise.all(
+        pendingPayments.docs.map((payment) =>
+          payload.update({
+            collection: 'payments',
+            id: payment.id,
+            data: {
+              status: 'failed', // Using 'failed' as void/cancelled status equivalent
+              notes:
+                (payment.notes || '') + '\nAutomatically cancelled because booking was cancelled.',
+            },
+          }),
+        ),
+      )
+    }
 
     return NextResponse.json({
       booking: updatedBooking,

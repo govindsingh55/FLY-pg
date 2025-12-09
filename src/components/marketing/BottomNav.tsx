@@ -16,8 +16,14 @@ import { useFilterActions } from './FilterContext'
 export function BottomNav() {
   const pathname = usePathname()
   const actions = useFilterActions()
+
+  // Hide global bottom nav on dashboard pages (use DashboardBottomNav instead)
+  if (pathname?.startsWith('/dashboard')) {
+    return null
+  }
+
   return (
-    <nav className="fixed z-[100] inset-x-0 bottom-0 h-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+    <nav className="fixed z-100 inset-x-0 bottom-0 h-16 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 md:hidden">
       <div className="container flex h-full items-center justify-center px-4">
         <div className="flex w-full max-w-md items-center justify-around">
           <Link
@@ -70,7 +76,7 @@ function Account() {
         <User className="h-5 w-5" />
         <span>Account</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="z-[200] gap-2 p-2">
+      <DropdownMenuContent className="z-200 gap-2 p-2">
         {isAuthenticated ? (
           <>
             <DropdownMenuItem className="border-b rounded-none">

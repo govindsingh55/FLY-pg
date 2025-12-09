@@ -76,6 +76,7 @@ export interface Config {
     'visit-bookings': VisitBooking;
     bookings: Booking;
     payments: Payment;
+    'payment-methods': PaymentMethod;
     'food-menu': FoodMenu;
     'support-tickets': SupportTicket;
     'support-media': SupportMedia;
@@ -98,6 +99,7 @@ export interface Config {
     'visit-bookings': VisitBookingsSelect<false> | VisitBookingsSelect<true>;
     bookings: BookingsSelect<false> | BookingsSelect<true>;
     payments: PaymentsSelect<false> | PaymentsSelect<true>;
+    'payment-methods': PaymentMethodsSelect<false> | PaymentMethodsSelect<true>;
     'food-menu': FoodMenuSelect<false> | FoodMenuSelect<true>;
     'support-tickets': SupportTicketsSelect<false> | SupportTicketsSelect<true>;
     'support-media': SupportMediaSelect<false> | SupportMediaSelect<true>;
@@ -126,6 +128,7 @@ export interface Config {
   jobs: {
     tasks: {
       'customer-rent-reminder-notification-task': TaskCustomerRentReminderNotificationTask;
+      'auto-pay-process': TaskAutoPayProcess;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1182,6 +1185,36 @@ export interface Payment {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-methods".
+ */
+export interface PaymentMethod {
+  id: string;
+  customer: string | Customer;
+  type: 'card' | 'upi' | 'netbanking';
+  name: string;
+  /**
+   * Last 4 digits or UPI ID masked
+   */
+  maskedNumber: string;
+  token: string;
+  isDefault?: boolean | null;
+  /**
+   * Additional gateway specific details
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "support-tickets".
  */
 export interface SupportTicket {
@@ -1862,7 +1895,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'customer-rent-reminder-notification-task' | 'schedulePublish';
+        taskSlug: 'inline' | 'customer-rent-reminder-notification-task' | 'auto-pay-process' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1895,7 +1928,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'customer-rent-reminder-notification-task' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'customer-rent-reminder-notification-task' | 'auto-pay-process' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1940,6 +1973,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'payments';
         value: string | Payment;
+      } | null)
+    | ({
+        relationTo: 'payment-methods';
+        value: string | PaymentMethod;
       } | null)
     | ({
         relationTo: 'food-menu';
@@ -2487,6 +2524,21 @@ export interface PaymentsSelect<T extends boolean = true> {
   customerSatisfactionScore?: T;
   lastRetryAt?: T;
   bookingSnapshot?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-methods_select".
+ */
+export interface PaymentMethodsSelect<T extends boolean = true> {
+  customer?: T;
+  type?: T;
+  name?: T;
+  maskedNumber?: T;
+  token?: T;
+  isDefault?: T;
+  metadata?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3086,6 +3138,14 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  * via the `definition` "TaskCustomer-rent-reminder-notification-task".
  */
 export interface TaskCustomerRentReminderNotificationTask {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskAuto-pay-process".
+ */
+export interface TaskAutoPayProcess {
   input?: unknown;
   output?: unknown;
 }

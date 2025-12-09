@@ -686,9 +686,12 @@ export {
   hasExistingRentInvoiceForCurrentMonth,
 }
 
+import { AutoPayProcessTask } from './AutoPayTask'
+// ... (existing exports)
+
 export default {
   jobsCollectionOverrides: ({ defaultJobsCollection }) => {
     return defaultJobsCollection
   },
-  tasks: [CustomerRentReminderNotificationTask],
+  tasks: [CustomerRentReminderNotificationTask, AutoPayProcessTask],
 } as JobsConfig

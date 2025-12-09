@@ -125,23 +125,12 @@ export function UserProvider({
           } else {
             // Session expired - user is null but response is ok
             dispatch({ type: 'SET_UNAUTHENTICATED' })
-            // Show session expired notification
-            if (typeof window !== 'undefined') {
-              import('sonner').then(({ toast }) => {
-                toast.error('Session expired. Please log in again.')
-              })
-            }
             return false
           }
         }
         if (res.status === 401) {
           // Unauthorized - clear session
           setUnauthenticated()
-          if (typeof window !== 'undefined') {
-            import('sonner').then(({ toast }) => {
-              toast.error('Session expired. Please log in again.')
-            })
-          }
           return false
         }
         // Other error statuses

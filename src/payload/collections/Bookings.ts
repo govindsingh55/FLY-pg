@@ -8,6 +8,7 @@ const bookingsAccess = {
   },
   update: ({ req }: AccessArgs) => {
     const user = req.user as { role?: string } | undefined
+    // Strictly limit update to manager and admin
     return user?.role === 'manager' || user?.role === 'admin'
   },
   delete: ({ req }: AccessArgs) => {

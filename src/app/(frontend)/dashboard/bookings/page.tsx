@@ -77,12 +77,12 @@ export default function BookingsPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-0 items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Bookings</h1>
           <p className="text-muted-foreground">Manage and track all your property bookings</p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-end md:justify-start w-full md:w-auto space-x-2">
           <Button onClick={handleRefresh} variant="outline" size="lg">
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
@@ -141,7 +141,7 @@ export default function BookingsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
               <Select
@@ -194,7 +194,7 @@ export default function BookingsPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-2 md:col-span-full">
               <label className="text-sm font-medium">Search</label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />

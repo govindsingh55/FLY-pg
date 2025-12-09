@@ -1,9 +1,8 @@
 'use client'
 
-import React from 'react'
-import { Breadcrumb } from './Breadcrumb'
+import { DashboardSidebarContent } from '@/components/dashboard/DashboardSidebarContent'
 import { Button } from '@/components/ui/button'
-import { Bell } from 'lucide-react'
+import { ErrorBoundary } from '@/components/ui/error-boundary'
 import {
   Sidebar,
   SidebarContent,
@@ -12,8 +11,10 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { DashboardSidebarContent } from '@/components/dashboard/DashboardSidebarContent'
-import { ErrorBoundary } from '@/components/ui/error-boundary'
+import { Bell } from 'lucide-react'
+import React from 'react'
+import { Breadcrumb } from './Breadcrumb'
+import { DashboardBottomNav } from './DashboardBottomNav'
 import { GlobalSearch } from './GlobalSearch'
 
 interface DashboardLayoutProps {
@@ -24,7 +25,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { isMobile } = useSidebar()
 
   return (
-    <div className="flex min-h-screen bg-background w-full">
+    <div className="flex min-h-screen bg-background w-full pb-12 md:pb-0">
       {/* Sidebar */}
       <Sidebar variant="floating" collapsible="icon" className="border-r">
         <SidebarHeader>
@@ -94,6 +95,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <ErrorBoundary>
       <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      <DashboardBottomNav />
     </ErrorBoundary>
   )
 }

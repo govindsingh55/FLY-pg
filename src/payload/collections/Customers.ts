@@ -33,8 +33,34 @@ const Customers: CollectionConfig = {
     description: 'Manage customer accounts and profiles',
   },
   access: {
-    create: () => true,
-    read: () => true,
+    create: () => true, // Allow signup
+    read: ({ req }) => {
+      // Allow staff to read customers
+      const user = req.user as { role?: string } | undefined
+      if (
+        user?.role === 'chef' ||
+        user?.role === 'cleaning' ||
+        user?.role === 'security' ||
+        user?.role === 'maintenance'
+      )
+        return true
+      return true
+    },
+    update: ({ req }) => {
+      const user = req.user as { role?: string; id?: string } | undefined
+      if (!user) return false
+      // Admin and Manager can update
+      if (user.role === 'admin' || user.role === 'manager') return true
+      // Customers can update themselves
+      if (user.role === 'customer' || !user.role) return { id: { equals: user.id } }
+
+      // Staff cannot update
+      return false
+    },
+    delete: ({ req }) => {
+      const user = req.user as { role?: string } | undefined
+      return user?.role === 'admin' || user?.role === 'manager'
+    },
     admin: () => false,
   },
   fields: [

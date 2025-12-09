@@ -44,18 +44,12 @@ export function Navbar() {
           >
             Properties
           </Link>
-          <Link
-            href="/#community"
-            className="font-medium text-foreground/80 hover:text-primary transition-colors"
-          >
-            Community
-          </Link>
-          <Link
+          {/* <Link
             href="/about-us"
             className="font-medium text-foreground/80 hover:text-primary transition-colors"
           >
             About Us
-          </Link>
+          </Link> */}
         </nav>
 
         {/* Right: Actions */}

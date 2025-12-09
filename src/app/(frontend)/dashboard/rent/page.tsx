@@ -84,14 +84,14 @@ export default function RentPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-0 items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Rent & Payments</h1>
           <p className="text-muted-foreground">
             Manage your rent payments and view payment history
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-end md:justify-start w-full md:w-auto flex-wrap gap-2 md:gap-0 space-x-2">
           <Button onClick={handleRefresh} variant="outline" size="lg">
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
@@ -275,7 +275,7 @@ export default function RentPage() {
           <CardTitle>Recent Payments</CardTitle>
           <CardDescription>Your latest payment transactions</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           {error ? (
             <div className="flex flex-col items-center justify-center py-12">
               <AlertCircle className="h-12 w-12 text-red-600 mb-4" />

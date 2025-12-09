@@ -265,7 +265,7 @@ export function SupportCenter() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-0 md:items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Support Center</h1>
           <p className="text-muted-foreground">
@@ -298,7 +298,7 @@ export function SupportCenter() {
                     }))
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full md:w-auto">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -370,7 +370,7 @@ export function SupportCenter() {
                   )}
                 </div>
               </div>
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-end space-x-2 mt-4">
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                   Cancel
                 </Button>

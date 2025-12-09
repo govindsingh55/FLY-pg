@@ -16,6 +16,7 @@ import FoodMenu from './collections/FoodMenu'
 import SupportTickets from './collections/SupportTickets'
 import SupportMedia from './collections/SupportMedia'
 import Payments from './collections/Payments'
+import { PaymentMethods } from './collections/PaymentMethods'
 import Notifications from './collections/Notifications'
 import Amenities from './collections/Amenities'
 import Pages from './collections/PagesFixed'
@@ -44,6 +45,7 @@ export default buildConfig({
     VisitBookings,
     Bookings,
     Payments,
+    PaymentMethods,
     FoodMenu,
     SupportTickets,
     SupportMedia,
