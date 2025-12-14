@@ -84,7 +84,7 @@
 					/>
 				</div>
 			</CardContent>
-			<CardFooter class="flex flex-col space-y-4">
+			<CardFooter class="flex flex-col space-y-4 mt-4">
 				<Button type="submit" class="w-full" disabled={loading}>
 					{loading ? 'Logging in...' : 'Login'}
 				</Button>

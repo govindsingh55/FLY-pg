@@ -14,12 +14,7 @@
 	let { data } = $props();
 </script>
 
-<div class="space-y-6">
-	<div>
-		<h1 class="text-3xl font-bold tracking-tight">Welcome back, {data.user.name.split(' ')[0]}!</h1>
-		<p class="text-muted-foreground">Here is an overview of your account.</p>
-	</div>
-
+<div class="space-y-6 p-6">
 	{#if !data.customer}
 		<Card>
 			<CardHeader>
@@ -129,9 +124,9 @@
 							</Table.Row>
 						{:else}
 							<Table.Row>
-								<Table.Cell colspan={4} class="text-center text-muted-foreground"
-									>No recent payments.</Table.Cell
-								>
+								<Table.Cell colspan={4} class="text-center text-muted-foreground">
+									No recent payments.
+								</Table.Cell>
 							</Table.Row>
 						{/each}
 					</Table.Body>

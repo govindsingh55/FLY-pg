@@ -7,7 +7,7 @@ export const load = async ({ parent }) => {
 		// Find the customer profile linked to this user
 		const customer = await db.query.customers.findFirst({
 			where: {
-				id: user.id
+				userId: user.id
 			},
 			with: {
 				bookings: {
@@ -28,7 +28,7 @@ export const load = async ({ parent }) => {
 				tickets: true // Maybe recent tickets?
 			}
 		});
-
+		console.log({ customer, user });
 		return {
 			customer
 		};

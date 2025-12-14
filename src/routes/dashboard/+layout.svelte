@@ -3,30 +3,20 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar';
-	import {
-		Building,
-		Calendar,
-		CreditCard,
-		Home,
-		LayoutDashboard,
-		LogOut,
-		Menu,
-		Users
-	} from 'lucide-svelte';
+	import { Bell, CreditCard, Home, LayoutDashboard, LogOut, Menu, Ticket } from 'lucide-svelte';
 
 	let { children, data } = $props();
 
 	const navItems = [
-		{ title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-		{ title: 'Properties', href: '/admin/properties', icon: Building },
-		{ title: 'Customers', href: '/admin/customers', icon: Users },
-		{ title: 'Bookings', href: '/admin/bookings', icon: Calendar },
-		{ title: 'Payments', href: '/admin/payments', icon: CreditCard }
+		{ title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+		{ title: 'Tickets', href: '/dashboard/tickets', icon: Ticket },
+		{ title: 'Payments', href: '/dashboard/payments', icon: CreditCard },
+		{ title: 'Notifications', href: '/dashboard/notifications', icon: Bell }
 	];
 
 	function isActive(href: string): boolean {
-		if (href === '/admin') {
-			return $page.url.pathname === '/admin';
+		if (href === '/dashboard') {
+			return $page.url.pathname === '/dashboard';
 		}
 		return $page.url.pathname.startsWith(href);
 	}
@@ -37,7 +27,7 @@
 		<Sidebar.Header>
 			<div class="flex items-center gap-2 px-4 py-2">
 				<Home class="h-6 w-6" />
-				<span class="text-lg font-semibold">PMS Admin</span>
+				<span class="text-lg font-semibold">Customer Portal</span>
 			</div>
 			<Separator />
 		</Sidebar.Header>
@@ -90,16 +80,14 @@
 				<Menu class="h-5 w-5" />
 			</Sidebar.Trigger>
 			<h1 class="text-lg font-semibold">
-				{#if $page.url.pathname === '/admin'}
+				{#if $page.url.pathname === '/dashboard'}
 					Dashboard
-				{:else if $page.url.pathname.includes('properties')}
-					Properties
-				{:else if $page.url.pathname.includes('customers')}
-					Customers
-				{:else if $page.url.pathname.includes('bookings')}
-					Bookings
+				{:else if $page.url.pathname.includes('tickets')}
+					Tickets
 				{:else if $page.url.pathname.includes('payments')}
 					Payments
+				{:else if $page.url.pathname.includes('notifications')}
+					Notifications
 				{/if}
 			</h1>
 		</header>
