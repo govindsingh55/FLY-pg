@@ -2,7 +2,14 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './db/index.js';
 import { admin } from 'better-auth/plugins';
-import { ac, adminRole, managerRole, staffRole, customerRole } from '$lib/permissions';
+import {
+	ac,
+	adminRole,
+	managerRole,
+	propertyManagerRole,
+	staffRole,
+	customerRole
+} from '$lib/permissions';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -25,6 +32,7 @@ export const authForScripts = betterAuth({
 			roles: {
 				admin: adminRole,
 				manager: managerRole,
+				property_manager: propertyManagerRole,
 				staff: staffRole,
 				customer: customerRole
 			},

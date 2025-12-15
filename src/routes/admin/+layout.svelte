@@ -4,7 +4,6 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import {
-	import {
 		Building,
 		Calendar,
 		CreditCard,
@@ -19,14 +18,41 @@
 		UserCog
 	} from 'lucide-svelte';
 
-	let { children, data } = $props();
+	import type { LayoutData } from './$types';
+
+	let { children, data }: { children: any; data: LayoutData } = $props();
 
 	const allNavItems = [
-		{ title: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['admin', 'manager', 'property_manager', 'staff'] },
-		{ title: 'Properties', href: '/admin/properties', icon: Building, roles: ['admin', 'manager', 'property_manager', 'staff'] }, // Adjusted per permissions
-		{ title: 'Customers', href: '/admin/customers', icon: Users, roles: ['admin', 'manager', 'property_manager', 'staff'] },
-		{ title: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['admin', 'manager', 'property_manager', 'staff'] },
-		{ title: 'Home Visits', href: '/admin/visits', icon: Briefcase, roles: ['admin', 'manager', 'property_manager', 'staff'] },
+		{
+			title: 'Dashboard',
+			href: '/admin',
+			icon: LayoutDashboard,
+			roles: ['admin', 'manager', 'property_manager', 'staff']
+		},
+		{
+			title: 'Properties',
+			href: '/admin/properties',
+			icon: Building,
+			roles: ['admin', 'manager', 'property_manager', 'staff']
+		}, // Adjusted per permissions
+		{
+			title: 'Customers',
+			href: '/admin/customers',
+			icon: Users,
+			roles: ['admin', 'manager', 'property_manager', 'staff']
+		},
+		{
+			title: 'Bookings',
+			href: '/admin/bookings',
+			icon: Calendar,
+			roles: ['admin', 'manager', 'property_manager', 'staff']
+		},
+		{
+			title: 'Home Visits',
+			href: '/admin/visits',
+			icon: Briefcase,
+			roles: ['admin', 'manager', 'property_manager', 'staff']
+		},
 		{ title: 'Payments', href: '/admin/payments', icon: CreditCard, roles: ['admin', 'manager'] }, // Assume limited
 		{ title: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
 		{ title: 'Assignments', href: '/admin/assignments', icon: ClipboardList, roles: ['admin'] },
@@ -34,7 +60,7 @@
 	];
 
 	// Filter items based on user role
-	const navItems = allNavItems.filter(item => item.roles.includes(data.user.role));
+	const navItems = allNavItems.filter((item) => item.roles.includes(data.user?.role ?? ''));
 
 	function isActive(href: string): boolean {
 		if (href === '/admin') {
