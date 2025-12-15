@@ -9,7 +9,12 @@ import {
 	customers,
 	bookings,
 	payments,
-	tickets
+	tickets,
+	staffProfiles,
+	propertyManagerAssignments,
+	visitBookings,
+	systemSettings,
+	staffAssignments
 } from '../src/lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 
@@ -17,6 +22,12 @@ async function seed() {
 	console.log('🌱 Starting database seed...');
 
 	try {
+		// Clear new tables
+		await db.delete(systemSettings);
+		await db.delete(visitBookings);
+		await db.delete(staffAssignments);
+		await db.delete(propertyManagerAssignments);
+		await db.delete(staffProfiles);
 		// Clear existing data first (including auth tables)
 		console.log('🧹 Clearing existing data...');
 		await db.delete(tickets);
@@ -43,7 +54,7 @@ async function seed() {
 		async function createUser(
 			name: string,
 			email: string,
-			role: 'admin' | 'manager' | 'staff' | 'customer'
+			role: 'admin' | 'manager' | 'property_manager' | 'staff' | 'customer'
 		) {
 			try {
 				const result = await auth.api.signUpEmail({
@@ -84,7 +95,13 @@ async function seed() {
 
 		await createUser('Admin User', 'admin@pms.local', 'admin');
 		await createUser('Manager User', 'manager@pms.local', 'manager');
-		await createUser('Staff User', 'staff@pms.local', 'staff');
+		const propManagerId = await createUser(
+			'Property Manager User',
+			'propman@pms.local',
+			'property_manager'
+		);
+		const staffUser1Id = await createUser('Chef Staff', 'chef@pms.local', 'staff');
+		const staffUser2Id = await createUser('Janitor Staff', 'janitor@pms.local', 'staff');
 		const customerUser1Id = await createUser('John Doe', 'john@example.com', 'customer');
 		const customerUser2Id = await createUser('Jane Smith', 'jane@example.com', 'customer');
 
@@ -107,6 +124,8 @@ async function seed() {
 				amenities: ['WiFi', 'Parking', 'Gym', 'Security'],
 				images: ['/images/sunrise-1.jpg', '/images/sunrise-2.jpg'],
 				contactPhone: '+91 9876543210',
+				isFoodServiceAvailable: true,
+				bookingCharge: 1000,
 				createdAt: new Date(),
 				updatedAt: new Date()
 			},
@@ -121,12 +140,55 @@ async function seed() {
 				amenities: ['WiFi', 'Meals', 'Laundry', 'AC'],
 				images: ['/images/greenvalley-1.jpg'],
 				contactPhone: '+91 9876543211',
+				isFoodServiceAvailable: false,
+				bookingCharge: 0,
 				createdAt: new Date(),
 				updatedAt: new Date()
 			}
 		]);
 
 		console.log('✅ Properties created');
+
+		// Assign Property Manager to Property 1
+		console.log('Assigning Property Manager...');
+		await db.insert(propertyManagerAssignments).values({
+			userId: propManagerId!,
+			propertyId: property1Id,
+			assignedBy: 'system'
+		});
+		console.log('✅ Property Manager Assigned');
+
+		// Create Staff Profiles & Assignments
+		console.log('Creating Staff Profiles...');
+		const profile1Id = crypto.randomUUID();
+		const profile2Id = crypto.randomUUID();
+
+		await db.insert(staffProfiles).values([
+			{
+				id: profile1Id,
+				userId: staffUser1Id!,
+				staffType: 'chef'
+			},
+			{
+				id: profile2Id,
+				userId: staffUser2Id!,
+				staffType: 'janitor'
+			}
+		]);
+
+		await db.insert(staffAssignments).values([
+			{
+				staffProfileId: profile1Id,
+				propertyId: property1Id,
+				assignedBy: 'system'
+			},
+			{
+				staffProfileId: profile2Id,
+				propertyId: property2Id, // Janitor at Green Valley
+				assignedBy: 'system'
+			}
+		]);
+		console.log('✅ Staff Profiles & Assignments Created');
 
 		// Create rooms
 		console.log('Creating rooms...');
@@ -253,6 +315,7 @@ async function seed() {
 				endDate: null, // Ongoing
 				rentAmount: 15000,
 				securityDeposit: 15000,
+				includeFood: true,
 				status: 'active',
 				createdAt: twoMonthsAgo,
 				updatedAt: new Date()
@@ -266,6 +329,7 @@ async function seed() {
 				endDate: null,
 				rentAmount: 8333, // Split 3-way from 25000
 				securityDeposit: 12500,
+				includeFood: false,
 				status: 'active',
 				createdAt: twoMonthsAgo,
 				updatedAt: new Date()
@@ -273,6 +337,37 @@ async function seed() {
 		]);
 
 		console.log('✅ Bookings created');
+
+		// Create Visits
+		console.log('Creating Visits...');
+		await db.insert(visitBookings).values([
+			{
+				customerId: customer1Id,
+				propertyId: property1Id,
+				visitDate: new Date(now.getTime() + 86400000), // Tomorrow
+				visitTime: new Date(now.getTime() + 86400000), // Time part
+				status: 'pending'
+			},
+			{
+				customerId: customer2Id,
+				propertyId: property1Id,
+				visitDate: new Date(now.getTime() - 86400000), // Yesterday
+				visitTime: new Date(now.getTime() - 86400000),
+				status: 'cancelled',
+				cancelReason: 'Changed mind',
+				cancelledBy: customerUser2Id
+			}
+		]);
+		console.log('✅ Visits created');
+
+		// Create Settings
+		console.log('Creating System Settings...');
+		await db.insert(systemSettings).values({
+			settingKey: 'allow_manager_delete',
+			settingValue: false, // Default
+			updatedBy: 'system'
+		});
+		console.log('✅ Settings created');
 
 		// Create payments
 		console.log('Creating payments...');
@@ -383,7 +478,9 @@ async function seed() {
 		console.log('\n📝 Test Credentials (ready to use):');
 		console.log('   Admin:    admin@pms.local    / password123');
 		console.log('   Manager:  manager@pms.local  / password123');
-		console.log('   Staff:    staff@pms.local    / password123');
+		console.log('   Prop Man: propman@pms.local  / password123');
+		console.log('   Chef:     chef@pms.local     / password123');
+		console.log('   Janitor:  janitor@pms.local  / password123');
 		console.log('   Customer: john@example.com   / password123');
 		console.log('   Customer: jane@example.com   / password123');
 		console.log('\n✅ All users created via better-auth with working credentials!');

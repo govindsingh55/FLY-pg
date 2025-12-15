@@ -3,12 +3,22 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar';
-	import { Bell, CreditCard, Home, LayoutDashboard, LogOut, Menu, Ticket } from 'lucide-svelte';
+	import {
+		Bell,
+		CreditCard,
+		Home,
+		LayoutDashboard,
+		LogOut,
+		Menu,
+		Ticket,
+		Briefcase
+	} from 'lucide-svelte';
 
 	let { children, data } = $props();
 
 	const navItems = [
 		{ title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+		{ title: 'My Visits', href: '/dashboard/visits', icon: Briefcase },
 		{ title: 'Tickets', href: '/dashboard/tickets', icon: Ticket },
 		{ title: 'Payments', href: '/dashboard/payments', icon: CreditCard },
 		{ title: 'Notifications', href: '/dashboard/notifications', icon: Bell }
@@ -82,6 +92,8 @@
 			<h1 class="text-lg font-semibold">
 				{#if $page.url.pathname === '/dashboard'}
 					Dashboard
+				{:else if $page.url.pathname.includes('visits')}
+					My Visits
 				{:else if $page.url.pathname.includes('tickets')}
 					Tickets
 				{:else if $page.url.pathname.includes('payments')}

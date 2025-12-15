@@ -4,6 +4,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import {
+	import {
 		Building,
 		Calendar,
 		CreditCard,
@@ -11,18 +12,29 @@
 		LayoutDashboard,
 		LogOut,
 		Menu,
-		Users
+		Users,
+		ClipboardList,
+		Briefcase,
+		Settings,
+		UserCog
 	} from 'lucide-svelte';
 
 	let { children, data } = $props();
 
-	const navItems = [
-		{ title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-		{ title: 'Properties', href: '/admin/properties', icon: Building },
-		{ title: 'Customers', href: '/admin/customers', icon: Users },
-		{ title: 'Bookings', href: '/admin/bookings', icon: Calendar },
-		{ title: 'Payments', href: '/admin/payments', icon: CreditCard }
+	const allNavItems = [
+		{ title: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['admin', 'manager', 'property_manager', 'staff'] },
+		{ title: 'Properties', href: '/admin/properties', icon: Building, roles: ['admin', 'manager', 'property_manager', 'staff'] }, // Adjusted per permissions
+		{ title: 'Customers', href: '/admin/customers', icon: Users, roles: ['admin', 'manager', 'property_manager', 'staff'] },
+		{ title: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['admin', 'manager', 'property_manager', 'staff'] },
+		{ title: 'Home Visits', href: '/admin/visits', icon: Briefcase, roles: ['admin', 'manager', 'property_manager', 'staff'] },
+		{ title: 'Payments', href: '/admin/payments', icon: CreditCard, roles: ['admin', 'manager'] }, // Assume limited
+		{ title: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
+		{ title: 'Assignments', href: '/admin/assignments', icon: ClipboardList, roles: ['admin'] },
+		{ title: 'Settings', href: '/admin/settings', icon: Settings, roles: ['admin'] }
 	];
+
+	// Filter items based on user role
+	const navItems = allNavItems.filter(item => item.roles.includes(data.user.role));
 
 	function isActive(href: string): boolean {
 		if (href === '/admin') {
@@ -68,6 +80,9 @@
 					<div class="px-4 py-2">
 						<p class="text-sm font-medium">{data.user.name}</p>
 						<p class="text-xs text-muted-foreground">{data.user.email}</p>
+						<p class="text-xs uppercase text-muted-foreground mt-1">
+							{data.user.role?.replace('_', ' ')}
+						</p>
 					</div>
 				</Sidebar.MenuItem>
 				<Sidebar.MenuItem>
@@ -98,8 +113,16 @@
 					Customers
 				{:else if $page.url.pathname.includes('bookings')}
 					Bookings
+				{:else if $page.url.pathname.includes('visits')}
+					Home Visits
 				{:else if $page.url.pathname.includes('payments')}
 					Payments
+				{:else if $page.url.pathname.includes('staff')}
+					Staff Management
+				{:else if $page.url.pathname.includes('assignments')}
+					Assignments
+				{:else if $page.url.pathname.includes('settings')}
+					System Settings
 				{/if}
 			</h1>
 		</header>

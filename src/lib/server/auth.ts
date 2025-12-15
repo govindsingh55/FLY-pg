@@ -4,7 +4,14 @@ import { getRequestEvent } from '$app/server';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './db';
 import { admin } from 'better-auth/plugins';
-import { ac, adminRole, managerRole, staffRole, customerRole } from '$lib/permissions';
+import {
+	ac,
+	adminRole,
+	managerRole,
+	staffRole,
+	customerRole,
+	propertyManagerRole
+} from '$lib/permissions';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -25,6 +32,7 @@ export const auth = betterAuth({
 			roles: {
 				admin: adminRole,
 				manager: managerRole,
+				property_manager: propertyManagerRole,
 				staff: staffRole,
 				customer: customerRole
 			},

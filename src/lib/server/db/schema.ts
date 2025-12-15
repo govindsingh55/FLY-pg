@@ -9,7 +9,9 @@ export const user = sqliteTable('user', {
 	email: text('email').notNull().unique(),
 	emailVerified: integer('email_verified', { mode: 'boolean' }).default(false).notNull(),
 	image: text('image'),
-	role: text('role', { enum: ['admin', 'manager', 'staff', 'customer'] }).default('customer'),
+	role: text('role', {
+		enum: ['admin', 'manager', 'property_manager', 'staff', 'customer']
+	}).default('customer'),
 	banned: integer('banned', { mode: 'boolean' }).default(false),
 	banReason: text('ban_reason'),
 	banExpires: integer('ban_expires', { mode: 'timestamp_ms' }),
@@ -19,7 +21,9 @@ export const user = sqliteTable('user', {
 	updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
 		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 		.$onUpdate(() => /* @__PURE__ */ new Date())
-		.notNull()
+		.notNull(),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
 });
 
 export const session = sqliteTable(
@@ -107,8 +111,12 @@ export const properties = sqliteTable('properties', {
 	amenities: text('amenities', { mode: 'json' }), // JSON array of strings
 	images: text('images', { mode: 'json' }), // JSON array of URLs
 	contactPhone: text('contact_phone'),
+	isFoodServiceAvailable: integer('is_food_service_available', { mode: 'boolean' }).default(false),
+	bookingCharge: integer('booking_charge').default(0),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
 });
 
 export const rooms = sqliteTable('rooms', {
@@ -126,7 +134,9 @@ export const rooms = sqliteTable('rooms', {
 	features: text('features', { mode: 'json' }),
 	status: text('status', { enum: ['available', 'occupied', 'maintenance'] }).default('available'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
 });
 
 export const customers = sqliteTable('customers', {
@@ -145,7 +155,9 @@ export const customers = sqliteTable('customers', {
 	emergencyContactPhone: text('emergency_contact_phone'),
 	status: text('status', { enum: ['active', 'inactive'] }).default('active'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
 });
 
 export const bookings = sqliteTable('bookings', {
@@ -165,11 +177,14 @@ export const bookings = sqliteTable('bookings', {
 	endDate: integer('end_date', { mode: 'timestamp' }), // Nullable for indefinite? Or enforce contract end
 	rentAmount: integer('rent_amount').notNull(),
 	securityDeposit: integer('security_deposit'),
+	includeFood: integer('include_food', { mode: 'boolean' }).default(false),
 	status: text('status', { enum: ['pending', 'active', 'completed', 'cancelled'] }).default(
 		'pending'
 	),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
 });
 
 export const payments = sqliteTable('payments', {
@@ -179,13 +194,17 @@ export const payments = sqliteTable('payments', {
 	bookingId: text('booking_id').references(() => bookings.id),
 	customerId: text('customer_id').references(() => customers.id),
 	amount: integer('amount').notNull(),
-	type: text('type', { enum: ['rent', 'security_deposit', 'maintenance', 'other'] }).notNull(),
+	type: text('type', {
+		enum: ['rent', 'security_deposit', 'maintenance', 'booking_charge', 'other']
+	}).notNull(),
 	status: text('status', { enum: ['pending', 'paid', 'failed', 'refunded'] }).default('pending'),
 	transactionId: text('transaction_id'),
 	paymentMethod: text('payment_method'),
 	paymentDate: integer('payment_date', { mode: 'timestamp' }),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
 });
 
 export const tickets = sqliteTable('tickets', {
@@ -199,7 +218,9 @@ export const tickets = sqliteTable('tickets', {
 	status: text('status', { enum: ['open', 'in_progress', 'resolved', 'closed'] }).default('open'),
 	priority: text('priority', { enum: ['low', 'medium', 'high'] }).default('medium'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
 });
 
 export const notifications = sqliteTable('notifications', {
@@ -211,7 +232,88 @@ export const notifications = sqliteTable('notifications', {
 	message: text('message').notNull(),
 	type: text('type', { enum: ['info', 'warning', 'success', 'error'] }).default('info'),
 	isRead: integer('is_read', { mode: 'boolean' }).default(false),
-	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`)
+	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
+});
+
+export const staffProfiles = sqliteTable('staff_profiles', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	staffType: text('staff_type', { enum: ['chef', 'janitor', 'security'] }).notNull(),
+	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
+});
+
+export const propertyManagerAssignments = sqliteTable('property_manager_assignments', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	propertyId: text('property_id')
+		.notNull()
+		.references(() => properties.id, { onDelete: 'cascade' }),
+	assignedAt: integer('assigned_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+	assignedBy: text('assigned_by')
+});
+
+export const staffAssignments = sqliteTable('staff_assignments', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	staffProfileId: text('staff_profile_id')
+		.notNull()
+		.references(() => staffProfiles.id, { onDelete: 'cascade' }),
+	propertyId: text('property_id')
+		.notNull()
+		.references(() => properties.id, { onDelete: 'cascade' }),
+	assignedAt: integer('assigned_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+	assignedBy: text('assigned_by')
+});
+
+export const visitBookings = sqliteTable('visit_bookings', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	customerId: text('customer_id')
+		.notNull()
+		.references(() => customers.id, { onDelete: 'cascade' }),
+	propertyId: text('property_id')
+		.notNull()
+		.references(() => properties.id, { onDelete: 'cascade' }),
+	visitDate: integer('visit_date', { mode: 'timestamp' }).notNull(),
+	visitTime: integer('visit_time', { mode: 'timestamp' }).notNull(),
+	status: text('status', { enum: ['pending', 'accepted', 'cancelled'] })
+		.default('pending')
+		.notNull(),
+	cancelReason: text('cancel_reason'),
+	cancelledBy: text('cancelled_by'),
+	createdAt: integer('created_at', { mode: 'timestamp' })
+		.default(sql`(unixepoch())`)
+		.notNull(),
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
+});
+
+export const systemSettings = sqliteTable('system_settings', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	settingKey: text('setting_key').notNull().unique(),
+	settingValue: text('setting_value', { mode: 'json' }).notNull(),
+	updatedBy: text('updated_by'),
+	updatedAt: integer('updated_at', { mode: 'timestamp' })
+		.default(sql`(unixepoch())`)
+		.$onUpdate(() => new Date())
 });
 
 // --- Relations ---
@@ -228,7 +330,12 @@ export const relationsDef = defineRelations(
 		bookings,
 		payments,
 		tickets,
-		notifications
+		notifications,
+		staffProfiles,
+		propertyManagerAssignments,
+		staffAssignments,
+		visitBookings,
+		systemSettings
 	},
 	(r) => ({
 		user: {
@@ -243,6 +350,14 @@ export const relationsDef = defineRelations(
 			customerProfile: r.one.customers({
 				from: r.user.id,
 				to: r.customers.userId
+			}),
+			staffProfile: r.one.staffProfiles({
+				from: r.user.id,
+				to: r.staffProfiles.userId
+			}),
+			propertyManagerAssignments: r.many.propertyManagerAssignments({
+				from: r.user.id,
+				to: r.propertyManagerAssignments.userId
 			})
 		},
 		session: {
@@ -255,6 +370,14 @@ export const relationsDef = defineRelations(
 			rooms: r.many.rooms({
 				from: r.properties.id,
 				to: r.rooms.propertyId
+			}),
+			managerAssignments: r.many.propertyManagerAssignments({
+				from: r.properties.id,
+				to: r.propertyManagerAssignments.propertyId
+			}),
+			staffAssignments: r.many.staffAssignments({
+				from: r.properties.id,
+				to: r.staffAssignments.propertyId
 			})
 		},
 		rooms: {
@@ -283,6 +406,10 @@ export const relationsDef = defineRelations(
 			tickets: r.many.tickets({
 				from: r.customers.id,
 				to: r.tickets.customerId
+			}),
+			visitBookings: r.many.visitBookings({
+				from: r.customers.id,
+				to: r.visitBookings.customerId
 			})
 		},
 		bookings: {
@@ -327,6 +454,46 @@ export const relationsDef = defineRelations(
 			user: r.one.user({
 				from: r.notifications.userId,
 				to: r.user.id
+			})
+		},
+		staffProfiles: {
+			user: r.one.user({
+				from: r.staffProfiles.userId,
+				to: r.user.id
+			}),
+			assignments: r.many.staffAssignments({
+				from: r.staffProfiles.id,
+				to: r.staffAssignments.staffProfileId
+			})
+		},
+		propertyManagerAssignments: {
+			user: r.one.user({
+				from: r.propertyManagerAssignments.userId,
+				to: r.user.id
+			}),
+			property: r.one.properties({
+				from: r.propertyManagerAssignments.propertyId,
+				to: r.properties.id
+			})
+		},
+		staffAssignments: {
+			staffProfile: r.one.staffProfiles({
+				from: r.staffAssignments.staffProfileId,
+				to: r.staffProfiles.id
+			}),
+			property: r.one.properties({
+				from: r.staffAssignments.propertyId,
+				to: r.properties.id
+			})
+		},
+		visitBookings: {
+			customer: r.one.customers({
+				from: r.visitBookings.customerId,
+				to: r.customers.id
+			}),
+			property: r.one.properties({
+				from: r.visitBookings.propertyId,
+				to: r.properties.id
 			})
 		}
 	})

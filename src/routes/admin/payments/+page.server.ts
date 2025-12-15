@@ -1,5 +1,4 @@
 import { db } from '$lib/server/db';
-import { payments } from '$lib/server/db/schema';
 
 export const load = async () => {
 	try {
