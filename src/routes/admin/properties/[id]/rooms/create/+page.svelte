@@ -10,14 +10,12 @@
 		CardDescription,
 		CardFooter
 	} from '$lib/components/ui/card';
-	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
-	// Import Select components manually if shadcn-svelte select is available,
-	// but for now we'll use native select or simple input for speed/robustness unless shadcn select is installed.
-	// Checked previous installs: table, button, input, card, label. Select is NOT installed.
-	// Using native select for now to avoid overhead, or installing select.
-	// Let's stick to native strictly for speed unless user requested "premium design" requires it.
-	// The prompt asked for shadcn ui stuff. I will install select component to be proper.
+	import { createRoom } from '../../../rooms.remote';
+	import { toast } from 'svelte-sonner';
+	import { goto } from '$app/navigation';
+
+	let propertyId = $derived($page.params.id);
 </script>
 
 <div class="mx-auto max-w-xl p-6">
@@ -26,11 +24,27 @@
 			<CardTitle>Add Room</CardTitle>
 			<CardDescription>Add a new room to this property.</CardDescription>
 		</CardHeader>
-		<form method="POST" use:enhance>
+		<form
+			{...createRoom.enhance(async ({ submit }) => {
+				try {
+					await submit();
+					toast.success('Room created successfully');
+					goto(`/admin/properties/${propertyId}`);
+				} catch (e: any) {
+					toast.error(e.message || 'Failed to create room');
+				}
+			})}
+		>
 			<CardContent class="grid gap-4">
+				<input type="hidden" name="propertyId" value={propertyId} />
 				<div class="grid gap-2">
 					<Label for="number">Room Number</Label>
 					<Input id="number" name="number" placeholder="101" required />
+					{#if createRoom.fields.number.issues()}
+						<p class="text-destructive text-sm">
+							{createRoom.fields.number.issues()?.[0].message}
+						</p>
+					{/if}
 				</div>
 
 				<div class="grid gap-2">
@@ -51,16 +65,31 @@
 					<div class="grid gap-2">
 						<Label for="capacity">Capacity (People)</Label>
 						<Input type="number" id="capacity" name="capacity" min="1" required />
+						{#if createRoom.fields.capacity.issues()}
+							<p class="text-destructive text-sm">
+								{createRoom.fields.capacity.issues()?.[0].message}
+							</p>
+						{/if}
 					</div>
 					<div class="grid gap-2">
 						<Label for="priceMonthly">Monthly Price</Label>
 						<Input type="number" id="priceMonthly" name="priceMonthly" min="0" required />
+						{#if createRoom.fields.priceMonthly.issues()}
+							<p class="text-destructive text-sm">
+								{createRoom.fields.priceMonthly.issues()?.[0].message}
+							</p>
+						{/if}
 					</div>
 				</div>
 
 				<div class="grid gap-2">
 					<Label for="depositAmount">Security Deposit</Label>
 					<Input type="number" id="depositAmount" name="depositAmount" min="0" />
+					{#if createRoom.fields.depositAmount.issues()}
+						<p class="text-destructive text-sm">
+							{createRoom.fields.depositAmount.issues()?.[0].message}
+						</p>
+					{/if}
 				</div>
 
 				<div class="grid gap-2">
@@ -77,8 +106,10 @@
 				</div>
 			</CardContent>
 			<CardFooter class="justify-between">
-				<Button variant="ghost" href="/admin/properties/{$page.params.id}">Cancel</Button>
-				<Button type="submit">Create Room</Button>
+				<Button variant="ghost" href="/admin/properties/{propertyId}">Cancel</Button>
+				<Button type="submit" disabled={!!createRoom.pending}>
+					{createRoom.pending ? 'Creating...' : 'Create Room'}
+				</Button>
 			</CardFooter>
 		</form>
 	</Card>

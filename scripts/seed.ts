@@ -14,7 +14,8 @@ import {
 	propertyManagerAssignments,
 	visitBookings,
 	systemSettings,
-	staffAssignments
+	staffAssignments,
+	foodMenuItems
 } from '../src/lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 
@@ -24,6 +25,7 @@ async function seed() {
 	try {
 		// Clear new tables
 		await db.delete(systemSettings);
+		await db.delete(foodMenuItems);
 		await db.delete(visitBookings);
 		await db.delete(staffAssignments);
 		await db.delete(propertyManagerAssignments);
@@ -126,6 +128,7 @@ async function seed() {
 				contactPhone: '+91 9876543210',
 				isFoodServiceAvailable: true,
 				bookingCharge: 1000,
+				status: 'published',
 				createdAt: new Date(),
 				updatedAt: new Date()
 			},
@@ -142,8 +145,59 @@ async function seed() {
 				contactPhone: '+91 9876543211',
 				isFoodServiceAvailable: false,
 				bookingCharge: 0,
+				status: 'published',
 				createdAt: new Date(),
 				updatedAt: new Date()
+			}
+		]);
+
+		// Create food menu items
+		console.log('Creating food menu items...');
+		await db.insert(foodMenuItems).values([
+			{
+				propertyId: property1Id,
+				category: 'breakfast',
+				name: 'Idli Sambar',
+				description: 'Steamed rice cakes with lentil soup',
+				isVegetarian: true,
+				isAvailable: true,
+				price: 50
+			},
+			{
+				propertyId: property1Id,
+				category: 'breakfast',
+				name: 'Masala Dosa',
+				description: 'Crispy crepe with potato filling',
+				isVegetarian: true,
+				isAvailable: true,
+				price: 70
+			},
+			{
+				propertyId: property1Id,
+				category: 'lunch',
+				name: 'Veg Thali',
+				description: 'Rice, Dal, 2 Sabzi, Roti, Curd',
+				isVegetarian: true,
+				isAvailable: true,
+				price: 120
+			},
+			{
+				propertyId: property1Id,
+				category: 'lunch',
+				name: 'Chicken Thali',
+				description: 'Rice, Chicken Curry, Roti, Salad',
+				isVegetarian: false,
+				isAvailable: true,
+				price: 180
+			},
+			{
+				propertyId: property1Id,
+				category: 'dinner',
+				name: 'Dal Khichdi',
+				description: 'Comfort food with lentils and rice',
+				isVegetarian: true,
+				isAvailable: true,
+				price: 100
 			}
 		]);
 
@@ -207,6 +261,7 @@ async function seed() {
 				priceMonthly: 15000,
 				depositAmount: 15000,
 				features: ['AC', 'Attached Bathroom', 'Balcony'],
+				images: ['/images/room101-1.jpg', '/images/room101-2.jpg'],
 				status: 'occupied',
 				createdAt: new Date(),
 				updatedAt: new Date()
@@ -220,6 +275,7 @@ async function seed() {
 				priceMonthly: 20000,
 				depositAmount: 20000,
 				features: ['AC', 'Attached Bathroom'],
+				images: ['/images/room102.jpg'],
 				status: 'available',
 				createdAt: new Date(),
 				updatedAt: new Date()
@@ -233,6 +289,7 @@ async function seed() {
 				priceMonthly: 25000,
 				depositAmount: 12500,
 				features: ['Fan', 'Shared Bathroom'],
+				images: ['/images/room201.jpg'],
 				status: 'occupied',
 				createdAt: new Date(),
 				updatedAt: new Date()
@@ -246,6 +303,7 @@ async function seed() {
 				priceMonthly: 8000,
 				depositAmount: 5000,
 				features: ['Fan', 'Shared Bathroom', 'Lockers'],
+				images: ['/images/room202.jpg'],
 				status: 'available',
 				createdAt: new Date(),
 				updatedAt: new Date()
@@ -381,6 +439,7 @@ async function seed() {
 				customerId: customer1Id,
 				amount: 15000,
 				type: 'security_deposit',
+				mode: 'online',
 				status: 'paid',
 				transactionId: 'TXN001',
 				paymentMethod: 'Bank Transfer',
@@ -394,6 +453,7 @@ async function seed() {
 				customerId: customer1Id,
 				amount: 15000,
 				type: 'rent',
+				mode: 'upi',
 				status: 'paid',
 				transactionId: 'TXN002',
 				paymentMethod: 'UPI',
@@ -407,6 +467,7 @@ async function seed() {
 				customerId: customer1Id,
 				amount: 15000,
 				type: 'rent',
+				mode: 'upi',
 				status: 'paid',
 				transactionId: 'TXN003',
 				paymentMethod: 'UPI',
@@ -420,6 +481,7 @@ async function seed() {
 				customerId: customer2Id,
 				amount: 12500,
 				type: 'security_deposit',
+				mode: 'cash',
 				status: 'paid',
 				transactionId: 'TXN004',
 				paymentMethod: 'Cash',
@@ -433,6 +495,7 @@ async function seed() {
 				customerId: customer2Id,
 				amount: 8333,
 				type: 'rent',
+				mode: 'upi',
 				status: 'paid',
 				transactionId: 'TXN005',
 				paymentMethod: 'UPI',

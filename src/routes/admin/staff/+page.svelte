@@ -1,85 +1,187 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import * as Table from '$lib/components/ui/table';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import * as Dialog from '$lib/components/ui/dialog';
+	import * as InputGroup from '$lib/components/ui/input-group';
+	import * as Pagination from '$lib/components/ui/pagination';
 	import * as Select from '$lib/components/ui/select';
+	import { Skeleton } from '$lib/components/ui/skeleton';
+	import * as Table from '$lib/components/ui/table';
+	import { Search } from 'lucide-svelte';
+	import { Debounced } from 'runed';
+	import { toast } from 'svelte-sonner';
+	import StaffForm from './_components/staff-form.svelte';
+	import { deleteStaff, getStaff } from './staff.remote';
 
-	export let data;
+	let searchTerm = $state('');
+	let currentPage = $state(1);
+	let pageSize = $state(10);
+	let staffDialogOpen = $state(false);
+
+	const debouncedSearchTerm = new Debounced(() => searchTerm, 500);
+
+	let staffPromise = $derived(
+		getStaff({
+			searchTerm: debouncedSearchTerm.current,
+			page: currentPage,
+			pageSize: pageSize
+		})
+	);
 </script>
 
-<div class="space-y-6">
+<div class="space-y-6 p-6">
 	<div class="flex items-center justify-between">
 		<h2 class="text-3xl font-bold tracking-tight">Staff Management</h2>
-		<Dialog.Root>
-			<Dialog.Trigger>
-				<Button>Add Staff</Button>
-			</Dialog.Trigger>
-			<Dialog.Content>
-				<Dialog.Header>
-					<Dialog.Title>Add New Staff Member</Dialog.Title>
-				</Dialog.Header>
-				<form method="POST" action="?/create" use:enhance class="space-y-4">
-					<div class="grid gap-2">
-						<Label for="name">Name</Label>
-						<Input id="name" name="name" required />
-					</div>
-					<div class="grid gap-2">
-						<Label for="email">Email</Label>
-						<Input id="email" name="email" type="email" required />
-					</div>
-					<div class="grid gap-2">
-						<Label for="password">Password</Label>
-						<Input id="password" name="password" type="password" required />
-					</div>
-					<div class="grid gap-2">
-						<Label for="staffType">Role Type</Label>
-						<select
-							name="staffType"
-							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						>
-							<option value="chef">Chef</option>
-							<option value="janitor">Janitor</option>
-							<option value="security">Security</option>
-						</select>
-					</div>
-					<Dialog.Footer>
-						<Button type="submit">Create Staff</Button>
-					</Dialog.Footer>
-				</form>
-			</Dialog.Content>
-		</Dialog.Root>
+		<Button onclick={() => (staffDialogOpen = true)}>Add Staff</Button>
 	</div>
 
+	<div class="flex items-center gap-2 flex-wrap">
+		<InputGroup.Root class="max-w-sm">
+			<InputGroup.Input placeholder="Search staff..." bind:value={searchTerm} />
+			<InputGroup.Button>
+				<Search class="h-4 w-4" />
+			</InputGroup.Button>
+		</InputGroup.Root>
+	</div>
+
+	<StaffForm bind:open={staffDialogOpen} />
+
 	<div class="rounded-md border">
-		<Table.Root>
-			<Table.Header>
-				<Table.Row>
-					<Table.Head>Name</Table.Head>
-					<Table.Head>Email</Table.Head>
-					<Table.Head>Type</Table.Head>
-					<!-- <Table.Head>Assigned Properties</Table.Head> -->
-					<Table.Head class="text-right">Actions</Table.Head>
-				</Table.Row>
-			</Table.Header>
-			<Table.Body>
-				{#each data.staff as staff}
-					<Table.Row>
-						<Table.Cell>{staff.name}</Table.Cell>
-						<Table.Cell>{staff.email}</Table.Cell>
-						<Table.Cell class="capitalize">{staff.staffType}</Table.Cell>
-						<!-- <Table.Cell>{staff.assignments.map(p => p.name).join(', ')}</Table.Cell> -->
-						<Table.Cell class="text-right">
-							<form method="POST" action="?/delete" use:enhance class="inline-block">
-								<input type="hidden" name="id" value={staff.id} />
-								<Button variant="destructive" size="sm" type="submit">Delete</Button>
-							</form>
-						</Table.Cell>
-					</Table.Row>
-				{/each}
-			</Table.Body>
-		</Table.Root>
+		<svelte:boundary>
+			{#await staffPromise}
+				<div class="p-4 space-y-4">
+					<Skeleton class="h-10 w-full" />
+					<Skeleton class="h-10 w-full" />
+				</div>
+			{:then data}
+				<Table.Root>
+					<Table.Header>
+						<Table.Row>
+							<Table.Head>Name</Table.Head>
+							<Table.Head>Email</Table.Head>
+							<Table.Head>Type</Table.Head>
+							<!-- <Table.Head>Assigned Properties</Table.Head> -->
+							<Table.Head class="text-right">Actions</Table.Head>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
+						{#each data.staff as s}
+							<Table.Row>
+								<Table.Cell>{s.name || 'Unknown'}</Table.Cell>
+								<Table.Cell>{s.email || '-'}</Table.Cell>
+								<Table.Cell class="capitalize">{s.staffType}</Table.Cell>
+								<Table.Cell class="text-right">
+									<form
+										class="inline-block"
+										{...deleteStaff.for(`delete-${s.id}`).enhance(async ({ submit }) => {
+											if (!confirm('Delete this staff member?')) return;
+											try {
+												await submit();
+												toast.success('Staff deleted');
+											} catch (e) {
+												toast.error('Failed to delete');
+											}
+										})}
+									>
+										<input type="hidden" name="id" value={s.id} />
+										<Button
+											variant="destructive"
+											size="sm"
+											type="submit"
+											disabled={!!deleteStaff.pending}
+										>
+											Delete
+										</Button>
+									</form>
+								</Table.Cell>
+							</Table.Row>
+						{:else}
+							<Table.Row>
+								<Table.Cell colspan={4} class="h-24 text-center">No staff members found.</Table.Cell
+								>
+							</Table.Row>
+						{/each}
+					</Table.Body>
+				</Table.Root>
+
+				{#if data.totalPages && data.totalPages > 1}
+					<div class="flex flex-col p-4 gap-4">
+						<div class="flex items-center justify-between gap-4">
+							<p class="text-sm text-muted-foreground">
+								Showing {(data.page - 1) * data.pageSize + 1} to {Math.min(
+									data.page * data.pageSize,
+									data.total
+								)} of {data.total} staff members
+							</p>
+							<Select.Root
+								type="single"
+								value={`${pageSize}`}
+								onValueChange={(value) => Number(value) && (pageSize = Number(value))}
+							>
+								<Select.Trigger class="w-auto">
+									{pageSize ?? 'Select a size'}
+								</Select.Trigger>
+								<Select.Content>
+									<Select.Item value="10">10</Select.Item>
+									<Select.Item value="25">25</Select.Item>
+									<Select.Item value="50">50</Select.Item>
+									<Select.Item value="100">100</Select.Item>
+								</Select.Content>
+							</Select.Root>
+						</div>
+						<div class="flex items-center justify-end w-full">
+							<Pagination.Root
+								count={data.total}
+								perPage={data.pageSize}
+								page={currentPage}
+								onPageChange={(page) => (currentPage = page)}
+							>
+								{#snippet children({ pages, currentPage })}
+									<Pagination.Content class="justify-end w-full">
+										<Pagination.Item>
+											<Pagination.PrevButton />
+										</Pagination.Item>
+										{#each pages as page (page.key)}
+											{#if page.type === 'ellipsis'}
+												<Pagination.Item>
+													<Pagination.Ellipsis />
+												</Pagination.Item>
+											{:else}
+												<Pagination.Item>
+													<Pagination.Link {page} isActive={currentPage == page.value}>
+														{page.value}
+													</Pagination.Link>
+												</Pagination.Item>
+											{/if}
+										{/each}
+										<Pagination.Item>
+											<Pagination.NextButton />
+										</Pagination.Item>
+									</Pagination.Content>
+								{/snippet}
+							</Pagination.Root>
+						</div>
+					</div>
+				{/if}
+			{:catch error}
+				<div
+					class="p-8 text-center text-destructive border rounded-lg border-destructive/50 bg-destructive/10"
+				>
+					<h3 class="font-semibold mb-2">Error loading staff</h3>
+					<p class="text-sm opacity-70 mb-4">{error.message}</p>
+					<Button
+						onclick={() => (staffPromise = getStaff({ searchTerm, page: currentPage, pageSize }))}
+						>Retry</Button
+					>
+				</div>
+			{/await}
+			{#snippet failed(error: any, reset)}
+				<div
+					class="p-8 text-center text-destructive border rounded-lg border-destructive/50 bg-destructive/10"
+				>
+					<h3 class="font-semibold mb-2">Something went wrong</h3>
+					<p class="text-sm opacity-70 mb-4">{error.message}</p>
+					<Button onclick={reset}>Try again</Button>
+				</div>
+			{/snippet}
+		</svelte:boundary>
 	</div>
 </div>

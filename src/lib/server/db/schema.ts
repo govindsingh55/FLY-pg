@@ -113,6 +113,7 @@ export const properties = sqliteTable('properties', {
 	contactPhone: text('contact_phone'),
 	isFoodServiceAvailable: integer('is_food_service_available', { mode: 'boolean' }).default(false),
 	bookingCharge: integer('booking_charge').default(0),
+	status: text('status', { enum: ['draft', 'published'] }).default('draft'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
 	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
@@ -132,6 +133,7 @@ export const rooms = sqliteTable('rooms', {
 	priceMonthly: integer('price_monthly').notNull(),
 	depositAmount: integer('deposit_amount'),
 	features: text('features', { mode: 'json' }),
+	images: text('images', { mode: 'json' }), // JSON array of URLs
 	status: text('status', { enum: ['available', 'occupied', 'maintenance'] }).default('available'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
@@ -198,6 +200,7 @@ export const payments = sqliteTable('payments', {
 		enum: ['rent', 'security_deposit', 'maintenance', 'booking_charge', 'other']
 	}).notNull(),
 	status: text('status', { enum: ['pending', 'paid', 'failed', 'refunded'] }).default('pending'),
+	mode: text('mode', { enum: ['cash', 'online', 'upi'] }).default('online'),
 	transactionId: text('transaction_id'),
 	paymentMethod: text('payment_method'),
 	paymentDate: integer('payment_date', { mode: 'timestamp' }),
@@ -316,6 +319,27 @@ export const systemSettings = sqliteTable('system_settings', {
 		.$onUpdate(() => new Date())
 });
 
+export const foodMenuItems = sqliteTable('food_menu_items', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	propertyId: text('property_id')
+		.notNull()
+		.references(() => properties.id, { onDelete: 'cascade' }),
+	category: text('category', {
+		enum: ['breakfast', 'lunch', 'dinner', 'snacks']
+	}).notNull(),
+	name: text('name').notNull(),
+	description: text('description'),
+	isVegetarian: integer('is_vegetarian', { mode: 'boolean' }).default(true),
+	isAvailable: integer('is_available', { mode: 'boolean' }).default(true),
+	price: integer('price'), // Optional if included in rent
+	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
+});
+
 // --- Relations ---
 
 export const relationsDef = defineRelations(
@@ -335,7 +359,8 @@ export const relationsDef = defineRelations(
 		propertyManagerAssignments,
 		staffAssignments,
 		visitBookings,
-		systemSettings
+		systemSettings,
+		foodMenuItems
 	},
 	(r) => ({
 		user: {
@@ -378,6 +403,10 @@ export const relationsDef = defineRelations(
 			staffAssignments: r.many.staffAssignments({
 				from: r.properties.id,
 				to: r.staffAssignments.propertyId
+			}),
+			foodMenuItems: r.many.foodMenuItems({
+				from: r.properties.id,
+				to: r.foodMenuItems.propertyId
 			})
 		},
 		rooms: {
@@ -493,6 +522,12 @@ export const relationsDef = defineRelations(
 			}),
 			property: r.one.properties({
 				from: r.visitBookings.propertyId,
+				to: r.properties.id
+			})
+		},
+		foodMenuItems: {
+			property: r.one.properties({
+				from: r.foodMenuItems.propertyId,
 				to: r.properties.id
 			})
 		}

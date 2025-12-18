@@ -2,11 +2,12 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { test } from '$lib/remote/index.remote';
+	import { ModeWatcher } from 'mode-watcher';
 
 	let { children } = $props();
-	const data = await test();
-	$inspect(data);
 </script>
+
+<ModeWatcher />
 
 <svelte:head>
 	<link rel="icon" href={favicon} />

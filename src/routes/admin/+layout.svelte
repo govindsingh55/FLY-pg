@@ -3,6 +3,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar';
+	import ThemeToggle from '$lib/components/theme-toggle.svelte';
 	import {
 		Building,
 		Calendar,
@@ -48,7 +49,7 @@
 			roles: ['admin', 'manager', 'property_manager', 'staff']
 		},
 		{
-			title: 'Home Visits',
+			title: 'Property Visits',
 			href: '/admin/visits',
 			icon: Briefcase,
 			roles: ['admin', 'manager', 'property_manager', 'staff']
@@ -113,11 +114,9 @@
 				</Sidebar.MenuItem>
 				<Sidebar.MenuItem>
 					<form method="POST" action="/logout">
-						<Sidebar.MenuButton class="w-full flex items-center gap-2">
-							<Button type="submit" variant="ghost">
-								<LogOut class="h-4 w-4" />
-								<span>Logout</span>
-							</Button>
+						<Sidebar.MenuButton class="w-full flex items-center gap-2" type="submit">
+							<LogOut class="h-4 w-4" />
+							<span>Logout</span>
 						</Sidebar.MenuButton>
 					</form>
 				</Sidebar.MenuItem>
@@ -151,6 +150,9 @@
 					System Settings
 				{/if}
 			</h1>
+			<div class="ml-auto">
+				<ThemeToggle />
+			</div>
 		</header>
 
 		<main class="flex-1 overflow-y-auto">
