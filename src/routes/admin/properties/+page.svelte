@@ -71,14 +71,7 @@
 								<Table.Cell class="font-medium">{prop.name}</Table.Cell>
 								<Table.Cell>
 									<div class="flex flex-col">
-										<span>{prop.address}</span>
-										<!-- Check if city/state exists before rendering -->
-										{#if prop.city || prop.state}
-											<span class="text-muted-foreground text-xs"
-												>{prop.city ?? ''}{prop.city && prop.state ? ', ' : ''}{prop.state ??
-													''}</span
-											>
-										{/if}
+										{prop.address}
 									</div>
 								</Table.Cell>
 								<Table.Cell>{prop.rooms?.length ?? 0}</Table.Cell>

@@ -2,6 +2,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import {
 		Card,
 		CardContent,
@@ -12,18 +13,56 @@
 	} from '$lib/components/ui/card';
 	import * as Table from '$lib/components/ui/table';
 	import { Plus, Trash, Pencil } from 'lucide-svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { getProperty, updateProperty, deleteProperty } from '../properties.remote';
+	import { getAmenities } from '../../amenities/amenities.remote';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 	import RoomForm from '../_components/room-form.svelte';
+	import * as Select from '$lib/components/ui/select';
 
-	let id = $derived($page.params.id);
+	let id = $derived(page.params.id);
 	let dataPromise = $derived(getProperty(id as string));
+	let amenitiesPromise = $derived(getAmenities());
 
 	let roomSheetOpen = $state(false);
 	let selectedRoom = $state<any>(null); // Using any or specific type if available
+	let selectedAmenities = $state<string[]>([]);
+	let nearbyItems = $state<any[]>([{ title: '', distance: '', image: '' }]);
+
+	$effect(() => {
+		dataPromise.then((data) => {
+			if (data.property?.amenities) {
+				selectedAmenities = data.property.amenities.map((a: any) => a.amenityId);
+			}
+			if (data.property?.nearby) {
+				const raw = data.property.nearby as any;
+				if (Array.isArray(raw)) {
+					if (raw.length > 0 && typeof raw[0] === 'string') {
+						nearbyItems = raw.map((s: string) => ({ title: s, distance: '', image: '' }));
+					} else {
+						nearbyItems = raw;
+					}
+				} else if (typeof raw === 'string') {
+					try {
+						const parsed = JSON.parse(raw);
+						if (Array.isArray(parsed)) {
+							if (parsed.length > 0 && typeof parsed[0] === 'string') {
+								nearbyItems = parsed.map((s: string) => ({ title: s, distance: '', image: '' }));
+							} else {
+								nearbyItems = parsed;
+							}
+						}
+					} catch {
+						nearbyItems = raw.split(',').map((s) => ({ title: s.trim(), distance: '', image: '' }));
+					}
+				}
+			} else {
+				nearbyItems = [{ title: '', distance: '', image: '' }];
+			}
+		});
+	});
 </script>
 
 <div class="mx-auto max-w-4xl p-6 space-y-6">
@@ -64,6 +103,9 @@
 				>
 					<CardContent class="grid gap-4">
 						<input type="hidden" name="id" value={property.id} />
+						<!-- Hidden Input for Amenities (Comma separated for schema transform) -->
+						<input type="hidden" name="amenities" value={selectedAmenities.join(',')} />
+
 						<div class="grid gap-2">
 							<Label for="name">Property Name</Label>
 							<Input id="name" name="name" required value={property.name} />
@@ -75,6 +117,11 @@
 						</div>
 
 						<div class="grid gap-2">
+							<Label for="description">Description</Label>
+							<Textarea id="description" name="description" value={property.description} />
+						</div>
+
+						<div class="grid gap-2">
 							<Label for="address">Address</Label>
 							<Input id="address" name="address" required value={property.address} />
 							{#if updateProperty.fields.address.issues()}
@@ -82,6 +129,22 @@
 									{updateProperty.fields.address.issues()?.[0].message}
 								</p>
 							{/if}
+						</div>
+
+						<div class="grid grid-cols-2 gap-4">
+							<div class="grid gap-2">
+								<Label for="lat">Latitude</Label>
+								<Input id="lat" name="lat" type="number" step="any" value={property.lat} />
+							</div>
+							<div class="grid gap-2">
+								<Label for="lng">Longitude</Label>
+								<Input id="lng" name="lng" type="number" step="any" value={property.lng} />
+							</div>
+						</div>
+
+						<div class="grid gap-2">
+							<Label for="sector">Sector</Label>
+							<Input id="sector" name="sector" value={property.sector} />
 						</div>
 
 						<div class="grid grid-cols-2 gap-4">
@@ -107,8 +170,124 @@
 						</div>
 
 						<div class="grid gap-2">
-							<Label for="description">Description</Label>
-							<Input id="description" name="description" value={property.description} />
+							<Label for="bookingCharge">Booking Charge</Label>
+							<Input
+								id="bookingCharge"
+								name="bookingCharge"
+								type="number"
+								min="0"
+								value={property.bookingCharge}
+							/>
+						</div>
+
+						<div class="flex items-center gap-2">
+							<input
+								type="checkbox"
+								id="isFoodServiceAvailable"
+								name="isFoodServiceAvailable"
+								class="w-4 h-4"
+								checked={property.isFoodServiceAvailable}
+							/>
+							<Label for="isFoodServiceAvailable">Food Service Available</Label>
+						</div>
+
+						<div class="grid gap-2">
+							<Label for="foodMenu">Food Menu URL</Label>
+							<Input id="foodMenu" name="foodMenu" value={property.foodMenu} />
+						</div>
+
+						<div class="grid gap-2">
+							<Label for="amenities">Amenities</Label>
+							{#await amenitiesPromise}
+								<div
+									class="h-10 w-full rounded-md border border-input bg-muted animate-pulse flex items-center px-3 text-sm text-muted-foreground"
+								>
+									Loading amenities...
+								</div>
+							{:then amenitiesData}
+								<Select.Root type="multiple" bind:value={selectedAmenities}>
+									<Select.Trigger class="w-full">
+										<div class="truncate text-left">
+											{#if selectedAmenities.length > 0}
+												{amenitiesData.amenities
+													.filter((a) => selectedAmenities.includes(a.id))
+													.map((a) => a.name)
+													.join(', ')}
+											{:else}
+												<span class="text-muted-foreground">Select amenities</span>
+											{/if}
+										</div>
+									</Select.Trigger>
+									<Select.Content>
+										{#each amenitiesData.amenities as amenity}
+											<Select.Item value={amenity.id} label={amenity.name}>
+												{amenity.name}
+											</Select.Item>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+								<p class="text-xs text-muted-foreground">Selected: {selectedAmenities.length}</p>
+							{:catch}
+								<p class="text-sm text-destructive">Failed to load amenities</p>
+							{/await}
+						</div>
+
+						<div class="grid gap-2">
+							<Label for="images">Images (URLs, comma separated)</Label>
+							<Textarea
+								id="images"
+								name="images"
+								value={property.media
+									?.filter((m) => m.type === 'image')
+									.map((m) => m.url)
+									.join(', ') ?? ''}
+							/>
+						</div>
+
+						<div class="grid gap-2">
+							<Label>Nearby Places</Label>
+							<input type="hidden" name="nearby" value={JSON.stringify(nearbyItems)} />
+							<div class="space-y-2">
+								{#each nearbyItems as item, i}
+									<div class="flex gap-2 items-start">
+										<div class="grid gap-1 flex-1">
+											<Input bind:value={item.title} placeholder="Title (e.g. Metro)" />
+										</div>
+										<div class="grid gap-1 w-24">
+											<Input bind:value={item.distance} placeholder="Dist" />
+										</div>
+										<div class="grid gap-1 flex-1">
+											<Input bind:value={item.image} placeholder="Icon/Img URL" />
+										</div>
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon"
+											class="text-destructive"
+											onclick={() => {
+												if (nearbyItems.length > 1) {
+													nearbyItems = nearbyItems.filter((_, idx) => idx !== i);
+												} else {
+													nearbyItems[0] = { title: '', distance: '', image: '' };
+												}
+											}}
+										>
+											<Trash class="h-4 w-4" />
+										</Button>
+									</div>
+								{/each}
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onclick={() => {
+										nearbyItems = [...nearbyItems, { title: '', distance: '', image: '' }];
+									}}
+								>
+									<Plus class="mr-2 h-4 w-4" />
+									Add Nearby Place
+								</Button>
+							</div>
 						</div>
 					</CardContent>
 					<CardFooter class="justify-between">

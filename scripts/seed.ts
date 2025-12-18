@@ -15,7 +15,10 @@ import {
 	visitBookings,
 	systemSettings,
 	staffAssignments,
-	foodMenuItems
+	foodMenuItems,
+	media,
+	amenities,
+	propertyAmenities
 } from '../src/lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 
@@ -26,6 +29,9 @@ async function seed() {
 		// Clear new tables
 		await db.delete(systemSettings);
 		await db.delete(foodMenuItems);
+		await db.delete(media);
+		await db.delete(propertyAmenities);
+		await db.delete(amenities);
 		await db.delete(visitBookings);
 		await db.delete(staffAssignments);
 		await db.delete(propertyManagerAssignments);
@@ -109,6 +115,36 @@ async function seed() {
 
 		console.log('\n✅ Users created with better-auth');
 
+		// Create Amenities
+		console.log('Creating amenities...');
+		const amenityIds: Record<string, string> = {};
+		const amenityList = [
+			'WiFi',
+			'Parking',
+			'Gym',
+			'Security',
+			'Meals',
+			'Laundry',
+			'AC',
+			'Fan',
+			'Shared Bathroom',
+			'Attached Bathroom',
+			'Lockers',
+			'Balcony'
+		];
+
+		for (const name of amenityList) {
+			const id = crypto.randomUUID();
+			amenityIds[name] = id;
+			await db.insert(amenities).values({
+				id,
+				name,
+				description: `${name} facility`,
+				icon: 'check' // Default icon
+			});
+		}
+		console.log('✅ Amenities created');
+
 		// Create properties
 		console.log('Creating properties...');
 		const property1Id = crypto.randomUUID();
@@ -120,13 +156,14 @@ async function seed() {
 				name: 'Sunrise Apartments',
 				description: 'Modern apartments in the heart of the city',
 				address: '123 Main Street',
+				sector: 'Sector 4',
 				city: 'Mumbai',
 				state: 'Maharashtra',
 				zip: '400001',
-				amenities: ['WiFi', 'Parking', 'Gym', 'Security'],
-				images: ['/images/sunrise-1.jpg', '/images/sunrise-2.jpg'],
+				nearby: ['Metro Station', 'City Mall'], // JSON array
 				contactPhone: '+91 9876543210',
 				isFoodServiceAvailable: true,
+				foodMenu: 'https://example.com/menu.pdf',
 				bookingCharge: 1000,
 				status: 'published',
 				createdAt: new Date(),
@@ -137,17 +174,57 @@ async function seed() {
 				name: 'Green Valley PG',
 				description: 'Affordable PG accommodation for students and professionals',
 				address: '456 College Road',
+				sector: 'Sector 5',
 				city: 'Pune',
 				state: 'Maharashtra',
 				zip: '411001',
-				amenities: ['WiFi', 'Meals', 'Laundry', 'AC'],
-				images: ['/images/greenvalley-1.jpg'],
+				nearby: ['College Campus', 'Bus Stand'],
 				contactPhone: '+91 9876543211',
 				isFoodServiceAvailable: false,
 				bookingCharge: 0,
 				status: 'published',
 				createdAt: new Date(),
 				updatedAt: new Date()
+			}
+		]);
+
+		// Link Amenities
+		const prop1Amenities = ['WiFi', 'Parking', 'Gym', 'Security'];
+		for (const am of prop1Amenities) {
+			if (amenityIds[am]) {
+				await db.insert(propertyAmenities).values({
+					propertyId: property1Id,
+					amenityId: amenityIds[am]
+				});
+			}
+		}
+
+		const prop2Amenities = ['WiFi', 'Meals', 'Laundry', 'AC'];
+		for (const am of prop2Amenities) {
+			if (amenityIds[am]) {
+				await db.insert(propertyAmenities).values({
+					propertyId: property2Id,
+					amenityId: amenityIds[am]
+				});
+			}
+		}
+
+		// Create Property Media
+		await db.insert(media).values([
+			{
+				url: '/images/sunrise-1.jpg',
+				type: 'image',
+				propertyId: property1Id
+			},
+			{
+				url: '/images/sunrise-2.jpg',
+				type: 'image',
+				propertyId: property1Id
+			},
+			{
+				url: '/images/greenvalley-1.jpg',
+				type: 'image',
+				propertyId: property2Id
 			}
 		]);
 
@@ -261,7 +338,6 @@ async function seed() {
 				priceMonthly: 15000,
 				depositAmount: 15000,
 				features: ['AC', 'Attached Bathroom', 'Balcony'],
-				images: ['/images/room101-1.jpg', '/images/room101-2.jpg'],
 				status: 'occupied',
 				createdAt: new Date(),
 				updatedAt: new Date()
@@ -275,7 +351,6 @@ async function seed() {
 				priceMonthly: 20000,
 				depositAmount: 20000,
 				features: ['AC', 'Attached Bathroom'],
-				images: ['/images/room102.jpg'],
 				status: 'available',
 				createdAt: new Date(),
 				updatedAt: new Date()
@@ -289,7 +364,6 @@ async function seed() {
 				priceMonthly: 25000,
 				depositAmount: 12500,
 				features: ['Fan', 'Shared Bathroom'],
-				images: ['/images/room201.jpg'],
 				status: 'occupied',
 				createdAt: new Date(),
 				updatedAt: new Date()
@@ -303,11 +377,19 @@ async function seed() {
 				priceMonthly: 8000,
 				depositAmount: 5000,
 				features: ['Fan', 'Shared Bathroom', 'Lockers'],
-				images: ['/images/room202.jpg'],
 				status: 'available',
 				createdAt: new Date(),
 				updatedAt: new Date()
 			}
+		]);
+
+		// Create Room Media
+		await db.insert(media).values([
+			{ url: '/images/room101-1.jpg', type: 'image', roomId: room1Id },
+			{ url: '/images/room101-2.jpg', type: 'image', roomId: room1Id },
+			{ url: '/images/room102.jpg', type: 'image', roomId: room2Id },
+			{ url: '/images/room201.jpg', type: 'image', roomId: room3Id },
+			{ url: '/images/room202.jpg', type: 'image', roomId: room4Id }
 		]);
 
 		console.log('✅ Rooms created');

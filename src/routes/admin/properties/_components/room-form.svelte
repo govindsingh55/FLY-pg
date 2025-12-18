@@ -2,6 +2,7 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import { Label } from '$lib/components/ui/label';
 	import { createRoom, updateRoom, deleteRoom } from '../rooms.remote';
 	import { toast } from 'svelte-sonner';
@@ -21,12 +22,14 @@
 			priceMonthly: number;
 			depositAmount?: number | null;
 			status: string;
+			features?: string[] | null;
+			images?: string[] | null;
 		} | null;
 	}>();
 </script>
 
 <Sheet.Root bind:open>
-	<Sheet.Content side="right" class="w-[400px] sm:w-[540px]">
+	<Sheet.Content side="right" class="w-[400px] sm:w-[540px] overflow-y-auto">
 		<Sheet.Header>
 			<Sheet.Title>{room ? 'Edit Room' : 'Add Room'}</Sheet.Title>
 			<Sheet.Description>
@@ -121,6 +124,26 @@
 							{updateRoom.fields.depositAmount.issues()?.[0].message}
 						</p>
 					{/if}
+				</div>
+
+				<div class="grid gap-2">
+					<Label for="features">Features (comma separated)</Label>
+					<Textarea
+						id="features"
+						name="features"
+						value={room.features?.join(', ') ?? ''}
+						placeholder="AC, Balcony, WiFi"
+					/>
+				</div>
+
+				<div class="grid gap-2">
+					<Label for="images">Images (URLs, comma separated)</Label>
+					<Textarea
+						id="images"
+						name="images"
+						value={room.images?.join(', ') ?? ''}
+						placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
+					/>
 				</div>
 
 				<div class="grid gap-2">
@@ -227,6 +250,20 @@
 							{createRoom.fields.depositAmount.issues()?.[0].message}
 						</p>
 					{/if}
+				</div>
+
+				<div class="grid gap-2">
+					<Label for="features">Features (comma separated)</Label>
+					<Textarea id="features" name="features" placeholder="AC, Balcony, WiFi" />
+				</div>
+
+				<div class="grid gap-2">
+					<Label for="images">Images (URLs, comma separated)</Label>
+					<Textarea
+						id="images"
+						name="images"
+						placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
+					/>
 				</div>
 
 				<div class="grid gap-2">

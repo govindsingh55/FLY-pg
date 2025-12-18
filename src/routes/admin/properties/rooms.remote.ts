@@ -1,7 +1,7 @@
 import { form, getRequestEvent, query } from '$app/server';
 import { roomSchema } from '$lib/schemas/room';
 import { db } from '$lib/server/db';
-import { rooms } from '$lib/server/db/schema';
+import { rooms, media } from '$lib/server/db/schema';
 import { softDelete } from '$lib/server/db/soft-delete';
 import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
@@ -47,14 +47,24 @@ export const createRoom = form(createRoomSchema, async (data) => {
 	}
 
 	try {
+		const { images: imageUrls, ...roomData } = data;
+		const roomId = crypto.randomUUID();
+
 		await db.insert(rooms).values({
-			...data,
-			features: data.features || []
+			id: roomId,
+			...roomData,
+			features: roomData.features || []
 		});
 
-		// Refresh property details if needed?
-		// We can't easily refresh getProperty(id) from here without knowing how it was called,
-		// but typically client invalidates.
+		if (imageUrls && imageUrls.length > 0) {
+			const mediaItems = imageUrls.map((url: string) => ({
+				url,
+				roomId,
+				type: 'image' as const
+			}));
+			await db.insert(media).values(mediaItems);
+		}
+
 		return { success: true };
 	} catch (e) {
 		console.error(e);
@@ -74,19 +84,32 @@ export const updateRoom = form(updateRoomSchema, async (data) => {
 	}
 
 	try {
+		const { images: imageUrls, ...roomData } = data;
+
 		await db
 			.update(rooms)
 			.set({
-				number: data.number,
-				type: data.type,
-				capacity: data.capacity,
-				priceMonthly: data.priceMonthly,
-				depositAmount: data.depositAmount,
-				status: data.status,
-				features: data.features,
+				number: roomData.number,
+				type: roomData.type,
+				capacity: roomData.capacity,
+				priceMonthly: roomData.priceMonthly,
+				depositAmount: roomData.depositAmount,
+				status: roomData.status,
+				features: roomData.features,
 				updatedAt: new Date()
 			})
-			.where(eq(rooms.id, data.id));
+			.where(eq(rooms.id, roomData.id));
+
+		// Update Media
+		await db.delete(media).where(eq(media.roomId, roomData.id));
+		if (imageUrls && imageUrls.length > 0) {
+			const mediaItems = imageUrls.map((url: string) => ({
+				url,
+				roomId: roomData.id,
+				type: 'image' as const
+			}));
+			await db.insert(media).values(mediaItems);
+		}
 
 		await getRoom(data.id).refresh();
 		return { success: true };

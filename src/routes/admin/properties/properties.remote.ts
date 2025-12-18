@@ -1,7 +1,7 @@
 import { form, getRequestEvent, query } from '$app/server';
 import { propertySchema } from '$lib/schemas/property';
 import { db } from '$lib/server/db';
-import { properties } from '$lib/server/db/schema';
+import { media, properties, propertyAmenities } from '$lib/server/db/schema';
 import { softDelete } from '$lib/server/db/soft-delete';
 import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
@@ -48,26 +48,28 @@ export const getProperties = query(
 				}
 			}
 
+			const roleFilter =
+				sessionUser.role === 'admin' || sessionUser.role === 'manager'
+					? {}
+					: {
+							id: { in: allowedPropertyIds as string[] }
+						};
+
+			const searchFilter = searchTerm
+				? {
+						OR: [
+							{ name: { like: `%${searchTerm}%` } },
+							{ description: { like: `%${searchTerm}%` } },
+							{ sector: { like: `%${searchTerm}%` } },
+							{ city: { like: `%${searchTerm}%` } }
+						]
+					}
+				: {};
+
 			// Get total count
 			const totalCount = await db.query.properties.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						sessionUser.role === 'admin' || sessionUser.role === 'manager'
-							? {}
-							: {
-									id: { in: allowedPropertyIds as string[] }
-								},
-						searchTerm
-							? {
-									OR: [
-										{ name: { like: `%${searchTerm}%` } },
-										{ description: { like: `%${searchTerm}%` } },
-										{ city: { like: `%${searchTerm}%` } }
-									]
-								}
-							: {}
-					]
+					AND: [{ deletedAt: { isNull: true } }, roleFilter, searchFilter]
 				}
 			});
 
@@ -75,23 +77,7 @@ export const getProperties = query(
 			const offset = (page - 1) * pageSize;
 			const props = await db.query.properties.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						sessionUser.role === 'admin' || sessionUser.role === 'manager'
-							? {}
-							: {
-									id: { in: allowedPropertyIds as string[] }
-								},
-						searchTerm
-							? {
-									OR: [
-										{ name: { like: `%${searchTerm}%` } },
-										{ description: { like: `%${searchTerm}%` } },
-										{ city: { like: `%${searchTerm}%` } }
-									]
-								}
-							: {}
-					]
+					AND: [{ deletedAt: { isNull: true } }, roleFilter, searchFilter]
 				},
 				with: {
 					rooms: true
@@ -130,7 +116,9 @@ export const getProperty = query(z.string(), async (id) => {
 				]
 			},
 			with: {
-				rooms: true
+				rooms: true,
+				media: true,
+				amenities: true
 			}
 		});
 
@@ -149,11 +137,33 @@ export const createProperty = form(propertySchema, async (data) => {
 	}
 
 	try {
+		const { amenities: amenityIds, images: imageUrls, ...propData } = data;
+
+		// 1. Create Property
+		const propertyId = crypto.randomUUID();
 		await db.insert(properties).values({
-			...data,
-			amenities: data.amenities || [],
-			images: data.images || []
+			id: propertyId,
+			...propData
 		});
+
+		// 2. Add Amenities
+		if (amenityIds && amenityIds.length > 0) {
+			const links = amenityIds.map((aid: string) => ({
+				propertyId,
+				amenityId: aid
+			}));
+			await db.insert(propertyAmenities).values(links);
+		}
+
+		// 3. Add Images (Media)
+		if (imageUrls && imageUrls.length > 0) {
+			const mediaItems = imageUrls.map((url: string) => ({
+				url,
+				propertyId,
+				type: 'image' as const
+			}));
+			await db.insert(media).values(mediaItems);
+		}
 
 		await getProperties({}).refresh();
 		return { success: true };
@@ -174,21 +184,37 @@ export const updateProperty = form(updateSchema, async (data) => {
 	}
 
 	try {
+		const { amenities: amenityIds, images: imageUrls, id, ...propData } = data;
+
+		// 1. Update Property
 		await db
 			.update(properties)
 			.set({
-				name: data.name,
-				description: data.description,
-				address: data.address,
-				city: data.city,
-				state: data.state,
-				zip: data.zip,
-				contactPhone: data.contactPhone,
-				amenities: data.amenities,
-				images: data.images,
+				...propData,
 				updatedAt: new Date()
 			})
-			.where(eq(properties.id, data.id));
+			.where(eq(properties.id, id));
+
+		// 2. Update Amenities (Delete all, re-insert)
+		await db.delete(propertyAmenities).where(eq(propertyAmenities.propertyId, id));
+		if (amenityIds && amenityIds.length > 0) {
+			const links = amenityIds.map((aid: string) => ({
+				propertyId: id,
+				amenityId: aid
+			}));
+			await db.insert(propertyAmenities).values(links);
+		}
+
+		// 3. Update Media
+		await db.delete(media).where(eq(media.propertyId, id));
+		if (imageUrls && imageUrls.length > 0) {
+			const mediaItems = imageUrls.map((url: string) => ({
+				url,
+				propertyId: id,
+				type: 'image' as const
+			}));
+			await db.insert(media).values(mediaItems);
+		}
 
 		await getProperties({}).refresh();
 		await getProperty(data.id).refresh();

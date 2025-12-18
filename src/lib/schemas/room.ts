@@ -16,7 +16,28 @@ export const roomSchema = z.object({
 		.optional()
 		.transform((val) => (val === undefined ? undefined : Number(val)))
 		.pipe(z.number().optional()),
-	features: z.array(z.string()).optional(),
+	features: z
+		.union([
+			z.array(z.string()),
+			z.string().transform((val) =>
+				val
+					.split(',')
+					.map((s) => s.trim())
+					.filter((s) => s.length > 0)
+			)
+		])
+		.optional(),
+	images: z
+		.union([
+			z.array(z.string()),
+			z.string().transform((val) =>
+				val
+					.split(',')
+					.map((s) => s.trim())
+					.filter((s) => s.length > 0)
+			)
+		])
+		.optional(),
 	status: z.enum(['available', 'occupied', 'maintenance']).default('available')
 });
 

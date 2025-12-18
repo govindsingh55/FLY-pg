@@ -1,5 +1,5 @@
 import { defineRelations, sql } from 'drizzle-orm';
-import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index, primaryKey, real } from 'drizzle-orm/sqlite-core';
 
 // --- Auth Tables ---
 
@@ -98,6 +98,45 @@ export const verification = sqliteTable(
 
 // --- Business Domain Tables ---
 
+export const media = sqliteTable('media', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	url: text('url').notNull(),
+	type: text('type', { enum: ['image', 'document', 'video', 'other'] }).default('image'),
+	propertyId: text('property_id').references(() => properties.id, { onDelete: 'cascade' }),
+	roomId: text('room_id').references(() => rooms.id, { onDelete: 'cascade' }),
+	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
+});
+
+export const amenities = sqliteTable('amenities', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	name: text('name').notNull(),
+	description: text('description'),
+	image: text('image'), // URL
+	icon: text('icon'), // Lucide icon name
+	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
+});
+
+export const propertyAmenities = sqliteTable(
+	'property_amenities',
+	{
+		propertyId: text('property_id')
+			.notNull()
+			.references(() => properties.id, { onDelete: 'cascade' }),
+		amenityId: text('amenity_id')
+			.notNull()
+			.references(() => amenities.id, { onDelete: 'cascade' })
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.propertyId, t.amenityId] })
+	})
+);
+
 export const properties = sqliteTable('properties', {
 	id: text('id')
 		.primaryKey()
@@ -105,13 +144,18 @@ export const properties = sqliteTable('properties', {
 	name: text('name').notNull(),
 	description: text('description'),
 	address: text('address').notNull(),
-	city: text('city'),
-	state: text('state'),
-	zip: text('zip'),
-	amenities: text('amenities', { mode: 'json' }), // JSON array of strings
-	images: text('images', { mode: 'json' }), // JSON array of URLs
+	sector: text('sector'),
+	city: text('city').notNull(),
+	state: text('state').notNull(),
+	zip: text('zip').notNull(),
+	lat: real('lat'),
+	lng: real('lng'),
+	// Nearby text or JSON
+	nearby: text('nearby', { mode: 'json' }),
 	contactPhone: text('contact_phone'),
 	isFoodServiceAvailable: integer('is_food_service_available', { mode: 'boolean' }).default(false),
+	// Optional food menu URL/file
+	foodMenu: text('food_menu'),
 	bookingCharge: integer('booking_charge').default(0),
 	status: text('status', { enum: ['draft', 'published'] }).default('draft'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
@@ -132,8 +176,7 @@ export const rooms = sqliteTable('rooms', {
 	capacity: integer('capacity'),
 	priceMonthly: integer('price_monthly').notNull(),
 	depositAmount: integer('deposit_amount'),
-	features: text('features', { mode: 'json' }),
-	images: text('images', { mode: 'json' }), // JSON array of URLs
+	features: text('features', { mode: 'json' }), // JSON array of strings
 	status: text('status', { enum: ['available', 'occupied', 'maintenance'] }).default('available'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
@@ -360,7 +403,10 @@ export const relationsDef = defineRelations(
 		staffAssignments,
 		visitBookings,
 		systemSettings,
-		foodMenuItems
+		foodMenuItems,
+		media,
+		amenities,
+		propertyAmenities
 	},
 	(r) => ({
 		user: {
@@ -407,6 +453,14 @@ export const relationsDef = defineRelations(
 			foodMenuItems: r.many.foodMenuItems({
 				from: r.properties.id,
 				to: r.foodMenuItems.propertyId
+			}),
+			media: r.many.media({
+				from: r.properties.id,
+				to: r.media.propertyId
+			}),
+			amenities: r.many.propertyAmenities({
+				from: r.properties.id,
+				to: r.propertyAmenities.propertyId
 			})
 		},
 		rooms: {
@@ -417,6 +471,36 @@ export const relationsDef = defineRelations(
 			bookings: r.many.bookings({
 				from: r.rooms.id,
 				to: r.bookings.roomId
+			}),
+			media: r.many.media({
+				from: r.rooms.id,
+				to: r.media.roomId
+			})
+		},
+		media: {
+			property: r.one.properties({
+				from: r.media.propertyId,
+				to: r.properties.id
+			}),
+			room: r.one.rooms({
+				from: r.media.roomId,
+				to: r.rooms.id
+			})
+		},
+		amenities: {
+			properties: r.many.propertyAmenities({
+				from: r.amenities.id,
+				to: r.propertyAmenities.amenityId
+			})
+		},
+		propertyAmenities: {
+			property: r.one.properties({
+				from: r.propertyAmenities.propertyId,
+				to: r.properties.id
+			}),
+			amenity: r.one.amenities({
+				from: r.propertyAmenities.amenityId,
+				to: r.amenities.id
 			})
 		},
 		customers: {
