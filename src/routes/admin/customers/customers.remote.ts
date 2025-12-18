@@ -75,56 +75,53 @@ export const getCustomers = query(
 			}
 
 			// Get total count
-			const totalCount = await db.query.customers.findMany({
+			const propertiesList = await db.query.customers.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						sessionUser.role === 'admin' ? {} : { id: { in: allowedCustomerIds || [] } },
-						searchTerm
-							? {
-									OR: [
-										{ name: { like: `%${searchTerm}%` } },
-										{ email: { like: `%${searchTerm}%` } },
-										{ phone: { like: `%${searchTerm}%` } }
-									]
-								}
-							: {}
-					]
-				}
+					deletedAt: { isNull: true },
+					...(sessionUser.role !== 'admin' ? { id: { in: allowedCustomerIds || [] } } : {}),
+					...(searchTerm
+						? {
+								OR: [
+									{ name: { like: `%${searchTerm}%` } },
+									{ email: { like: `%${searchTerm}%` } },
+									{ phone: { like: `%${searchTerm}%` } }
+								]
+							}
+						: {})
+				},
+				columns: { id: true }
 			});
 
 			// Get paginated results
 			const offset = (page - 1) * pageSize;
 			const result = await db.query.customers.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						sessionUser.role === 'admin' ? {} : { id: { in: allowedCustomerIds || [] } },
-						searchTerm
-							? {
-									OR: [
-										{ name: { like: `%${searchTerm}%` } },
-										{ email: { like: `%${searchTerm}%` } },
-										{ phone: { like: `%${searchTerm}%` } }
-									]
-								}
-							: {}
-					]
+					deletedAt: { isNull: true },
+					...(sessionUser.role !== 'admin' ? { id: { in: allowedCustomerIds || [] } } : {}),
+					...(searchTerm
+						? {
+								OR: [
+									{ name: { like: `%${searchTerm}%` } },
+									{ email: { like: `%${searchTerm}%` } },
+									{ phone: { like: `%${searchTerm}%` } }
+								]
+							}
+						: {})
 				},
 				with: {
 					user: true
 				},
-				orderBy: (t, { desc }) => [desc(t.createdAt)],
+				orderBy: { createdAt: 'desc' },
 				limit: pageSize,
 				offset: offset
 			});
 
 			return {
 				customers: result,
-				total: totalCount.length,
+				total: propertiesList.length,
 				page,
 				pageSize,
-				totalPages: Math.ceil(totalCount.length / pageSize)
+				totalPages: Math.ceil(propertiesList.length / pageSize)
 			};
 		} catch (e) {
 			console.error('Error fetching customers:', e);
@@ -138,7 +135,7 @@ export const getCustomer = query(z.string(), async (id) => {
 	try {
 		// Simple permission check (should actually verify against role, but this is detail view)
 		const customer = await db.query.customers.findFirst({
-			where: { AND: [{ deletedAt: { isNull: true } }, { id }] },
+			where: { id, deletedAt: { isNull: true } },
 			with: {
 				user: true,
 				bookings: {

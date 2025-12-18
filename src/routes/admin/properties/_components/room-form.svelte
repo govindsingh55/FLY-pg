@@ -6,6 +6,9 @@
 	import { Label } from '$lib/components/ui/label';
 	import { createRoom, updateRoom, deleteRoom } from '../rooms.remote';
 	import { toast } from 'svelte-sonner';
+	import MediaSelection from '$lib/components/media/media-selection.svelte';
+
+	let selectedImages = $state<string[]>([]);
 
 	let {
 		open = $bindable(false),
@@ -26,6 +29,14 @@
 			images?: string[] | null;
 		} | null;
 	}>();
+
+	$effect(() => {
+		if (open) {
+			selectedImages = room?.images || [];
+		} else {
+			selectedImages = [];
+		}
+	});
 </script>
 
 <Sheet.Root bind:open>
@@ -52,6 +63,15 @@
 				})}
 			>
 				<input type="hidden" name="id" value={room.id} />
+
+				<MediaSelection
+					value={selectedImages}
+					onValueChange={(urls) => (selectedImages = urls as string[])}
+					mode="multiple"
+					label="Room Images"
+					name="images"
+					{propertyId}
+				/>
 				<div class="grid gap-2">
 					<Label for="number">Room Number</Label>
 					<Input id="number" name="number" value={room.number} required />
@@ -137,16 +157,6 @@
 				</div>
 
 				<div class="grid gap-2">
-					<Label for="images">Images (URLs, comma separated)</Label>
-					<Textarea
-						id="images"
-						name="images"
-						value={room.images?.join(', ') ?? ''}
-						placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
-					/>
-				</div>
-
-				<div class="grid gap-2">
 					<Label for="status">Status</Label>
 					<select
 						name="status"
@@ -199,6 +209,15 @@
 				})}
 			>
 				<input type="hidden" name="propertyId" value={propertyId} />
+
+				<MediaSelection
+					value={selectedImages}
+					onValueChange={(urls) => (selectedImages = urls as string[])}
+					mode="multiple"
+					label="Room Images"
+					name="images"
+					{propertyId}
+				/>
 				<div class="grid gap-2">
 					<Label for="number">Room Number</Label>
 					<Input id="number" name="number" placeholder="101" required />
@@ -255,15 +274,6 @@
 				<div class="grid gap-2">
 					<Label for="features">Features (comma separated)</Label>
 					<Textarea id="features" name="features" placeholder="AC, Balcony, WiFi" />
-				</div>
-
-				<div class="grid gap-2">
-					<Label for="images">Images (URLs, comma separated)</Label>
-					<Textarea
-						id="images"
-						name="images"
-						placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
-					/>
 				</div>
 
 				<div class="grid gap-2">

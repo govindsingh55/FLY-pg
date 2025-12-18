@@ -21,6 +21,7 @@
 	import { goto } from '$app/navigation';
 	import RoomForm from '../_components/room-form.svelte';
 	import * as Select from '$lib/components/ui/select';
+	import MediaSelection from '$lib/components/media/media-selection.svelte';
 
 	let id = $derived(page.params.id);
 	let dataPromise = $derived(getProperty(id as string));
@@ -29,12 +30,22 @@
 	let roomSheetOpen = $state(false);
 	let selectedRoom = $state<any>(null); // Using any or specific type if available
 	let selectedAmenities = $state<string[]>([]);
+	let selectedImages = $state<string[]>([]);
+	let selectedStatus = $state('draft');
 	let nearbyItems = $state<any[]>([{ title: '', distance: '', image: '' }]);
 
 	$effect(() => {
 		dataPromise.then((data) => {
 			if (data.property?.amenities) {
 				selectedAmenities = data.property.amenities.map((a: any) => a.amenityId);
+			}
+			if (data.property?.status) {
+				selectedStatus = data.property.status;
+			}
+			if (data.property?.media) {
+				selectedImages = data.property.media
+					.filter((m: any) => m.type === 'image')
+					.map((m: any) => m.url);
 			}
 			if (data.property?.nearby) {
 				const raw = data.property.nearby as any;
@@ -105,6 +116,14 @@
 						<input type="hidden" name="id" value={property.id} />
 						<!-- Hidden Input for Amenities (Comma separated for schema transform) -->
 						<input type="hidden" name="amenities" value={selectedAmenities.join(',')} />
+
+						<MediaSelection
+							value={selectedImages}
+							onValueChange={(urls) => (selectedImages = urls as string[])}
+							mode="multiple"
+							label="Property Images"
+							name="images"
+						/>
 
 						<div class="grid gap-2">
 							<Label for="name">Property Name</Label>
@@ -180,6 +199,24 @@
 							/>
 						</div>
 
+						<div class="grid gap-2">
+							<Label for="status">Status</Label>
+							<Select.Root
+								type="single"
+								value={selectedStatus}
+								onValueChange={(v) => (selectedStatus = v)}
+							>
+								<Select.Trigger class="w-full capitalize">
+									{selectedStatus || 'Select status'}
+								</Select.Trigger>
+								<Select.Content>
+									<Select.Item value="draft" label="Draft">Draft</Select.Item>
+									<Select.Item value="published" label="Published">Published</Select.Item>
+								</Select.Content>
+							</Select.Root>
+							<input type="hidden" name="status" value={selectedStatus} />
+						</div>
+
 						<div class="flex items-center gap-2">
 							<input
 								type="checkbox"
@@ -230,18 +267,6 @@
 							{:catch}
 								<p class="text-sm text-destructive">Failed to load amenities</p>
 							{/await}
-						</div>
-
-						<div class="grid gap-2">
-							<Label for="images">Images (URLs, comma separated)</Label>
-							<Textarea
-								id="images"
-								name="images"
-								value={property.media
-									?.filter((m) => m.type === 'image')
-									.map((m) => m.url)
-									.join(', ') ?? ''}
-							/>
 						</div>
 
 						<div class="grid gap-2">

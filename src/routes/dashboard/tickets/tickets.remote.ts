@@ -33,7 +33,7 @@ export const getTickets = query(async () => {
 			with: {
 				room: true
 			},
-			orderBy: (tickets, { desc }) => [desc(tickets.createdAt)]
+			orderBy: { createdAt: 'desc' }
 		});
 
 		return {

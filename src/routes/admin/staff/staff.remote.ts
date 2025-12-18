@@ -39,31 +39,28 @@ export const getStaff = query(
 			}
 
 			// Get total count
-			const totalCount = await db.query.staffProfiles.findMany({
+			const resultsList = await db.query.staffProfiles.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						searchTerm
-							? {
-									userId: { in: matchedUserIds.length > 0 ? matchedUserIds : ['nomatch'] }
-								}
-							: {}
-					]
-				}
+					deletedAt: { isNull: true },
+					...(searchTerm
+						? {
+								userId: { in: matchedUserIds.length > 0 ? matchedUserIds : ['nomatch'] }
+							}
+						: {})
+				},
+				columns: { id: true }
 			});
 
 			// Get paginated results
 			const offset = (page - 1) * pageSize;
 			const staffList = await db.query.staffProfiles.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						searchTerm
-							? {
-									userId: { in: matchedUserIds.length > 0 ? matchedUserIds : ['nomatch'] }
-								}
-							: {}
-					]
+					deletedAt: { isNull: true },
+					...(searchTerm
+						? {
+								userId: { in: matchedUserIds.length > 0 ? matchedUserIds : ['nomatch'] }
+							}
+						: {})
 				},
 				with: {
 					user: true,
@@ -89,10 +86,10 @@ export const getStaff = query(
 						staffType: p.staffType,
 						assignments: p.assignments.map((a) => a.property)
 					})),
-				total: totalCount.length,
+				total: resultsList.length,
 				page,
 				pageSize,
-				totalPages: Math.ceil(totalCount.length / pageSize)
+				totalPages: Math.ceil(resultsList.length / pageSize)
 			};
 		} catch (e) {
 			console.error(e);

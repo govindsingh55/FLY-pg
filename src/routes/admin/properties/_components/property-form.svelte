@@ -9,17 +9,22 @@
 	import { toast } from 'svelte-sonner';
 	import * as Select from '$lib/components/ui/select';
 	import { Trash, Plus } from 'lucide-svelte';
+	import MediaSelection from '$lib/components/media/media-selection.svelte';
 
 	let { open = $bindable(false) } = $props<{ open: boolean }>();
 
 	let amenitiesPromise = $derived(open ? getAmenities() : Promise.resolve({ amenities: [] }));
 	let selectedAmenities = $state<string[]>([]);
+	let selectedImages = $state<string[]>([]);
+	let selectedStatus = $state('draft');
 	let nearbyItems = $state([{ title: '', distance: '', image: '' }]);
 
 	// Reset selection when dialog closes/opens
 	$effect(() => {
 		if (!open) {
 			selectedAmenities = [];
+			selectedImages = [];
+			selectedStatus = 'draft';
 			nearbyItems = [{ title: '', distance: '', image: '' }];
 		}
 	});
@@ -54,6 +59,14 @@
 		>
 			<!-- Hidden Input for Amenities (Comma separated for schema transform) -->
 			<input type="hidden" name="amenities" value={selectedAmenities.join(',')} />
+
+			<MediaSelection
+				value={selectedImages}
+				onValueChange={(urls) => (selectedImages = urls as string[])}
+				mode="multiple"
+				label="Property Images"
+				name="images"
+			/>
 
 			<div class="grid gap-2">
 				<Label for="name">Property Name</Label>
@@ -131,6 +144,24 @@
 				<Input id="bookingCharge" name="bookingCharge" type="number" min="0" placeholder="0" />
 			</div>
 
+			<div class="grid gap-2">
+				<Label for="status">Status</Label>
+				<Select.Root
+					type="single"
+					value={selectedStatus}
+					onValueChange={(v) => (selectedStatus = v)}
+				>
+					<Select.Trigger class="w-full capitalize">
+						{selectedStatus || 'Select status'}
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Item value="draft" label="Draft">Draft</Select.Item>
+						<Select.Item value="published" label="Published">Published</Select.Item>
+					</Select.Content>
+				</Select.Root>
+				<input type="hidden" name="status" value={selectedStatus} />
+			</div>
+
 			<div class="flex items-center gap-2">
 				<input
 					type="checkbox"
@@ -180,15 +211,6 @@
 				{:catch}
 					<p class="text-sm text-destructive">Failed to load amenities</p>
 				{/await}
-			</div>
-
-			<div class="grid gap-2">
-				<Label for="images">Images (URLs, comma separated)</Label>
-				<Textarea
-					id="images"
-					name="images"
-					placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
-				/>
 			</div>
 
 			<div class="grid gap-2">

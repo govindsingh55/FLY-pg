@@ -27,3 +27,4 @@ vite.config.ts.timestamp-*
 *.sqlite
 drizzle
 static/robots.txt
+static/uploads

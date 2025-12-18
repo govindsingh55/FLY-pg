@@ -22,7 +22,7 @@ export const getPayments = query(async () => {
 	try {
 		const result = await db.query.payments.findMany({
 			where: { customerId: customer.id },
-			orderBy: (payments, { desc }) => [desc(payments.paymentDate)],
+			orderBy: { paymentDate: 'desc' },
 			with: {
 				booking: {
 					with: {

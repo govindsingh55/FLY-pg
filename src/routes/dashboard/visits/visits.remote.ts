@@ -32,7 +32,8 @@ export const getVisits = query(async () => {
 	// Fetch visits
 	const visits = await db.query.visitBookings.findMany({
 		where: {
-			AND: [{ customerId: customer.id }, { deletedAt: { isNull: true } }]
+			customerId: customer.id,
+			deletedAt: { isNull: true }
 		},
 		with: {
 			property: true
@@ -45,7 +46,7 @@ export const getVisits = query(async () => {
 	// Fetch properties for dropdown
 	const propertiesList = await db.query.properties.findMany({
 		where: {
-			AND: [{ deletedAt: { isNull: true } }]
+			deletedAt: { isNull: true }
 		}
 	});
 
@@ -116,7 +117,8 @@ export const cancelVisit = form(
 
 		const visit = await db.query.visitBookings.findFirst({
 			where: {
-				AND: [{ id: visitId }, { customerId: customer.id }]
+				id: visitId,
+				customerId: customer.id
 			}
 		});
 

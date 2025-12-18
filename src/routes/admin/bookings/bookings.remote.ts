@@ -60,68 +60,65 @@ export const getBookings = query(
 			}
 
 			// Get total count
-			const totalCount = await db.query.bookings.findMany({
+			const resultsList = await db.query.bookings.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						sessionUser.role === 'admin' ? {} : { propertyId: { in: allowedPropertyIds || [] } },
-						!searchTerm
-							? {}
-							: {
-									OR: [
-										{ propertyId: searchTerm },
-										{ roomId: searchTerm },
-										{ customerId: searchTerm },
-										...(matchedPropertyIds.length > 0
-											? [{ propertyId: { in: matchedPropertyIds } }]
-											: [])
-									]
-								},
-						dateFrom ? { startDate: { gte: new Date(dateFrom) } } : {},
-						dateTo ? { startDate: { lte: new Date(dateTo) } } : {}
-					]
-				}
+					deletedAt: { isNull: true },
+					...(sessionUser.role !== 'admin' ? { propertyId: { in: allowedPropertyIds || [] } } : {}),
+					...(searchTerm
+						? {
+								OR: [
+									{ propertyId: searchTerm },
+									{ roomId: searchTerm },
+									{ customerId: searchTerm },
+									...(matchedPropertyIds.length > 0
+										? [{ propertyId: { in: matchedPropertyIds } }]
+										: [])
+								]
+							}
+						: {}),
+					...(dateFrom ? { startDate: { gte: new Date(dateFrom) } } : {}),
+					...(dateTo ? { startDate: { lte: new Date(dateTo) } } : {})
+				},
+				columns: { id: true }
 			});
 
 			// Get paginated results
 			const offset = (page - 1) * pageSize;
 			const result = await db.query.bookings.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						sessionUser.role === 'admin' ? {} : { propertyId: { in: allowedPropertyIds || [] } },
-						!searchTerm
-							? {}
-							: {
-									OR: [
-										{ propertyId: searchTerm },
-										{ roomId: searchTerm },
-										{ customerId: searchTerm },
-										...(matchedPropertyIds.length > 0
-											? [{ propertyId: { in: matchedPropertyIds } }]
-											: [])
-									]
-								},
-						dateFrom ? { startDate: { gte: new Date(dateFrom) } } : {},
-						dateTo ? { startDate: { lte: new Date(dateTo) } } : {}
-					]
+					deletedAt: { isNull: true },
+					...(sessionUser.role !== 'admin' ? { propertyId: { in: allowedPropertyIds || [] } } : {}),
+					...(searchTerm
+						? {
+								OR: [
+									{ propertyId: searchTerm },
+									{ roomId: searchTerm },
+									{ customerId: searchTerm },
+									...(matchedPropertyIds.length > 0
+										? [{ propertyId: { in: matchedPropertyIds } }]
+										: [])
+								]
+							}
+						: {}),
+					...(dateFrom ? { startDate: { gte: new Date(dateFrom) } } : {}),
+					...(dateTo ? { startDate: { lte: new Date(dateTo) } } : {})
 				},
 				with: {
 					property: true,
 					room: true,
 					customer: true
 				},
-				orderBy: (t, { desc }) => [desc(t.createdAt)],
+				orderBy: { createdAt: 'desc' },
 				limit: pageSize,
 				offset: offset
 			});
 
 			return {
 				bookings: result,
-				total: totalCount.length,
+				total: resultsList.length,
 				page,
 				pageSize,
-				totalPages: Math.ceil(totalCount.length / pageSize)
+				totalPages: Math.ceil(resultsList.length / pageSize)
 			};
 		} catch (e) {
 			console.error(e);
@@ -134,9 +131,7 @@ export const getBooking = query(z.string(), async (id) => {
 	await getSession();
 	try {
 		const booking = await db.query.bookings.findFirst({
-			where: {
-				AND: [{ id }, { deletedAt: { isNull: true } }]
-			},
+			where: { id, deletedAt: { isNull: true } },
 			with: {
 				property: true,
 				room: true,

@@ -14,9 +14,7 @@ export async function ensurePropertyAccess(user: User & { role: string }, proper
 
 	if (user.role === 'property_manager') {
 		const assignment = await db.query.propertyManagerAssignments.findFirst({
-			where: {
-				AND: [{ userId: user.id }, { propertyId: propertyId }]
-			}
+			where: { userId: user.id, propertyId }
 		});
 		if (!assignment) throw error(403, 'You are not assigned to manage this property');
 		return true;
@@ -25,17 +23,13 @@ export async function ensurePropertyAccess(user: User & { role: string }, proper
 	if (user.role === 'staff') {
 		// First get staff profile
 		const staffProfile = await db.query.staffProfiles.findFirst({
-			where: {
-				AND: [{ userId: user.id }, { deletedAt: { isNull: true } }]
-			}
+			where: { userId: user.id, deletedAt: { isNull: true } }
 		});
 
 		if (!staffProfile) throw error(403, 'Staff profile not found');
 
 		const assignment = await db.query.staffAssignments.findFirst({
-			where: {
-				AND: [{ staffProfileId: staffProfile.id }, { propertyId: propertyId }]
-			}
+			where: { staffProfileId: staffProfile.id, propertyId }
 		});
 
 		if (!assignment) throw error(403, 'You are not assigned to this property');

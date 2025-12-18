@@ -18,7 +18,7 @@ export const getNotifications = query(async () => {
 		const result = await db.query.notifications.findMany({
 			where: { userId: sessionUser.id },
 			// Need to fix orderBy syntax for Drizzle
-			orderBy: (notifications, { desc }) => [desc(notifications.createdAt)]
+			orderBy: { createdAt: 'desc' }
 		});
 
 		return {

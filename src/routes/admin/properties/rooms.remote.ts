@@ -20,9 +20,7 @@ export const getRoom = query(z.string(), async (id) => {
 	try {
 		// Use callback syntax
 		const room = await db.query.rooms.findFirst({
-			where: {
-				AND: [{ id: id }, { deletedAt: { isNull: true } }]
-			},
+			where: { id, deletedAt: { isNull: true } },
 			with: {
 				property: true
 			}

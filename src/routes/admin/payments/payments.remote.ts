@@ -71,20 +71,18 @@ export const getPayments = query(
 
 			const result = await db.query.payments.findMany({
 				where: {
-					AND: [
-						sessionUser.role == 'admin' ? {} : { customerId: { in: allowedCustomerIds || [] } },
-						searchTerm
-							? {
-									OR: [
-										{ customer: { name: { like: `%${searchTerm}%` } } },
-										{ booking: { property: { name: { like: `%${searchTerm}%` } } } },
-										{ booking: { room: { number: { like: `%${searchTerm}%` } } } }
-									]
-								}
-							: {},
-						dateFrom ? { paymentDate: { gte: new Date(dateFrom) } } : {},
-						dateTo ? { paymentDate: { lte: new Date(dateTo) } } : {}
-					]
+					...(sessionUser.role !== 'admin' ? { customerId: { in: allowedCustomerIds || [] } } : {}),
+					...(searchTerm
+						? {
+								OR: [
+									{ customer: { name: { like: `%${searchTerm}%` } } },
+									{ booking: { property: { name: { like: `%${searchTerm}%` } } } },
+									{ booking: { room: { number: { like: `%${searchTerm}%` } } } }
+								]
+							}
+						: {}),
+					...(dateFrom ? { paymentDate: { gte: new Date(dateFrom) } } : {}),
+					...(dateTo ? { paymentDate: { lte: new Date(dateTo) } } : {})
 				},
 				with: {
 					customer: true,
@@ -95,37 +93,36 @@ export const getPayments = query(
 						}
 					}
 				},
-				orderBy: (t, { desc }) => [desc(t.createdAt)],
+				orderBy: { createdAt: 'desc' },
 				limit: pageSize,
 				offset: (page - 1) * pageSize
 			});
 
 			// Get total count
-			const totalCount = await db.query.payments.findMany({
+			const resultsList = await db.query.payments.findMany({
 				where: {
-					AND: [
-						sessionUser.role == 'admin' ? {} : { customerId: { in: allowedCustomerIds || [] } },
-						searchTerm
-							? {
-									OR: [
-										{ customer: { name: { like: `%${searchTerm}%` } } },
-										{ booking: { property: { name: { like: `%${searchTerm}%` } } } },
-										{ booking: { room: { number: { like: `%${searchTerm}%` } } } }
-									]
-								}
-							: {},
-						dateFrom ? { paymentDate: { gte: new Date(dateFrom) } } : {},
-						dateTo ? { paymentDate: { lte: new Date(dateTo) } } : {}
-					]
-				}
+					...(sessionUser.role !== 'admin' ? { customerId: { in: allowedCustomerIds || [] } } : {}),
+					...(searchTerm
+						? {
+								OR: [
+									{ customer: { name: { like: `%${searchTerm}%` } } },
+									{ booking: { property: { name: { like: `%${searchTerm}%` } } } },
+									{ booking: { room: { number: { like: `%${searchTerm}%` } } } }
+								]
+							}
+						: {}),
+					...(dateFrom ? { paymentDate: { gte: new Date(dateFrom) } } : {}),
+					...(dateTo ? { paymentDate: { lte: new Date(dateTo) } } : {})
+				},
+				columns: { id: true }
 			});
 
 			return {
 				payments: result,
-				total: totalCount.length,
+				total: resultsList.length,
 				page,
 				pageSize,
-				totalPages: Math.ceil(totalCount.length / pageSize)
+				totalPages: Math.ceil(resultsList.length / pageSize)
 			};
 		} catch (e) {
 			console.error(e);

@@ -1,4 +1,4 @@
-import { form, getRequestEvent, query } from '$app/server';
+import { command, form, getRequestEvent, query } from '$app/server';
 import { propertySchema } from '$lib/schemas/property';
 import { db } from '$lib/server/db';
 import { media, properties, propertyAmenities } from '$lib/server/db/schema';
@@ -67,32 +67,37 @@ export const getProperties = query(
 				: {};
 
 			// Get total count
-			const totalCount = await db.query.properties.findMany({
+			const propertiesList = await db.query.properties.findMany({
 				where: {
-					AND: [{ deletedAt: { isNull: true } }, roleFilter, searchFilter]
-				}
+					deletedAt: { isNull: true },
+					...roleFilter,
+					...searchFilter
+				},
+				columns: { id: true } // Subset for count
 			});
 
 			// Get paginated results
 			const offset = (page - 1) * pageSize;
 			const props = await db.query.properties.findMany({
 				where: {
-					AND: [{ deletedAt: { isNull: true } }, roleFilter, searchFilter]
+					deletedAt: { isNull: true },
+					...roleFilter,
+					...searchFilter
 				},
 				with: {
 					rooms: true
 				},
-				orderBy: (t, { desc }) => [desc(t.createdAt)],
+				orderBy: { createdAt: 'desc' },
 				limit: pageSize,
 				offset: offset
 			});
 
 			return {
 				properties: props,
-				total: totalCount.length,
+				total: propertiesList.length,
 				page,
 				pageSize,
-				totalPages: Math.ceil(totalCount.length / pageSize)
+				totalPages: Math.ceil(propertiesList.length / pageSize)
 			};
 		} catch (e) {
 			console.error(e);
@@ -106,14 +111,8 @@ export const getProperty = query(z.string(), async (id) => {
 	try {
 		const property = await db.query.properties.findFirst({
 			where: {
-				AND: [
-					{
-						id: { eq: id }
-					},
-					{
-						deletedAt: { isNull: true }
-					}
-				]
+				id,
+				deletedAt: { isNull: true }
 			},
 			with: {
 				rooms: true,
@@ -241,3 +240,39 @@ export const deleteProperty = form(z.object({ id: z.string() }), async ({ id }) 
 		throw error(500, 'Failed to delete property');
 	}
 });
+
+export const updatePropertyStatus = command(
+	z.object({
+		id: z.string(),
+		status: z.enum(['draft', 'published']),
+		filterProps: z
+			.object({
+				searchTerm: z.string().optional(),
+				page: z.number().optional(),
+				pageSize: z.number().optional()
+			})
+			.optional()
+	}),
+	async ({ id, status, filterProps }) => {
+		const { sessionUser } = getSession();
+		if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
+			throw error(403, 'Forbidden');
+		}
+
+		try {
+			await db
+				.update(properties)
+				.set({
+					status,
+					updatedAt: new Date()
+				})
+				.where(eq(properties.id, id));
+
+			await getProperties({ ...filterProps }).refresh();
+			return { success: true };
+		} catch (e) {
+			console.error(e);
+			throw error(500, 'Failed to update property status');
+		}
+	}
+);

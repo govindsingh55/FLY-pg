@@ -54,7 +54,8 @@ export const propertySchema = z.object({
 		.optional(),
 	isFoodServiceAvailable: z.boolean().default(false),
 	foodMenu: z.string().optional(), // URL
-	bookingCharge: z.union([z.string(), z.number()]).pipe(z.coerce.number()).default(0)
+	bookingCharge: z.union([z.string(), z.number()]).pipe(z.coerce.number()).default(0),
+	status: z.enum(['draft', 'published']).default('draft')
 });
 
 export type PropertySchema = z.infer<typeof propertySchema>;

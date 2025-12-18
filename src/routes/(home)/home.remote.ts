@@ -8,19 +8,19 @@ export const getHomeData = query(async () => {
 	const propertiesList = await db.query.properties.findMany({
 		where: {
 			deletedAt: { isNull: true },
-			status: { eq: 'published' }
+			status: 'published'
 		},
 		with: {
 			rooms: {
 				where: {
 					deletedAt: { isNull: true },
-					status: { eq: 'available' }
+					status: 'available'
 				}
 			},
 			foodMenuItems: {
 				where: {
 					deletedAt: { isNull: true },
-					isAvailable: { eq: true }
+					isAvailable: true
 				}
 			}
 		}
@@ -46,21 +46,21 @@ export const getHomeData = query(async () => {
 export const getPropertyById = query(z.string().min(1).max(255), async (id: string) => {
 	const property = await db.query.properties.findFirst({
 		where: {
-			id: { eq: id },
+			id,
 			deletedAt: { isNull: true },
-			status: { eq: 'published' }
+			status: 'published'
 		},
 		with: {
 			rooms: {
 				where: {
 					deletedAt: { isNull: true },
-					status: { eq: 'available' }
+					status: 'available'
 				}
 			},
 			foodMenuItems: {
 				where: {
 					deletedAt: { isNull: true },
-					isAvailable: { eq: true }
+					isAvailable: true
 				}
 			}
 		}

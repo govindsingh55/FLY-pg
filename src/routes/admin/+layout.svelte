@@ -1,22 +1,22 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import ThemeToggle from '$lib/components/theme-toggle.svelte';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar';
-	import ThemeToggle from '$lib/components/theme-toggle.svelte';
 	import {
+		Briefcase,
 		Building,
 		Calendar,
+		ClipboardList,
 		CreditCard,
 		Home,
+		ImageIcon,
 		LayoutDashboard,
 		LogOut,
 		Menu,
-		Users,
-		ClipboardList,
-		Briefcase,
 		Settings,
-		UserCog
+		UserCog,
+		Users
 	} from 'lucide-svelte';
 
 	import type { LayoutData } from './$types';
@@ -57,6 +57,12 @@
 		{ title: 'Payments', href: '/admin/payments', icon: CreditCard, roles: ['admin', 'manager'] }, // Assume limited
 		{ title: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
 		{ title: 'Assignments', href: '/admin/assignments', icon: ClipboardList, roles: ['admin'] },
+		{
+			title: 'Media',
+			href: '/admin/media',
+			icon: ImageIcon,
+			roles: ['admin', 'manager']
+		},
 		{ title: 'Settings', href: '/admin/settings', icon: Settings, roles: ['admin'] }
 	];
 
@@ -88,12 +94,14 @@
 						{#each navItems as item}
 							{@const Icon = item.icon}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={isActive(item.href)}>
-									<a href={item.href} class="flex items-center gap-2 w-full">
-										<Icon class="h-4 w-4" />
-										<span>{item.title}</span>
-									</a>
-								</Sidebar.MenuButton>
+								<div class="flex items-center justify-between w-full">
+									<Sidebar.MenuButton isActive={isActive(item.href)} class="grow">
+										<a href={item.href} class="flex items-center gap-2 w-full">
+											<Icon class="h-4 w-4" />
+											<span>{item.title}</span>
+										</a>
+									</Sidebar.MenuButton>
+								</div>
 							</Sidebar.MenuItem>
 						{/each}
 					</Sidebar.Menu>
@@ -146,6 +154,8 @@
 					Staff Management
 				{:else if $page.url.pathname.includes('assignments')}
 					Assignments
+				{:else if $page.url.pathname.includes('media')}
+					Media Management
 				{:else if $page.url.pathname.includes('settings')}
 					System Settings
 				{/if}

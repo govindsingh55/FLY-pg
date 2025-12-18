@@ -7,8 +7,9 @@
 	import * as Table from '$lib/components/ui/table';
 	import { Plus, Search } from 'lucide-svelte';
 	import { Debounced } from 'runed';
-	import { getProperties } from './properties.remote';
+	import { getProperties, updatePropertyStatus } from './properties.remote';
 	import PropertyForm from './_components/property-form.svelte';
+	import { toast } from 'svelte-sonner';
 
 	let searchTerm = $state('');
 	let currentPage = $state(1);
@@ -62,6 +63,7 @@
 							<Table.Head>Name</Table.Head>
 							<Table.Head>Location</Table.Head>
 							<Table.Head>Total Rooms</Table.Head>
+							<Table.Head>Status</Table.Head>
 							<Table.Head class="text-right">Actions</Table.Head>
 						</Table.Row>
 					</Table.Header>
@@ -75,6 +77,36 @@
 									</div>
 								</Table.Cell>
 								<Table.Cell>{prop.rooms?.length ?? 0}</Table.Cell>
+								<Table.Cell>
+									<Select.Root
+										type="single"
+										value={prop.status ?? undefined}
+										onValueChange={async (val) => {
+											try {
+												await updatePropertyStatus({
+													id: prop.id,
+													status: val as 'draft' | 'published',
+													filterProps: {
+														searchTerm: debouncedSearchTerm.current,
+														page: currentPage,
+														pageSize: pageSize
+													}
+												});
+												toast.success('Status updated');
+											} catch (e: any) {
+												toast.error(e.message || 'Failed to update status');
+											}
+										}}
+									>
+										<Select.Trigger class="w-[120px] h-8 text-xs capitalize">
+											{prop.status}
+										</Select.Trigger>
+										<Select.Content>
+											<Select.Item value="draft" label="Draft">Draft</Select.Item>
+											<Select.Item value="published" label="Published">Published</Select.Item>
+										</Select.Content>
+									</Select.Root>
+								</Table.Cell>
 								<Table.Cell class="text-right">
 									<Button variant="ghost" size="sm" href="/admin/properties/{prop.id}">Edit</Button>
 								</Table.Cell>

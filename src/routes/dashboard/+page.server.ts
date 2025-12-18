@@ -6,23 +6,19 @@ export const load = async ({ parent }) => {
 	try {
 		// Find the customer profile linked to this user
 		const customer = await db.query.customers.findFirst({
-			where: {
-				userId: user.id
-			},
+			where: { userId: user.id },
 			with: {
 				bookings: {
-					where: {
-						status: {
-							ne: 'cancelled'
-						}
-					},
+					where: { status: { ne: 'cancelled' } },
 					with: {
 						property: true,
 						room: true
 					}
 				},
 				payments: {
-					orderBy: (payments, { desc }) => [desc(payments.paymentDate)],
+					orderBy: {
+						paymentDate: 'desc'
+					},
 					limit: 5
 				},
 				tickets: true // Maybe recent tickets?

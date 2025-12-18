@@ -84,7 +84,8 @@ export const getDashboardStats = query(async () => {
 			// Fetch relevant payments for revenue calc (paid & rent)
 			db.query.payments.findMany({
 				where: {
-					AND: [{ status: 'paid' }, { type: 'rent' }]
+					status: 'paid',
+					type: 'rent'
 				},
 				orderBy: {
 					createdAt: 'desc'

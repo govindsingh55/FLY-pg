@@ -49,63 +49,62 @@ export const getVisits = query(
 			}
 
 			// Get total count
-			const totalCount = await db.query.visitBookings.findMany({
+			const resultsList = await db.query.visitBookings.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						sessionUser.role == 'admin'
-							? {}
-							: { propertyId: { in: allowedPropertyIds as string[] } },
-						searchTerm
-							? {
-									OR: [
-										{ property: { name: { like: `%${searchTerm}%` } } },
-										{ customer: { name: { like: `%${searchTerm}%` } } }
-									]
-								}
-							: {},
-						dateFrom ? { visitDate: { gte: new Date(dateFrom) } } : {},
-						dateTo ? { visitDate: { lte: new Date(dateTo) } } : {}
-					]
-				}
+					deletedAt: { isNull: true },
+					...(sessionUser.role === 'admin'
+						? {}
+						: { propertyId: { in: allowedPropertyIds as string[] } }),
+					...(searchTerm
+						? {
+								OR: [
+									{ property: { name: { like: `%${searchTerm}%` } } },
+									{ customer: { name: { like: `%${searchTerm}%` } } }
+								]
+							}
+						: {}),
+					...(dateFrom ? { visitDate: { gte: new Date(dateFrom) } } : {}),
+					...(dateTo ? { visitDate: { lte: new Date(dateTo) } } : {})
+				},
+				columns: { id: true }
 			});
 
 			// Get paginated results
 			const offset = (page - 1) * pageSize;
 			const visits = await db.query.visitBookings.findMany({
 				where: {
-					AND: [
-						{ deletedAt: { isNull: true } },
-						sessionUser.role == 'admin'
-							? {}
-							: { propertyId: { in: allowedPropertyIds as string[] } },
-						searchTerm
-							? {
-									OR: [
-										{ property: { name: { like: `%${searchTerm}%` } } },
-										{ customer: { name: { like: `%${searchTerm}%` } } }
-									]
-								}
-							: {},
-						dateFrom ? { visitDate: { gte: new Date(dateFrom) } } : {},
-						dateTo ? { visitDate: { lte: new Date(dateTo) } } : {}
-					]
+					deletedAt: { isNull: true },
+					...(sessionUser.role === 'admin'
+						? {}
+						: { propertyId: { in: allowedPropertyIds as string[] } }),
+					...(searchTerm
+						? {
+								OR: [
+									{ property: { name: { like: `%${searchTerm}%` } } },
+									{ customer: { name: { like: `%${searchTerm}%` } } }
+								]
+							}
+						: {}),
+					...(dateFrom ? { visitDate: { gte: new Date(dateFrom) } } : {}),
+					...(dateTo ? { visitDate: { lte: new Date(dateTo) } } : {})
 				},
 				with: {
 					property: true,
 					customer: true
 				},
-				orderBy: (t, { desc }) => [desc(t.visitDate)],
+				orderBy: {
+					visitDate: 'desc'
+				},
 				limit: pageSize,
 				offset: offset
 			});
 
 			return {
 				visits,
-				total: totalCount.length,
+				total: resultsList.length,
 				page,
 				pageSize,
-				totalPages: Math.ceil(totalCount.length / pageSize)
+				totalPages: Math.ceil(resultsList.length / pageSize)
 			};
 		} catch (e) {
 			console.error(e);

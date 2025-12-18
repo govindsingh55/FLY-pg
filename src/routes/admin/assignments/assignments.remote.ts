@@ -20,7 +20,10 @@ export const getAssignmentsData = query(async () => {
 	try {
 		// Fetch Property Managers
 		const managersList = await db.query.user.findMany({
-			where: (t, { and, eq, isNull }) => and(eq(t.role, 'property_manager'), isNull(t.deletedAt)),
+			where: {
+				role: 'property_manager',
+				deletedAt: { isNull: true }
+			},
 			with: {
 				propertyManagerAssignments: {
 					with: { property: true }
@@ -30,7 +33,7 @@ export const getAssignmentsData = query(async () => {
 
 		// Fetch Staff
 		const staffList = await db.query.staffProfiles.findMany({
-			where: (t, { isNull }) => isNull(t.deletedAt),
+			where: { deletedAt: { isNull: true } },
 			with: {
 				user: true,
 				assignments: {
@@ -41,7 +44,7 @@ export const getAssignmentsData = query(async () => {
 
 		// Fetch Properties
 		const propertiesList = await db.query.properties.findMany({
-			where: (t, { isNull }) => isNull(t.deletedAt)
+			where: { deletedAt: { isNull: true } }
 		});
 
 		return {
@@ -81,7 +84,7 @@ export const assignManager = form(
 		if (sessionUser.role !== 'admin') throw error(403, 'Forbidden');
 
 		const exists = await db.query.propertyManagerAssignments.findFirst({
-			where: (t, { and, eq }) => and(eq(t.userId, userId), eq(t.propertyId, propertyId))
+			where: { userId, propertyId }
 		});
 
 		if (exists) throw error(400, 'Already assigned');
@@ -119,8 +122,7 @@ export const assignStaff = form(
 		if (sessionUser.role !== 'admin') throw error(403, 'Forbidden');
 
 		const exists = await db.query.staffAssignments.findFirst({
-			where: (t, { and, eq }) =>
-				and(eq(t.staffProfileId, staffProfileId), eq(t.propertyId, propertyId))
+			where: { staffProfileId, propertyId }
 		});
 
 		if (exists) throw error(400, 'Already assigned');
