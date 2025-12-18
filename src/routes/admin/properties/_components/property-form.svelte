@@ -13,7 +13,9 @@
 
 	let { open = $bindable(false) } = $props<{ open: boolean }>();
 
-	let amenitiesPromise = $derived(open ? getAmenities() : Promise.resolve({ amenities: [] }));
+	let amenitiesPromise = $derived(
+		open ? getAmenities({ pageSize: 1000 }) : Promise.resolve({ amenities: [] as any[], total: 0 })
+	);
 	let selectedAmenities = $state<string[]>([]);
 	let selectedImages = $state<string[]>([]);
 	let selectedStatus = $state('draft');

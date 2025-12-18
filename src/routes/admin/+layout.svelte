@@ -12,6 +12,7 @@
 		Home,
 		ImageIcon,
 		LayoutDashboard,
+		List,
 		LogOut,
 		Menu,
 		Settings,
@@ -23,51 +24,82 @@
 
 	let { children, data }: { children: any; data: LayoutData } = $props();
 
-	const allNavItems = [
+	const allNavGroups = [
 		{
-			title: 'Dashboard',
-			href: '/admin',
-			icon: LayoutDashboard,
-			roles: ['admin', 'manager', 'property_manager', 'staff']
+			label: 'System',
+			items: [
+				{
+					title: 'Dashboard',
+					href: '/admin',
+					icon: LayoutDashboard,
+					roles: ['admin', 'manager', 'property_manager', 'staff']
+				},
+				{ title: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
+				{ title: 'Assignments', href: '/admin/assignments', icon: ClipboardList, roles: ['admin'] },
+				{ title: 'Settings', href: '/admin/settings', icon: Settings, roles: ['admin'] }
+			]
 		},
 		{
-			title: 'Properties',
-			href: '/admin/properties',
-			icon: Building,
-			roles: ['admin', 'manager', 'property_manager', 'staff']
-		}, // Adjusted per permissions
-		{
-			title: 'Customers',
-			href: '/admin/customers',
-			icon: Users,
-			roles: ['admin', 'manager', 'property_manager', 'staff']
+			label: 'Property',
+			items: [
+				{
+					title: 'Properties',
+					href: '/admin/properties',
+					icon: Building,
+					roles: ['admin', 'manager', 'property_manager', 'staff']
+				},
+				{
+					title: 'Amenities',
+					href: '/admin/amenities',
+					icon: List,
+					roles: ['admin', 'manager']
+				},
+				{
+					title: 'Media',
+					href: '/admin/media',
+					icon: ImageIcon,
+					roles: ['admin', 'manager']
+				}
+			]
 		},
 		{
-			title: 'Bookings',
-			href: '/admin/bookings',
-			icon: Calendar,
-			roles: ['admin', 'manager', 'property_manager', 'staff']
-		},
-		{
-			title: 'Property Visits',
-			href: '/admin/visits',
-			icon: Briefcase,
-			roles: ['admin', 'manager', 'property_manager', 'staff']
-		},
-		{ title: 'Payments', href: '/admin/payments', icon: CreditCard, roles: ['admin', 'manager'] }, // Assume limited
-		{ title: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
-		{ title: 'Assignments', href: '/admin/assignments', icon: ClipboardList, roles: ['admin'] },
-		{
-			title: 'Media',
-			href: '/admin/media',
-			icon: ImageIcon,
-			roles: ['admin', 'manager']
-		},
-		{ title: 'Settings', href: '/admin/settings', icon: Settings, roles: ['admin'] }
+			label: 'Customer',
+			items: [
+				{
+					title: 'Customers',
+					href: '/admin/customers',
+					icon: Users,
+					roles: ['admin', 'manager', 'property_manager', 'staff']
+				},
+				{
+					title: 'Bookings',
+					href: '/admin/bookings',
+					icon: Calendar,
+					roles: ['admin', 'manager', 'property_manager', 'staff']
+				},
+				{
+					title: 'Property Visits',
+					href: '/admin/visits',
+					icon: Briefcase,
+					roles: ['admin', 'manager', 'property_manager', 'staff']
+				},
+				{
+					title: 'Payments',
+					href: '/admin/payments',
+					icon: CreditCard,
+					roles: ['admin', 'manager']
+				}
+			]
+		}
 	];
 
 	// Filter items based on user role
-	const navItems = allNavItems.filter((item) => item.roles.includes(data.user?.role ?? ''));
+	const navGroups = allNavGroups
+		.map((group) => ({
+			...group,
+			items: group.items.filter((item) => item.roles.includes(data.user?.role ?? ''))
+		}))
+		.filter((group) => group.items.length > 0);
 
 	function isActive(href: string): boolean {
 		if (href === '/admin') {
@@ -88,25 +120,28 @@
 		</Sidebar.Header>
 
 		<Sidebar.Content>
-			<Sidebar.Group>
-				<Sidebar.GroupContent>
-					<Sidebar.Menu>
-						{#each navItems as item}
-							{@const Icon = item.icon}
-							<Sidebar.MenuItem>
-								<div class="flex items-center justify-between w-full">
-									<Sidebar.MenuButton isActive={isActive(item.href)} class="grow">
-										<a href={item.href} class="flex items-center gap-2 w-full">
-											<Icon class="h-4 w-4" />
-											<span>{item.title}</span>
-										</a>
-									</Sidebar.MenuButton>
-								</div>
-							</Sidebar.MenuItem>
-						{/each}
-					</Sidebar.Menu>
-				</Sidebar.GroupContent>
-			</Sidebar.Group>
+			{#each navGroups as group}
+				<Sidebar.Group>
+					<Sidebar.GroupLabel>{group.label}</Sidebar.GroupLabel>
+					<Sidebar.GroupContent>
+						<Sidebar.Menu>
+							{#each group.items as item}
+								{@const Icon = item.icon}
+								<Sidebar.MenuItem>
+									<div class="flex items-center justify-between w-full">
+										<Sidebar.MenuButton isActive={isActive(item.href)} class="grow">
+											<a href={item.href} class="flex items-center gap-2 w-full">
+												<Icon class="h-4 w-4" />
+												<span>{item.title}</span>
+											</a>
+										</Sidebar.MenuButton>
+									</div>
+								</Sidebar.MenuItem>
+							{/each}
+						</Sidebar.Menu>
+					</Sidebar.GroupContent>
+				</Sidebar.Group>
+			{/each}
 		</Sidebar.Content>
 
 		<Sidebar.Footer>
@@ -156,6 +191,8 @@
 					Assignments
 				{:else if $page.url.pathname.includes('media')}
 					Media Management
+				{:else if $page.url.pathname.includes('amenities')}
+					Amenities
 				{:else if $page.url.pathname.includes('settings')}
 					System Settings
 				{/if}

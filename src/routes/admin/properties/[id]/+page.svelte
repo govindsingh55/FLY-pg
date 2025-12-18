@@ -25,7 +25,7 @@
 
 	let id = $derived(page.params.id);
 	let dataPromise = $derived(getProperty(id as string));
-	let amenitiesPromise = $derived(getAmenities());
+	let amenitiesPromise = $derived(getAmenities({ pageSize: 1000 }));
 
 	let roomSheetOpen = $state(false);
 	let selectedRoom = $state<any>(null); // Using any or specific type if available
