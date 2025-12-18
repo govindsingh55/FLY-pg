@@ -16,11 +16,14 @@
 		LogOut,
 		Menu,
 		Settings,
+		Ticket,
 		UserCog,
 		Users
 	} from 'lucide-svelte';
 
 	import type { LayoutData } from './$types';
+	import { authClient } from '$lib/auth-client';
+	import { goto } from '$app/navigation';
 
 	let { children, data }: { children: any; data: LayoutData } = $props();
 
@@ -88,6 +91,12 @@
 					href: '/admin/payments',
 					icon: CreditCard,
 					roles: ['admin', 'manager']
+				},
+				{
+					title: 'Tickets',
+					href: '/admin/tickets',
+					icon: Ticket,
+					roles: ['admin', 'manager', 'property_manager', 'staff']
 				}
 			]
 		}
@@ -156,12 +165,13 @@
 					</div>
 				</Sidebar.MenuItem>
 				<Sidebar.MenuItem>
-					<form method="POST" action="/logout">
-						<Sidebar.MenuButton class="w-full flex items-center gap-2" type="submit">
-							<LogOut class="h-4 w-4" />
-							<span>Logout</span>
-						</Sidebar.MenuButton>
-					</form>
+					<Sidebar.MenuButton
+						class="w-full flex items-center gap-2"
+						onclick={() => authClient.signOut().then(() => goto('/login'))}
+					>
+						<LogOut class="h-4 w-4" />
+						<span>Logout</span>
+					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
 			</Sidebar.Menu>
 		</Sidebar.Footer>
@@ -193,6 +203,8 @@
 					Media Management
 				{:else if $page.url.pathname.includes('amenities')}
 					Amenities
+				{:else if $page.url.pathname.includes('tickets')}
+					Support Tickets
 				{:else if $page.url.pathname.includes('settings')}
 					System Settings
 				{/if}

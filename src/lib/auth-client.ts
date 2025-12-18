@@ -1,9 +1,10 @@
 import { createAuthClient } from 'better-auth/svelte';
 import { adminClient } from 'better-auth/client/plugins';
 import { ac, adminRole, managerRole, staffRole, customerRole } from '$lib/permissions';
+import { browser } from '$app/environment';
 
 export const authClient = createAuthClient({
-	baseURL: 'http://localhost:5173',
+	baseURL: browser ? window.location.origin : undefined,
 	plugins: [
 		adminClient({
 			ac,

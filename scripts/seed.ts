@@ -10,6 +10,7 @@ import {
 	bookings,
 	payments,
 	tickets,
+	ticketMessages,
 	staffProfiles,
 	propertyManagerAssignments,
 	visitBookings,
@@ -38,6 +39,7 @@ async function seed() {
 		await db.delete(staffProfiles);
 		// Clear existing data first (including auth tables)
 		console.log('🧹 Clearing existing data...');
+		await db.delete(ticketMessages);
 		await db.delete(tickets);
 		await db.delete(payments);
 		await db.delete(bookings);
@@ -590,30 +592,62 @@ async function seed() {
 		console.log('✅ Payments created');
 
 		// Create tickets
-		console.log('Creating tickets...');
+		console.log('Creating tickets and messages...');
+		const ticket1Id = crypto.randomUUID();
+		const ticket2Id = crypto.randomUUID();
+
 		await db.insert(tickets).values([
 			{
-				id: crypto.randomUUID(),
+				id: ticket1Id,
+				subject: 'Water Leakage',
 				customerId: customer1Id,
+				propertyId: property1Id,
 				roomId: room1Id,
 				type: 'plumbing',
-				description:
-					'Leaking tap in bathroom\n\nThe tap has been leaking for 2 days now. Please fix it soon.',
+				description: 'Leaking tap in bathroom. The tap has been leaking for 2 days now.',
 				status: 'open',
 				priority: 'high',
+				assignedTo: staffUser2Id, // Janitor
 				createdAt: now,
 				updatedAt: now
 			},
 			{
-				id: crypto.randomUUID(),
+				id: ticket2Id,
+				subject: 'Slow WiFi',
 				customerId: customer2Id,
+				propertyId: property2Id,
 				roomId: room3Id,
 				type: 'wifi',
-				description: 'WiFi not working\n\nInternet connection is very slow since yesterday.',
+				description: 'Internet connection is very slow since yesterday.',
 				status: 'in_progress',
 				priority: 'medium',
 				createdAt: oneMonthAgo,
 				updatedAt: now
+			}
+		]);
+
+		// Create sample messages
+		await db.insert(ticketMessages).values([
+			{
+				id: crypto.randomUUID(),
+				ticketId: ticket1Id,
+				senderId: customerUser1Id!,
+				content: 'When will someone come to fix it?',
+				createdAt: new Date(now.getTime() + 1000 * 60 * 30) // 30 mins later
+			},
+			{
+				id: crypto.randomUUID(),
+				ticketId: ticket2Id,
+				senderId: customerUser2Id!,
+				content: 'I have an important meeting tomorrow, please fix ASAP.',
+				createdAt: new Date(oneMonthAgo.getTime() + 1000 * 60 * 60) // 1 hour later
+			},
+			{
+				id: crypto.randomUUID(),
+				ticketId: ticket2Id,
+				senderId: staffUser1Id!, // Someone replied
+				content: 'We are looking into it. A technician will visit tomorrow morning.',
+				createdAt: new Date(oneMonthAgo.getTime() + 1000 * 60 * 60 * 2) // 2 hours later
 			}
 		]);
 

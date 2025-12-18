@@ -7,7 +7,7 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { toast } from 'svelte-sonner';
-	import { createTicket } from '../tickets.remote';
+	import { createTicket } from '../../../admin/tickets/tickets.remote';
 
 	let { open = $bindable(false) } = $props<{
 		open: boolean;

@@ -14,6 +14,8 @@
 		Ticket,
 		Briefcase
 	} from 'lucide-svelte';
+	import { authClient } from '$lib/auth-client.js';
+	import { goto } from '$app/navigation';
 
 	let { children, data } = $props();
 
@@ -72,12 +74,13 @@
 					</div>
 				</Sidebar.MenuItem>
 				<Sidebar.MenuItem>
-					<form method="POST" action="/logout">
-						<Sidebar.MenuButton class="w-full flex items-center gap-2" type="submit">
-							<LogOut class="h-4 w-4" />
-							<span>Logout</span>
-						</Sidebar.MenuButton>
-					</form>
+					<Sidebar.MenuButton
+						class="w-full flex items-center gap-2"
+						onclick={() => authClient.signOut().then(() => goto('/login'))}
+					>
+						<LogOut class="h-4 w-4" />
+						<span>Logout</span>
+					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
 			</Sidebar.Menu>
 		</Sidebar.Footer>

@@ -258,15 +258,32 @@ export const tickets = sqliteTable('tickets', {
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
 	customerId: text('customer_id').references(() => customers.id),
+	propertyId: text('property_id').references(() => properties.id),
 	roomId: text('room_id').references(() => rooms.id),
+	subject: text('subject').notNull(),
 	type: text('type', { enum: ['electricity', 'plumbing', 'furniture', 'wifi', 'other'] }).notNull(),
 	description: text('description').notNull(),
 	status: text('status', { enum: ['open', 'in_progress', 'resolved', 'closed'] }).default('open'),
 	priority: text('priority', { enum: ['low', 'medium', 'high'] }).default('medium'),
+	assignedTo: text('assigned_to').references(() => user.id),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
 	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 	deletedBy: text('deleted_by')
+});
+
+export const ticketMessages = sqliteTable('ticket_messages', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	ticketId: text('ticket_id')
+		.notNull()
+		.references(() => tickets.id, { onDelete: 'cascade' }),
+	senderId: text('sender_id')
+		.notNull()
+		.references(() => user.id),
+	content: text('content').notNull(),
+	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`)
 });
 
 export const notifications = sqliteTable('notifications', {
@@ -406,7 +423,8 @@ export const relationsDef = defineRelations(
 		foodMenuItems,
 		media,
 		amenities,
-		propertyAmenities
+		propertyAmenities,
+		ticketMessages
 	},
 	(r) => ({
 		user: {
@@ -558,9 +576,31 @@ export const relationsDef = defineRelations(
 				from: r.tickets.customerId,
 				to: r.customers.id
 			}),
+			property: r.one.properties({
+				from: r.tickets.propertyId,
+				to: r.properties.id
+			}),
 			room: r.one.rooms({
 				from: r.tickets.roomId,
 				to: r.rooms.id
+			}),
+			assignedStaff: r.one.user({
+				from: r.tickets.assignedTo,
+				to: r.user.id
+			}),
+			messages: r.many.ticketMessages({
+				from: r.tickets.id,
+				to: r.ticketMessages.ticketId
+			})
+		},
+		ticketMessages: {
+			ticket: r.one.tickets({
+				from: r.ticketMessages.ticketId,
+				to: r.tickets.id
+			}),
+			sender: r.one.user({
+				from: r.ticketMessages.senderId,
+				to: r.user.id
 			})
 		},
 		notifications: {

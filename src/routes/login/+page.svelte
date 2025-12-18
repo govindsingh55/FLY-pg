@@ -10,11 +10,14 @@
 		CardDescription,
 		CardFooter
 	} from '$lib/components/ui/card';
+	import * as InputGroup from '$lib/components/ui/input-group';
 	import { authClient } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
+	import { Eye, EyeOff } from 'lucide-svelte';
 
 	let email = $state('');
 	let password = $state('');
+	let showPassword = $state(false);
 	let error = $state('');
 	let loading = $state(false);
 
@@ -75,17 +78,33 @@
 
 				<div class="space-y-2">
 					<Label for="password">Password</Label>
-					<Input
-						id="password"
-						type="password"
-						bind:value={password}
-						placeholder="••••••••"
-						required
-					/>
+					<InputGroup.Root>
+						<InputGroup.Input
+							id="password"
+							type={showPassword ? 'text' : 'password'}
+							bind:value={password}
+							placeholder="••••••••"
+							required
+						/>
+						<InputGroup.Addon align="inline-end">
+							<InputGroup.Button
+								size="icon-sm"
+								onclick={() => (showPassword = !showPassword)}
+								title={showPassword ? 'Hide password' : 'Show password'}
+								class="cursor-pointer"
+							>
+								{#if showPassword}
+									<EyeOff class="size-4" />
+								{:else}
+									<Eye class="size-4" />
+								{/if}
+							</InputGroup.Button>
+						</InputGroup.Addon>
+					</InputGroup.Root>
 				</div>
 			</CardContent>
 			<CardFooter class="flex flex-col space-y-4 mt-4">
-				<Button type="submit" class="w-full" disabled={loading}>
+				<Button type="submit" class="w-full cursor-pointer" disabled={loading}>
 					{loading ? 'Logging in...' : 'Login'}
 				</Button>
 				<p class="text-center text-sm text-muted-foreground">
