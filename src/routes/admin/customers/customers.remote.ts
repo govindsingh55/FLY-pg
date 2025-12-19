@@ -140,7 +140,7 @@ export const getCustomer = query(z.string(), async (id) => {
 				user: true,
 				bookings: {
 					orderBy: { createdAt: 'desc' },
-					with: { property: true, room: true }
+					with: { property: true, room: true, contract: true }
 				}
 			}
 		});

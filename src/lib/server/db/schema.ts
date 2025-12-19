@@ -211,22 +211,23 @@ export const bookings = sqliteTable('bookings', {
 		.$defaultFn(() => crypto.randomUUID()),
 	propertyId: text('property_id')
 		.notNull()
-		.references(() => properties.id),
+		.references(() => properties.id, { onDelete: 'cascade' }),
 	roomId: text('room_id')
 		.notNull()
-		.references(() => rooms.id),
+		.references(() => rooms.id, { onDelete: 'cascade' }),
 	customerId: text('customer_id')
 		.notNull()
-		.references(() => customers.id),
-	startDate: integer('start_date', { mode: 'timestamp' }).notNull(),
-	endDate: integer('end_date', { mode: 'timestamp' }), // Nullable for indefinite? Or enforce contract end
-	rentAmount: integer('rent_amount').notNull(),
-	securityDeposit: integer('security_deposit'),
-	includeFood: integer('include_food', { mode: 'boolean' }).default(false),
-	status: text('status', { enum: ['pending', 'active', 'completed', 'cancelled'] }).default(
-		'pending'
-	),
-	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+		.references(() => customers.id, { onDelete: 'cascade' }),
+	status: text('status', { enum: ['pending', 'confirmed', 'cancelled', 'completed'] })
+		.default('pending')
+		.notNull(),
+	bookingCharge: integer('booking_charge').notNull().default(0),
+	paymentStatus: text('payment_status', { enum: ['pending', 'paid', 'refunded'] })
+		.default('pending')
+		.notNull(),
+	createdAt: integer('created_at', { mode: 'timestamp' })
+		.default(sql`(unixepoch())`)
+		.notNull(),
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
 	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 	deletedBy: text('deleted_by')
@@ -247,6 +248,7 @@ export const payments = sqliteTable('payments', {
 	transactionId: text('transaction_id'),
 	paymentMethod: text('payment_method'),
 	paymentDate: integer('payment_date', { mode: 'timestamp' }),
+	contractId: text('contract_id').references(() => contracts.id),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
 	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
@@ -400,6 +402,48 @@ export const foodMenuItems = sqliteTable('food_menu_items', {
 	deletedBy: text('deleted_by')
 });
 
+export const contracts = sqliteTable('contracts', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	customerId: text('customer_id')
+		.notNull()
+		.references(() => customers.id, { onDelete: 'cascade' }),
+	propertyId: text('property_id')
+		.notNull()
+		.references(() => properties.id, { onDelete: 'cascade' }),
+	roomId: text('room_id')
+		.notNull()
+		.references(() => rooms.id, { onDelete: 'cascade' }),
+	bookingId: text('booking_id')
+		.unique()
+		.references(() => bookings.id, { onDelete: 'cascade' }),
+	contractType: text('contract_type', {
+		enum: ['rent', 'lease', 'other']
+	})
+		.default('rent')
+		.notNull(),
+	startDate: integer('start_date', { mode: 'timestamp' }).notNull(),
+	endDate: integer('end_date', { mode: 'timestamp' }), // Nullable for indefinite or month-to-month
+	rentAmount: integer('rent_amount').notNull(),
+	securityDeposit: integer('security_deposit'),
+	includeFood: integer('include_food', { mode: 'boolean' }).default(false),
+	status: text('status', { enum: ['active', 'expired', 'terminated'] })
+		.default('active')
+		.notNull(),
+	terminationDate: integer('termination_date', { mode: 'timestamp' }),
+	terminationReason: text('termination_reason'),
+	notes: text('notes'),
+	documentUrl: text('document_url'), // Link to the contract document
+	createdBy: text('created_by').references(() => user.id),
+	createdAt: integer('created_at', { mode: 'timestamp' })
+		.default(sql`(unixepoch())`)
+		.notNull(),
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedBy: text('deleted_by')
+});
+
 // --- Relations ---
 
 export const relationsDef = defineRelations(
@@ -424,6 +468,7 @@ export const relationsDef = defineRelations(
 		media,
 		amenities,
 		propertyAmenities,
+		contracts,
 		ticketMessages
 	},
 	(r) => ({
@@ -443,6 +488,10 @@ export const relationsDef = defineRelations(
 			staffProfile: r.one.staffProfiles({
 				from: r.user.id,
 				to: r.staffProfiles.userId
+			}),
+			contracts: r.many.contracts({
+				from: r.user.id,
+				to: r.contracts.createdBy
 			}),
 			propertyManagerAssignments: r.many.propertyManagerAssignments({
 				from: r.user.id,
@@ -544,6 +593,10 @@ export const relationsDef = defineRelations(
 			})
 		},
 		bookings: {
+			customer: r.one.customers({
+				from: r.bookings.customerId,
+				to: r.customers.id
+			}),
 			property: r.one.properties({
 				from: r.bookings.propertyId,
 				to: r.properties.id
@@ -552,13 +605,13 @@ export const relationsDef = defineRelations(
 				from: r.bookings.roomId,
 				to: r.rooms.id
 			}),
-			customer: r.one.customers({
-				from: r.bookings.customerId,
-				to: r.customers.id
-			}),
 			payments: r.many.payments({
 				from: r.bookings.id,
 				to: r.payments.bookingId
+			}),
+			contract: r.one.contracts({
+				from: r.bookings.id,
+				to: r.contracts.bookingId
 			})
 		},
 		payments: {
@@ -569,6 +622,10 @@ export const relationsDef = defineRelations(
 			customer: r.one.customers({
 				from: r.payments.customerId,
 				to: r.customers.id
+			}),
+			contract: r.one.contracts({
+				from: r.payments.contractId,
+				to: r.contracts.id
 			})
 		},
 		tickets: {
@@ -653,6 +710,28 @@ export const relationsDef = defineRelations(
 			property: r.one.properties({
 				from: r.foodMenuItems.propertyId,
 				to: r.properties.id
+			})
+		},
+		contracts: {
+			booking: r.one.bookings({
+				from: r.contracts.bookingId,
+				to: r.bookings.id
+			}),
+			customer: r.one.customers({
+				from: r.contracts.customerId,
+				to: r.customers.id
+			}),
+			property: r.one.properties({
+				from: r.contracts.propertyId,
+				to: r.properties.id
+			}),
+			room: r.one.rooms({
+				from: r.contracts.roomId,
+				to: r.rooms.id
+			}),
+			payments: r.many.payments({
+				from: r.contracts.id,
+				to: r.payments.contractId
 			})
 		}
 	})

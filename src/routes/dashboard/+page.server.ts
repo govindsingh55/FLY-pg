@@ -12,7 +12,8 @@ export const load = async ({ parent }) => {
 					where: { status: { ne: 'cancelled' } },
 					with: {
 						property: true,
-						room: true
+						room: true,
+						contract: true
 					}
 				},
 				payments: {

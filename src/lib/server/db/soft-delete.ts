@@ -12,7 +12,7 @@ export const notDeleted = isNull(schema.properties.deletedAt);
 // A common pattern is:
 // export const notDeleted = (table: any) => isNull(table.deletedAt);
 
-export const notDeletedFilter = () => ({ deletedAt: { isNull: true } });
+export const notDeletedFilter = () => ({ deletedAt: { isNull: true as const } });
 
 /**
  * Returns the object to update for a soft delete.

@@ -11,8 +11,10 @@
 	import { type DateValue } from '@internationalized/date';
 	import { Calendar as CalendarIcon, Plus, Search, X } from 'lucide-svelte';
 	import { Debounced } from 'runed';
+	import { page } from '$app/state';
 	import { getBookings } from '../bookings/bookings.remote';
 	import { getCustomers } from '../customers/customers.remote';
+	import { getContracts } from '../contracts/contracts.remote';
 	import PaymentForm from './_components/payment-form.svelte';
 	import { getPayments } from './payments.remote';
 	import * as Select from '$lib/components/ui/select';
@@ -23,6 +25,9 @@
 	let currentPage = $state(1);
 	let pageSize = $state(10);
 
+	let contractId = $derived(page.url.searchParams.get('contractId'));
+	let bookingId = $derived(page.url.searchParams.get('bookingId'));
+
 	const debouncedSearchTerm = new Debounced(() => searchTerm, 500);
 
 	let paymentsPromise = $derived(
@@ -30,11 +35,15 @@
 			searchTerm: debouncedSearchTerm.current,
 			dateFrom: dateFrom?.toString(),
 			dateTo: dateTo?.toString(),
+			contractId: contractId ?? undefined,
+			bookingId: bookingId ?? undefined,
 			page: currentPage,
 			pageSize: pageSize
 		})
 	);
-	let dependenciesPromise = $derived(Promise.all([getCustomers(), getBookings(undefined)]));
+	let dependenciesPromise = $derived(
+		Promise.all([getCustomers({}), getBookings({}), getContracts({ pageSize: 100 })])
+	);
 
 	let paymentSheetOpen = $state(false);
 	let datePopoverOpen = $state(false);
@@ -127,6 +136,7 @@
 						<Table.Header>
 							<Table.Row>
 								<Table.Head>Date</Table.Head>
+								<Table.Head>Reference</Table.Head>
 								<Table.Head>Customer</Table.Head>
 								<Table.Head>Property / Booking</Table.Head>
 								<Table.Head>Type</Table.Head>
@@ -140,6 +150,25 @@
 								<Table.Row>
 									<Table.Cell>
 										{payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : '-'}
+									</Table.Cell>
+									<Table.Cell>
+										{#if payment.contract}
+											<a
+												href="/admin/contracts/{payment.contract.id}"
+												class="block hover:underline text-blue-600"
+											>
+												<Badge variant="outline">C</Badge> ...{payment.contract.id.slice(0, 8)}
+											</a>
+										{:else if payment.booking}
+											<a
+												href="/admin/bookings/{payment.booking.id}"
+												class="block hover:underline text-blue-600"
+											>
+												<Badge variant="outline">B</Badge> ...{payment.booking.id.slice(0, 8)}
+											</a>
+										{:else}
+											<span class="text-muted-foreground">-</span>
+										{/if}
 									</Table.Cell>
 									<Table.Cell class="font-medium">
 										{payment.customer?.name || 'Unknown'}
@@ -267,10 +296,11 @@
 
 {#await dependenciesPromise}
 	<!-- Loading dependencies silently -->
-{:then [customersResult, bookingsResult]}
+{:then [customersResult, bookingsResult, contractsResult]}
 	<PaymentForm
 		bind:open={paymentSheetOpen}
 		customers={customersResult.customers}
 		bookings={bookingsResult.bookings}
+		contracts={contractsResult.contracts}
 	/>
 {/await}

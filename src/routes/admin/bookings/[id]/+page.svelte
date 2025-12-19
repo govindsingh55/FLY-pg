@@ -89,18 +89,20 @@
 						<div class="flex justify-between">
 							<span class="text-muted-foreground">Dates:</span>
 							<span
-								>{new Date(booking.startDate).toLocaleDateString()} - {booking.endDate
-									? new Date(booking.endDate).toLocaleDateString()
+								>{booking.contract?.startDate
+									? new Date(booking.contract.startDate).toLocaleDateString()
+									: 'N/A'} - {booking.contract?.endDate
+									? new Date(booking.contract.endDate).toLocaleDateString()
 									: 'Ongoing'}</span
 							>
 						</div>
 						<div class="flex justify-between">
 							<span class="text-muted-foreground">Rent:</span>
-							<span>${booking.rentAmount}/mo</span>
+							<span>${booking.contract?.rentAmount ?? 'N/A'}/mo</span>
 						</div>
 						<div class="flex justify-between">
 							<span class="text-muted-foreground">Security Deposit:</span>
-							<span>${booking.securityDeposit ?? 0}</span>
+							<span>${booking.contract?.securityDeposit ?? 0}</span>
 						</div>
 					</CardContent>
 				</Card>
@@ -135,7 +137,9 @@
 			<Card>
 				<CardHeader class="flex flex-row items-center justify-between">
 					<CardTitle>Payments</CardTitle>
-					<!-- Actions to add payment would go here -->
+					<Button variant="outline" size="sm" href="/admin/payments?bookingId={booking.id}">
+						View All in Payments
+					</Button>
 				</CardHeader>
 				<CardContent>
 					<Table.Root>

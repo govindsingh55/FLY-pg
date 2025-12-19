@@ -5,6 +5,10 @@ export const paymentSchema = z.object({
 		.string()
 		.optional()
 		.transform((e) => (e === '' ? undefined : e)), // Can be linked to booking or just customer
+	contractId: z
+		.string()
+		.optional()
+		.transform((e) => (e === '' ? undefined : e)),
 	customerId: z.string().min(1, 'Customer is required'),
 	amount: z
 		.union([z.string(), z.number()])

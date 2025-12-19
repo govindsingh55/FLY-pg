@@ -19,10 +19,12 @@ export const getPayments = query(
 		searchTerm: z.string().optional(),
 		dateFrom: z.string().optional(),
 		dateTo: z.string().optional(),
+		contractId: z.string().optional(),
+		bookingId: z.string().optional(),
 		page: z.number().default(1),
 		pageSize: z.number().default(10)
 	}),
-	async ({ searchTerm, dateFrom, dateTo, page, pageSize }) => {
+	async ({ searchTerm, dateFrom, dateTo, contractId, bookingId, page, pageSize }) => {
 		const { sessionUser } = getSession();
 
 		try {
@@ -69,23 +71,30 @@ export const getPayments = query(
 				}
 			}
 
+			const where = {
+				...(sessionUser.role !== 'admin' ? { customerId: { in: allowedCustomerIds || [] } } : {}),
+				...(contractId ? { contractId: { eq: contractId } } : {}),
+				...(bookingId ? { bookingId: { eq: bookingId } } : {}),
+				...(searchTerm
+					? {
+							OR: [
+								{ customer: { name: { like: `%${searchTerm}%` } } },
+								{ booking: { property: { name: { like: `%${searchTerm}%` } } } },
+								{ booking: { room: { number: { like: `%${searchTerm}%` } } } },
+								{ contractId: { like: `%${searchTerm}%` } },
+								{ bookingId: { like: `%${searchTerm}%` } }
+							]
+						}
+					: {}),
+				...(dateFrom ? { paymentDate: { gte: new Date(dateFrom) } } : {}),
+				...(dateTo ? { paymentDate: { lte: new Date(dateTo) } } : {})
+			};
+
 			const result = await db.query.payments.findMany({
-				where: {
-					...(sessionUser.role !== 'admin' ? { customerId: { in: allowedCustomerIds || [] } } : {}),
-					...(searchTerm
-						? {
-								OR: [
-									{ customer: { name: { like: `%${searchTerm}%` } } },
-									{ booking: { property: { name: { like: `%${searchTerm}%` } } } },
-									{ booking: { room: { number: { like: `%${searchTerm}%` } } } }
-								]
-							}
-						: {}),
-					...(dateFrom ? { paymentDate: { gte: new Date(dateFrom) } } : {}),
-					...(dateTo ? { paymentDate: { lte: new Date(dateTo) } } : {})
-				},
+				where,
 				with: {
 					customer: true,
+					contract: true,
 					booking: {
 						with: {
 							property: true,
@@ -100,20 +109,7 @@ export const getPayments = query(
 
 			// Get total count
 			const resultsList = await db.query.payments.findMany({
-				where: {
-					...(sessionUser.role !== 'admin' ? { customerId: { in: allowedCustomerIds || [] } } : {}),
-					...(searchTerm
-						? {
-								OR: [
-									{ customer: { name: { like: `%${searchTerm}%` } } },
-									{ booking: { property: { name: { like: `%${searchTerm}%` } } } },
-									{ booking: { room: { number: { like: `%${searchTerm}%` } } } }
-								]
-							}
-						: {}),
-					...(dateFrom ? { paymentDate: { gte: new Date(dateFrom) } } : {}),
-					...(dateTo ? { paymentDate: { lte: new Date(dateTo) } } : {})
-				},
+				where,
 				columns: { id: true }
 			});
 

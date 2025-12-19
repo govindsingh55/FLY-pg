@@ -19,7 +19,8 @@ import {
 	foodMenuItems,
 	media,
 	amenities,
-	propertyAmenities
+	propertyAmenities,
+	contracts
 } from '../src/lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 
@@ -41,6 +42,7 @@ async function seed() {
 		console.log('🧹 Clearing existing data...');
 		await db.delete(ticketMessages);
 		await db.delete(tickets);
+		await db.delete(contracts);
 		await db.delete(payments);
 		await db.delete(bookings);
 		await db.delete(customers);
@@ -453,12 +455,8 @@ async function seed() {
 				propertyId: property1Id,
 				roomId: room1Id,
 				customerId: customer1Id,
-				startDate: twoMonthsAgo,
-				endDate: null, // Ongoing
-				rentAmount: 15000,
-				securityDeposit: 15000,
-				includeFood: true,
-				status: 'active',
+				bookingCharge: 1000,
+				status: 'confirmed',
 				createdAt: twoMonthsAgo,
 				updatedAt: new Date()
 			},
@@ -467,18 +465,62 @@ async function seed() {
 				propertyId: property2Id,
 				roomId: room3Id,
 				customerId: customer2Id,
-				startDate: twoMonthsAgo,
-				endDate: null,
-				rentAmount: 8333, // Split 3-way from 25000
-				securityDeposit: 12500,
-				includeFood: false,
-				status: 'active',
+				bookingCharge: 0,
+				status: 'confirmed',
 				createdAt: twoMonthsAgo,
 				updatedAt: new Date()
 			}
 		]);
 
 		console.log('✅ Bookings created');
+
+		// Create Contracts
+		console.log('Creating contracts...');
+		// Create Contracts
+		console.log('Creating contracts...');
+		const [contract1] = await db
+			.insert(contracts)
+			.values([
+				{
+					id: crypto.randomUUID(),
+					customerId: customer1Id,
+					propertyId: property1Id,
+					roomId: room1Id,
+					bookingId: booking1Id,
+					contractType: 'rent',
+					startDate: twoMonthsAgo,
+					rentAmount: 15000,
+					securityDeposit: 15000,
+					includeFood: true,
+					status: 'active',
+					createdAt: twoMonthsAgo,
+					updatedAt: new Date()
+				}
+			])
+			.returning();
+
+		const [contract2] = await db
+			.insert(contracts)
+			.values([
+				{
+					id: crypto.randomUUID(),
+					customerId: customer2Id,
+					propertyId: property2Id,
+					roomId: room3Id,
+					bookingId: booking2Id,
+					contractType: 'rent',
+					startDate: twoMonthsAgo,
+					rentAmount: 8333,
+					securityDeposit: 12500,
+					includeFood: false,
+					status: 'active',
+					createdAt: twoMonthsAgo,
+					updatedAt: new Date()
+				}
+			])
+			.returning();
+
+		console.log('✅ Contracts created');
 
 		// Create Visits
 		console.log('Creating Visits...');
@@ -520,6 +562,7 @@ async function seed() {
 			{
 				id: crypto.randomUUID(),
 				bookingId: booking1Id,
+				contractId: contract1.id,
 				customerId: customer1Id,
 				amount: 15000,
 				type: 'security_deposit',
@@ -534,6 +577,7 @@ async function seed() {
 			{
 				id: crypto.randomUUID(),
 				bookingId: booking1Id,
+				contractId: contract1.id,
 				customerId: customer1Id,
 				amount: 15000,
 				type: 'rent',
@@ -548,6 +592,7 @@ async function seed() {
 			{
 				id: crypto.randomUUID(),
 				bookingId: booking1Id,
+				contractId: contract1.id,
 				customerId: customer1Id,
 				amount: 15000,
 				type: 'rent',
@@ -565,6 +610,21 @@ async function seed() {
 				customerId: customer2Id,
 				amount: 12500,
 				type: 'security_deposit',
+				mode: 'upi',
+				status: 'paid',
+				transactionId: 'TXN003',
+				paymentMethod: 'UPI',
+				paymentDate: now,
+				createdAt: now,
+				updatedAt: now
+			},
+			{
+				id: crypto.randomUUID(),
+				bookingId: booking2Id,
+				contractId: contract2.id,
+				customerId: customer2Id,
+				amount: 12500,
+				type: 'security_deposit',
 				mode: 'cash',
 				status: 'paid',
 				transactionId: 'TXN004',
@@ -576,6 +636,7 @@ async function seed() {
 			{
 				id: crypto.randomUUID(),
 				bookingId: booking2Id,
+				contractId: contract2.id,
 				customerId: customer2Id,
 				amount: 8333,
 				type: 'rent',

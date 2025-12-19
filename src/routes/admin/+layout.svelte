@@ -15,6 +15,7 @@
 		List,
 		LogOut,
 		Menu,
+		ScrollText,
 		Settings,
 		Ticket,
 		UserCog,
@@ -79,6 +80,12 @@
 					href: '/admin/bookings',
 					icon: Calendar,
 					roles: ['admin', 'manager', 'property_manager', 'staff']
+				},
+				{
+					title: 'Contracts',
+					href: '/admin/contracts',
+					icon: ScrollText,
+					roles: ['admin', 'manager']
 				},
 				{
 					title: 'Property Visits',
@@ -191,6 +198,8 @@
 					Customers
 				{:else if $page.url.pathname.includes('bookings')}
 					Bookings
+				{:else if $page.url.pathname.includes('contracts')}
+					Contracts
 				{:else if $page.url.pathname.includes('visits')}
 					Home Visits
 				{:else if $page.url.pathname.includes('payments')}

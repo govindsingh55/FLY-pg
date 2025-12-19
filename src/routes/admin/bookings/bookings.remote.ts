@@ -1,7 +1,7 @@
 import { form, getRequestEvent, query } from '$app/server';
 import { bookingSchema } from '$lib/schemas/booking';
 import { db } from '$lib/server/db';
-import { bookings, properties } from '$lib/server/db/schema';
+import { bookings, contracts, properties } from '$lib/server/db/schema';
 import { softDelete } from '$lib/server/db/soft-delete';
 import { error } from '@sveltejs/kit';
 import { eq, like } from 'drizzle-orm';
@@ -18,12 +18,10 @@ const getSession = () => {
 export const getBookings = query(
 	z.object({
 		searchTerm: z.string().optional(),
-		dateFrom: z.string().optional(),
-		dateTo: z.string().optional(),
 		page: z.number().default(1),
 		pageSize: z.number().default(10)
 	}),
-	async ({ searchTerm, dateFrom, dateTo, page, pageSize }) => {
+	async ({ searchTerm, page, pageSize }) => {
 		const { sessionUser } = getSession();
 
 		try {
@@ -75,9 +73,7 @@ export const getBookings = query(
 										: [])
 								]
 							}
-						: {}),
-					...(dateFrom ? { startDate: { gte: new Date(dateFrom) } } : {}),
-					...(dateTo ? { startDate: { lte: new Date(dateTo) } } : {})
+						: {})
 				},
 				columns: { id: true }
 			});
@@ -99,14 +95,13 @@ export const getBookings = query(
 										: [])
 								]
 							}
-						: {}),
-					...(dateFrom ? { startDate: { gte: new Date(dateFrom) } } : {}),
-					...(dateTo ? { startDate: { lte: new Date(dateTo) } } : {})
+						: {})
 				},
 				with: {
 					property: true,
 					room: true,
-					customer: true
+					customer: true,
+					contract: true
 				},
 				orderBy: { createdAt: 'desc' },
 				limit: pageSize,
@@ -136,6 +131,7 @@ export const getBooking = query(z.string(), async (id) => {
 				property: true,
 				room: true,
 				customer: true,
+				contract: true,
 				payments: {
 					orderBy: (t, { desc }) => [desc(t.createdAt)]
 				}
@@ -171,22 +167,83 @@ export const cancelBooking = form(z.object({ id: z.string() }), async ({ id }) =
 	}
 });
 
-export const createBooking = form(bookingSchema, async (data) => {
+// 1. Loose Schema for Form Input (Input: string/number/boolean)
+// This satisfies RemoteFormInput constraints
+const createBookingFormSchema = z.object({
+	propertyId: z.string().min(1),
+	roomId: z.string().min(1),
+	customerId: z.string().min(1),
+	bookingCharge: z.union([z.string(), z.number()]),
+	status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']).default('pending'),
+	startDate: z.string(),
+	endDate: z.string().optional(),
+	rentAmount: z.union([z.string(), z.number()]),
+	securityDeposit: z.union([z.string(), z.number()]).optional(),
+	includeFood: z.union([z.boolean(), z.string()]).optional()
+});
+
+// 2. Strict Schema for Logic (Input: parsed data from above, Output: typed data)
+const createBookingLogicSchema = z.object({
+	propertyId: z.string(),
+	roomId: z.string(),
+	customerId: z.string(),
+	bookingCharge: z.coerce.number().min(0),
+	status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']),
+	startDate: z.coerce.date(),
+	endDate: z.coerce.date().optional(),
+	rentAmount: z.coerce.number().min(0),
+	securityDeposit: z.coerce.number().default(0),
+	includeFood: z.coerce.boolean().default(false)
+});
+
+export const createBooking = form(createBookingFormSchema, async (formData) => {
 	const { sessionUser } = getSession();
 	if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
 		throw error(403, 'Forbidden');
 	}
 
+	// Double-parse with logic schema to ensure safe types
+	const data = createBookingLogicSchema.parse(formData);
+
 	try {
-		await db.insert(bookings).values({
-			...data
+		await db.transaction(async (tx) => {
+			// 1. Create Booking
+			const [booking] = await tx
+				.insert(bookings)
+				.values({
+					propertyId: data.propertyId,
+					roomId: data.roomId,
+					customerId: data.customerId,
+					bookingCharge: data.bookingCharge,
+					status: data.status,
+					paymentStatus: 'pending' // Default
+				})
+				.returning();
+
+			if (!booking) throw new Error('Failed to insert booking');
+
+			// 2. Create Contract
+			await tx.insert(contracts).values({
+				customerId: data.customerId,
+				propertyId: data.propertyId,
+				roomId: data.roomId,
+				bookingId: booking.id,
+				contractType: 'rent',
+				startDate: data.startDate,
+				endDate: data.endDate || undefined,
+				rentAmount: data.rentAmount,
+				securityDeposit: data.securityDeposit,
+				includeFood: data.includeFood,
+				status: 'active',
+				createdBy: sessionUser.id
+			});
 		});
 
 		await getBookings({}).refresh();
 		return { success: true };
 	} catch (e) {
 		console.error(e);
-		throw error(500, 'Failed to create booking');
+		throw error(500, 'Failed to create booking and contract');
 	}
 });
 
@@ -207,9 +264,7 @@ export const updateBooking = form(updateSchema, async (data) => {
 				propertyId: data.propertyId,
 				roomId: data.roomId,
 				customerId: data.customerId,
-				startDate: data.startDate,
-				endDate: data.endDate,
-				rentAmount: data.rentAmount,
+				bookingCharge: data.bookingCharge,
 				status: data.status,
 				updatedAt: new Date()
 			})

@@ -41,11 +41,15 @@
 						<div class="mt-4 text-sm">
 							<div class="flex justify-between">
 								<span>Rent:</span>
-								<span class="font-medium">${booking.rentAmount}/mo</span>
+								<span class="font-medium">${booking.contract?.rentAmount || 'N/A'}/mo</span>
 							</div>
 							<div class="flex justify-between">
 								<span>Move-in:</span>
-								<span>{new Date(booking.startDate).toLocaleDateString()}</span>
+								<span
+									>{booking.contract?.startDate
+										? new Date(booking.contract.startDate).toLocaleDateString()
+										: 'N/A'}</span
+								>
 							</div>
 						</div>
 					{:else}

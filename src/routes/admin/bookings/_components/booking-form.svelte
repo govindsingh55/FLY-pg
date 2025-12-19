@@ -23,7 +23,6 @@
 		</Sheet.Header>
 
 		<form
-			method="POST"
 			class="space-y-4 py-4"
 			{...createBooking.enhance(async ({ submit }) => {
 				try {
@@ -49,8 +48,10 @@
 						<option value={property.id}>{property.name}</option>
 					{/each}
 				</select>
-				{#if createBooking.fields.propertyId.errors}
-					<p class="text-sm text-destructive">{createBooking.fields.propertyId.errors}</p>
+				{#if createBooking.fields.propertyId.issues()}
+					<p class="text-sm text-destructive">
+						{createBooking.fields.propertyId.issues()?.join(', ')}
+					</p>
 				{/if}
 			</div>
 
@@ -67,8 +68,8 @@
 						<option value={room.id}>{room.number} ({room.type})</option>
 					{/each}
 				</select>
-				{#if createBooking.fields.roomId.errors}
-					<p class="text-sm text-destructive">{createBooking.fields.roomId.errors}</p>
+				{#if createBooking.fields.roomId.issues()}
+					<p class="text-sm text-destructive">{createBooking.fields.roomId.issues()?.join(', ')}</p>
 				{/if}
 			</div>
 
@@ -85,8 +86,10 @@
 						<option value={customer.id}>{customer.name} ({customer.phone})</option>
 					{/each}
 				</select>
-				{#if createBooking.fields.customerId.errors}
-					<p class="text-sm text-destructive">{createBooking.fields.customerId.errors}</p>
+				{#if createBooking.fields.customerId.issues()}
+					<p class="text-sm text-destructive">
+						{createBooking.fields.customerId.issues()?.join(', ')}
+					</p>
 				{/if}
 			</div>
 
@@ -94,15 +97,19 @@
 				<div class="grid gap-2">
 					<Label for="startDate">Start Date</Label>
 					<Input type="date" id="startDate" name="startDate" required />
-					{#if createBooking.fields.startDate.errors}
-						<p class="text-sm text-destructive">{createBooking.fields.startDate.errors}</p>
+					{#if createBooking.fields.startDate.issues()}
+						<p class="text-sm text-destructive">
+							{createBooking.fields.startDate.issues()?.join(', ')}
+						</p>
 					{/if}
 				</div>
 				<div class="grid gap-2">
 					<Label for="endDate">End Date</Label>
 					<Input type="date" id="endDate" name="endDate" />
-					{#if createBooking.fields.endDate.errors}
-						<p class="text-sm text-destructive">{createBooking.fields.endDate.errors}</p>
+					{#if createBooking.fields.endDate.issues()}
+						<p class="text-sm text-destructive">
+							{createBooking.fields.endDate.issues()?.join(', ')}
+						</p>
 					{/if}
 				</div>
 			</div>
@@ -111,15 +118,19 @@
 				<div class="grid gap-2">
 					<Label for="rentAmount">Rent Amount</Label>
 					<Input type="number" id="rentAmount" name="rentAmount" required min="0" />
-					{#if createBooking.fields.rentAmount.errors}
-						<p class="text-sm text-destructive">{createBooking.fields.rentAmount.errors}</p>
+					{#if createBooking.fields.rentAmount.issues()}
+						<p class="text-sm text-destructive">
+							{createBooking.fields.rentAmount.issues()?.join(', ')}
+						</p>
 					{/if}
 				</div>
 				<div class="grid gap-2">
 					<Label for="securityDeposit">Security Deposit</Label>
 					<Input type="number" id="securityDeposit" name="securityDeposit" min="0" />
-					{#if createBooking.fields.securityDeposit.errors}
-						<p class="text-sm text-destructive">{createBooking.fields.securityDeposit.errors}</p>
+					{#if createBooking.fields.securityDeposit.issues()}
+						<p class="text-sm text-destructive">
+							{createBooking.fields.securityDeposit.issues()?.join(', ')}
+						</p>
 					{/if}
 				</div>
 			</div>
@@ -132,7 +143,7 @@
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<option value="pending">Pending</option>
-					<option value="active" selected>Active</option>
+					<option value="confirmed" selected>Confirmed</option>
 					<option value="completed">Completed</option>
 					<option value="cancelled">Cancelled</option>
 				</select>

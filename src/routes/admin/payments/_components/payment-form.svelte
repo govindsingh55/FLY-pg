@@ -7,13 +7,18 @@
 	import { toast } from 'svelte-sonner';
 	import { createPayment } from '../payments.remote';
 
-	let { open = $bindable(false), customers = [], bookings = [] } = $props();
+	let { open = $bindable(false), customers = [], bookings = [], contracts = [] } = $props();
 
 	let selectedCustomerId = $state('');
 
 	// Filter bookings by selected customer
 	let filteredBookings = $derived(
 		bookings.filter((b) => !selectedCustomerId || b.customerId === selectedCustomerId)
+	);
+
+	// Filter contracts by selected customer
+	let filteredContracts = $derived(
+		contracts.filter((c) => !selectedCustomerId || c.customerId === selectedCustomerId)
 	);
 </script>
 
@@ -58,6 +63,22 @@
 							.join(', ')}
 					</p>
 				{/if}
+			</div>
+
+			<div class="grid gap-2">
+				<Label for="contractId">Contract (Optional)</Label>
+				<select
+					id="contractId"
+					name="contractId"
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					<option value="">None</option>
+					{#each filteredContracts as contract}
+						<option value={contract.id}>
+							Contract {contract.id.slice(0, 8)}... ({contract.contractType}) - ${contract.rentAmount}/mo
+						</option>
+					{/each}
+				</select>
 			</div>
 
 			<div class="grid gap-2">

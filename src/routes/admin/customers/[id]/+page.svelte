@@ -192,12 +192,16 @@
 						<Table.Body>
 							{#each customer.bookings as booking}
 								<Table.Row>
-									<Table.Cell>{new Date(booking.startDate).toLocaleDateString()}</Table.Cell>
+									<Table.Cell>
+										{booking.contract?.startDate
+											? new Date(booking.contract.startDate).toLocaleDateString()
+											: 'N/A'}
+									</Table.Cell>
 									<Table.Cell>
 										{booking.property ? booking.property.name : booking.propertyId} /
 										{booking.room ? `Room ${booking.room.number}` : booking.roomId}
 									</Table.Cell>
-									<Table.Cell>{booking.rentAmount}</Table.Cell>
+									<Table.Cell>{booking.contract?.rentAmount ?? 'N/A'}</Table.Cell>
 									<Table.Cell class="capitalize">{booking.status}</Table.Cell>
 								</Table.Row>
 							{:else}
