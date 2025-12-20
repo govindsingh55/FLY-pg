@@ -4,7 +4,7 @@ import { db } from '$lib/server/db';
 import { staffProfiles, user } from '$lib/server/db/schema';
 import { softDelete } from '$lib/server/db/soft-delete';
 import { error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, inArray, isNull, or } from 'drizzle-orm';
 import { z } from 'zod';
 
 const getSession = () => {
@@ -26,70 +26,100 @@ export const getStaff = query(
 		if (sessionUser.role !== 'admin') throw error(403, 'Forbidden');
 
 		try {
-			// Find user IDs matching the search term
-			let matchedUserIds: string[] = [];
-			if (searchTerm) {
-				const users = await db.query.user.findMany({
-					where: {
-						OR: [{ name: { like: `%${searchTerm}%` } }, { email: { like: `%${searchTerm}%` } }]
-					},
-					columns: { id: true }
-				});
-				matchedUserIds = users.map((u) => u.id);
+			// Define the roles we want to fetch
+			const targetRoles = ['manager', 'property_manager', 'staff'] as const;
+
+			// Define the filter condition separately for reuse in count and select
+			const searchCondition = searchTerm
+				? or(ilike(user.name, `%${searchTerm}%`), ilike(user.email, `%${searchTerm}%`))
+				: undefined;
+
+			const filterCondition = and(
+				inArray(user.role, targetRoles),
+				isNull(user.deletedAt),
+				searchCondition
+			);
+
+			// 1. Get total count
+			const [totalResult] = await db.select({ count: count() }).from(user).where(filterCondition);
+
+			// 2. Get matched IDs with pagination using db.select (allows complex filters)
+			const offset = (page - 1) * pageSize;
+
+			const matchedUsers = await db
+				.select({ id: user.id })
+				.from(user)
+				.where(filterCondition)
+				.limit(pageSize)
+				.offset(offset)
+				.orderBy(desc(user.createdAt));
+
+			if (matchedUsers.length === 0) {
+				return { staff: [], total: totalResult?.count ?? 0, page, pageSize, totalPages: 0 };
 			}
 
-			// Get total count
-			const resultsList = await db.query.staffProfiles.findMany({
-				where: {
-					deletedAt: { isNull: true },
-					...(searchTerm
-						? {
-								userId: { in: matchedUserIds.length > 0 ? matchedUserIds : ['nomatch'] }
-							}
-						: {})
-				},
-				columns: { id: true }
-			});
+			const matchedUserIds = matchedUsers.map((u) => u.id);
 
-			// Get paginated results
-			const offset = (page - 1) * pageSize;
-			const staffList = await db.query.staffProfiles.findMany({
+			// 3. Hydrate relations using db.query (preserves relational types)
+			const usersList = await db.query.user.findMany({
 				where: {
-					deletedAt: { isNull: true },
-					...(searchTerm
-						? {
-								userId: { in: matchedUserIds.length > 0 ? matchedUserIds : ['nomatch'] }
-							}
-						: {})
+					id: { in: matchedUserIds }
 				},
 				with: {
-					user: true,
-					assignments: {
+					staffProfile: {
+						with: {
+							assignments: {
+								with: {
+									property: true
+								}
+							}
+						}
+					},
+					propertyManagerAssignments: {
 						with: {
 							property: true
 						}
 					}
 				},
-				limit: pageSize,
-				offset: offset
+				orderBy: { createdAt: 'desc' }
 			});
 
+			// Define proper types for the query result
+			type UserWithRelations = (typeof usersList)[number];
+			type Assignment = NonNullable<UserWithRelations['staffProfile']>['assignments'][number];
+			type PropertyManagerAssignment = UserWithRelations['propertyManagerAssignments'][number];
+			type Property = NonNullable<Assignment['property']>;
+
 			return {
-				staff: staffList
-					.filter((p) => p.user && p.user != null)
-					.map((p) => ({
-						id: p.id,
-						userId: p.userId,
-						name: p.user?.name,
-						email: p.user?.email,
-						role: p.user?.role,
-						staffType: p.staffType,
-						assignments: p.assignments.map((a) => a.property)
-					})),
-				total: resultsList.length,
+				staff: usersList.map((u: UserWithRelations) => {
+					let assignments: { id: string; name: string }[] = [];
+
+					if (u.role === 'staff' && u.staffProfile?.assignments) {
+						assignments = u.staffProfile.assignments
+							.map((a: Assignment) => a.property)
+							.filter((p): p is Property => p !== null && p !== undefined)
+							.map((p) => ({ id: p.id, name: p.name }));
+					} else if (u.role === 'property_manager' && u.propertyManagerAssignments) {
+						assignments = u.propertyManagerAssignments
+							.map((a: PropertyManagerAssignment) => a.property)
+							.filter((p): p is Property => p !== null && p !== undefined)
+							.map((p) => ({ id: p.id, name: p.name }));
+					}
+
+					return {
+						id: u.staffProfile?.id || u.id,
+						userId: u.id,
+						name: u.name,
+						email: u.email,
+						role: u.role,
+						staffType: u.staffProfile?.staffType,
+						assignments
+					};
+				}),
+				total: totalResult?.count ?? 0,
 				page,
 				pageSize,
-				totalPages: Math.ceil(resultsList.length / pageSize)
+				totalPages: Math.ceil((totalResult?.count ?? 0) / pageSize)
 			};
 		} catch (e) {
 			console.error(e);

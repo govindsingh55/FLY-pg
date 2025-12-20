@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { Button } from '$lib/components/ui/button';
 	import ThemeToggle from '$lib/components/theme-toggle.svelte';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar';
@@ -71,7 +72,7 @@
 					title: 'Properties',
 					href: '/admin/properties',
 					icon: Building,
-					roles: ['admin', 'manager', 'property_manager', 'staff']
+					roles: ['admin', 'manager', 'property_manager']
 				},
 				{
 					title: 'Amenities',
@@ -100,13 +101,13 @@
 					title: 'Customers',
 					href: '/admin/customers',
 					icon: Users,
-					roles: ['admin', 'manager', 'property_manager', 'staff']
+					roles: ['admin', 'manager', 'property_manager']
 				},
 				{
 					title: 'Bookings',
 					href: '/admin/bookings',
 					icon: Calendar,
-					roles: ['admin', 'manager', 'property_manager', 'staff']
+					roles: ['admin', 'manager', 'property_manager']
 				},
 				{
 					title: 'Contracts',
@@ -118,7 +119,7 @@
 					title: 'Property Visits',
 					href: '/admin/visits',
 					icon: Briefcase,
-					roles: ['admin', 'manager', 'property_manager', 'staff']
+					roles: ['admin', 'manager', 'property_manager']
 				},
 				{
 					title: 'Payments',
@@ -249,7 +250,19 @@
 					Electricity
 				{/if}
 			</h1>
-			<div class="ml-auto">
+			<div class="ml-auto flex items-center gap-2">
+				{#if data.session?.impersonatedBy}
+					<Button
+						variant="destructive"
+						size="sm"
+						onclick={async () => {
+							await authClient.admin.stopImpersonating();
+							window.location.reload();
+						}}
+					>
+						Stop Impersonation
+					</Button>
+				{/if}
 				<ThemeToggle />
 			</div>
 		</header>

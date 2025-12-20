@@ -1,8 +1,11 @@
 import { createAccessControl } from 'better-auth/plugins/access';
+import { defaultStatements, adminAc } from 'better-auth/plugins/admin/access';
 
-// Define access control
+// Define access control - merge with default admin statements
 export const ac = createAccessControl({
-	user: ['view', 'update', 'delete'],
+	...defaultStatements,
+	// Note: defaultStatements includes 'user' and 'session' resources with admin actions
+	// We keep them as-is to preserve impersonate, ban, set-role, etc.
 	property: ['view', 'create', 'update', 'delete'],
 	room: ['view', 'create', 'update', 'delete'],
 	customer: ['view', 'create', 'update', 'delete'],
@@ -16,9 +19,11 @@ export const ac = createAccessControl({
 	staff_profile: ['view', 'create', 'update', 'delete']
 });
 
-// Define role permissions
+// Define role permissions - admin includes default admin permissions (including impersonate)
 export const adminRole = ac.newRole({
-	user: ['view', 'update', 'delete'],
+	...adminAc.statements, // This includes user:impersonate, user:ban, user:create, etc.
+	// Note: We don't override 'user' permissions here because adminAc.statements already provides
+	// comprehensive admin permissions for the user resource including 'impersonate'
 	property: ['view', 'create', 'update', 'delete'],
 	room: ['view', 'create', 'update', 'delete'],
 	customer: ['view', 'create', 'update', 'delete'],
@@ -33,7 +38,7 @@ export const adminRole = ac.newRole({
 });
 
 export const managerRole = ac.newRole({
-	user: ['view'],
+	user: ['get', 'list'],
 	property: ['view', 'create', 'update', 'delete'], // Delete allowed in PERMISSION, logic handled in middleware via settings
 	room: ['view', 'create', 'update', 'delete'],
 	customer: ['view', 'create', 'update', 'delete'],
@@ -48,7 +53,7 @@ export const managerRole = ac.newRole({
 });
 
 export const propertyManagerRole = ac.newRole({
-	user: ['view'],
+	user: ['get'],
 	property: ['view', 'update'],
 	room: ['view', 'create', 'update'],
 	customer: ['view', 'create', 'update'],
@@ -63,7 +68,7 @@ export const propertyManagerRole = ac.newRole({
 });
 
 export const staffRole = ac.newRole({
-	user: ['view'],
+	user: ['get'],
 	property: ['view'],
 	room: ['view'],
 	customer: ['view'],
@@ -78,7 +83,7 @@ export const staffRole = ac.newRole({
 });
 
 export const customerRole = ac.newRole({
-	user: ['view', 'update'],
+	user: ['get', 'update'],
 	property: ['view'],
 	room: ['view'],
 	customer: ['view'], // Can view their own profile

@@ -10,17 +10,21 @@ export const load = async ({ request }) => {
 		throw redirect(303, '/login');
 	}
 
-	// Check if user has admin role
+	// Only admin, manager, and property_manager can access /admin routes
 	if (
 		session.user.role !== 'admin' &&
 		session.user.role !== 'manager' &&
-		session.user.role !== 'staff' &&
 		session.user.role !== 'property_manager'
 	) {
+		// Redirect staff to their own dashboard
+		if (session.user.role === 'staff') {
+			throw redirect(303, '/staff');
+		}
+		// Redirect customers to customer dashboard
 		throw redirect(303, '/dashboard');
 	}
 
-	// Define role permissions for sub-routes
+	// Define role permissions for sub-routes (staff completely removed)
 	const routePermissions: Record<string, string[]> = {
 		'/admin/settings': ['admin', 'manager'],
 		'/admin/staff': ['admin', 'manager'],
@@ -30,7 +34,7 @@ export const load = async ({ request }) => {
 		'/admin/bookings': ['admin', 'manager', 'property_manager'],
 		'/admin/contracts': ['admin', 'manager', 'property_manager'],
 		'/admin/payments': ['admin', 'manager', 'property_manager'],
-		'/admin/tickets': ['admin', 'manager', 'property_manager', 'staff'],
+		'/admin/tickets': ['admin', 'manager', 'property_manager'],
 		'/admin/visits': ['admin', 'manager', 'property_manager'],
 		'/admin/electricity': ['admin', 'manager', 'property_manager'],
 		'/admin/amenities': ['admin', 'manager'],
@@ -45,14 +49,13 @@ export const load = async ({ request }) => {
 		if (pathname.startsWith(route)) {
 			if (!roles.includes(session.user.role)) {
 				// Redirect to a safe page with an error message
-				// For staff, safe page is /admin/tickets or /admin (which might show dashboard widgets)
-				// For others, /admin is usually safe
 				throw redirect(303, '/admin?access_denied=true');
 			}
 		}
 	}
 
 	return {
-		user: session.user
+		user: session.user,
+		session: session.session
 	};
 };

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { authClient } from '$lib/auth-client';
 	import { Button } from '$lib/components/ui/button';
 	import * as InputGroup from '$lib/components/ui/input-group';
 	import * as Pagination from '$lib/components/ui/pagination';
@@ -25,6 +26,32 @@
 			pageSize: pageSize
 		})
 	);
+
+	async function impersonate(userId: string) {
+		try {
+			toast.loading('Starting impersonation...');
+			console.log('Attempting to impersonate user:', userId);
+
+			const result = await authClient.admin.impersonateUser({
+				userId
+			});
+
+			console.log('Impersonation result:', result);
+			toast.dismiss();
+			toast.success('Impersonation started');
+			// Force reload/redirect to ensure session is picked up
+			window.location.href = '/admin';
+		} catch (e: any) {
+			toast.dismiss();
+			console.error('Impersonation error:', e);
+			console.error('Error details:', {
+				message: e?.message,
+				status: e?.status,
+				response: e?.response
+			});
+			toast.error(`Failed to impersonate: ${e?.message || 'Unknown error'}`);
+		}
+	}
 </script>
 
 <div class="space-y-6 p-6">
@@ -57,7 +84,7 @@
 						<Table.Row>
 							<Table.Head>Name</Table.Head>
 							<Table.Head>Email</Table.Head>
-							<Table.Head>Type</Table.Head>
+							<Table.Head>Role / Type</Table.Head>
 							<!-- <Table.Head>Assigned Properties</Table.Head> -->
 							<Table.Head class="text-right">Actions</Table.Head>
 						</Table.Row>
@@ -65,10 +92,35 @@
 					<Table.Body>
 						{#each data.staff as s}
 							<Table.Row>
-								<Table.Cell>{s.name || 'Unknown'}</Table.Cell>
+								<Table.Cell>
+									<div class="flex flex-col">
+										<span class="font-medium">{s.name || 'Unknown'}</span>
+										{#if s.assignments && s.assignments.length > 0}
+											<span class="text-xs text-muted-foreground">
+												{s.assignments.map((a) => a.name).join(', ')}
+											</span>
+										{/if}
+									</div>
+								</Table.Cell>
 								<Table.Cell>{s.email || '-'}</Table.Cell>
-								<Table.Cell class="capitalize">{s.staffType}</Table.Cell>
+								<Table.Cell>
+									<span class="capitalize badge">{s.role}</span>
+									{#if s.staffType}
+										<span class="text-xs text-muted-foreground block capitalize">
+											({s.staffType})
+										</span>
+									{/if}
+								</Table.Cell>
 								<Table.Cell class="text-right">
+									<Button
+										variant="outline"
+										size="sm"
+										class="mr-2"
+										onclick={() => impersonate(s.userId)}
+									>
+										Impersonate
+									</Button>
+
 									<form
 										class="inline-block"
 										{...deleteStaff.for(`delete-${s.id}`).enhance(async ({ submit }) => {

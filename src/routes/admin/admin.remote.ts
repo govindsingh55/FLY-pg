@@ -10,8 +10,9 @@ const getSession = () => {
 		throw error(401, 'Unauthorized');
 	}
 	const role = event.locals.user.role;
-	if (role !== 'admin' && role !== 'manager' && role !== 'staff') {
-		throw error(403, 'Forbidden');
+	// Only admin, manager, and property_manager can access admin functions
+	if (role !== 'admin' && role !== 'manager' && role !== 'property_manager') {
+		throw error(403, 'Forbidden - Admin/Manager/Property Manager only');
 	}
 	return { session: event.locals.session, sessionUser: event.locals.user };
 };
@@ -57,7 +58,7 @@ export const getDashboardStats = query(async () => {
 			db
 				.select({ count: count() })
 				.from(bookings)
-				.where(eq(bookings.status, 'active'))
+				.where(eq(bookings.status, 'confirmed'))
 				.then((res) => res[0].count),
 			db
 				.select({ count: count() })
