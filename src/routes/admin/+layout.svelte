@@ -19,7 +19,9 @@
 		Settings,
 		Ticket,
 		UserCog,
-		Users
+		Users,
+		Zap,
+		Bell
 	} from 'lucide-svelte';
 
 	import type { LayoutData } from './$types';
@@ -27,6 +29,19 @@
 	import { goto } from '$app/navigation';
 
 	let { children, data }: { children: any; data: LayoutData } = $props();
+
+	import { toast } from 'svelte-sonner';
+
+	$effect(() => {
+		if ($page.url.searchParams.get('access_denied')) {
+			toast.error('Access Denied', {
+				description: 'You do not have permission to view this page.'
+			});
+			const newUrl = new URL($page.url);
+			newUrl.searchParams.delete('access_denied');
+			goto(newUrl.toString(), { replaceState: true, keepFocus: true, noScroll: true });
+		}
+	});
 
 	const allNavGroups = [
 		{
@@ -40,7 +55,13 @@
 				},
 				{ title: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
 				{ title: 'Assignments', href: '/admin/assignments', icon: ClipboardList, roles: ['admin'] },
-				{ title: 'Settings', href: '/admin/settings', icon: Settings, roles: ['admin'] }
+				{ title: 'Settings', href: '/admin/settings', icon: Settings, roles: ['admin'] },
+				{
+					title: 'Notifications',
+					href: '/admin/notifications',
+					icon: Bell,
+					roles: ['admin', 'manager', 'property_manager']
+				}
 			]
 		},
 		{
@@ -63,6 +84,12 @@
 					href: '/admin/media',
 					icon: ImageIcon,
 					roles: ['admin', 'manager']
+				},
+				{
+					title: 'Electricity',
+					href: '/admin/electricity',
+					icon: Zap,
+					roles: ['admin', 'manager', 'property_manager']
 				}
 			]
 		},
@@ -216,6 +243,10 @@
 					Support Tickets
 				{:else if $page.url.pathname.includes('settings')}
 					System Settings
+				{:else if $page.url.pathname.includes('notifications')}
+					Notifications
+				{:else if $page.url.pathname.includes('electricity')}
+					Electricity
 				{/if}
 			</h1>
 			<div class="ml-auto">

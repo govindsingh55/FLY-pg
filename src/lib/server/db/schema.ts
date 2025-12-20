@@ -156,6 +156,7 @@ export const properties = sqliteTable('properties', {
 	isFoodServiceAvailable: integer('is_food_service_available', { mode: 'boolean' }).default(false),
 	// Optional food menu URL/file
 	foodMenu: text('food_menu'),
+	electricityUnitCost: real('electricity_unit_cost').default(0),
 	bookingCharge: integer('booking_charge').default(0),
 	status: text('status', { enum: ['draft', 'published'] }).default('draft'),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
@@ -241,7 +242,7 @@ export const payments = sqliteTable('payments', {
 	customerId: text('customer_id').references(() => customers.id),
 	amount: integer('amount').notNull(),
 	type: text('type', {
-		enum: ['rent', 'security_deposit', 'maintenance', 'booking_charge', 'other']
+		enum: ['rent', 'security_deposit', 'maintenance', 'booking_charge', 'electricity', 'other']
 	}).notNull(),
 	status: text('status', { enum: ['pending', 'paid', 'failed', 'refunded'] }).default('pending'),
 	mode: text('mode', { enum: ['cash', 'online', 'upi'] }).default('online'),
@@ -292,10 +293,13 @@ export const notifications = sqliteTable('notifications', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
-	userId: text('user_id').references(() => user.id),
+	userId: text('user_id').references(() => user.id), // Recipient
+	senderId: text('sender_id').references(() => user.id), // Sender (admin/manager)
 	title: text('title'),
 	message: text('message').notNull(),
-	type: text('type', { enum: ['info', 'warning', 'success', 'error'] }).default('info'),
+	type: text('type', {
+		enum: ['info', 'warning', 'success', 'error', 'rent', 'electricity', 'general']
+	}).default('info'),
 	isRead: integer('is_read', { mode: 'boolean' }).default(false),
 	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
@@ -444,7 +448,44 @@ export const contracts = sqliteTable('contracts', {
 	deletedBy: text('deleted_by')
 });
 
-// --- Relations ---
+export const electricityReadings = sqliteTable(
+	'electricity_readings',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		contractId: text('contract_id')
+			.notNull()
+			.references(() => contracts.id, { onDelete: 'cascade' }),
+		propertyId: text('property_id')
+			.notNull()
+			.references(() => properties.id, { onDelete: 'cascade' }),
+		roomId: text('room_id')
+			.notNull()
+			.references(() => rooms.id, { onDelete: 'cascade' }),
+		customerId: text('customer_id')
+			.notNull()
+			.references(() => customers.id, { onDelete: 'cascade' }),
+		readingDate: integer('reading_date', { mode: 'timestamp' }).notNull(),
+		month: integer('month').notNull(), // 1-12
+		year: integer('year').notNull(),
+		unitsConsumed: real('units_consumed').notNull(),
+		unitCost: real('unit_cost').notNull(),
+		totalAmount: real('total_amount').notNull(),
+		note: text('note'), // Optional note
+		paymentId: text('payment_id').references(() => payments.id),
+		createdBy: text('created_by').references(() => user.id),
+		createdAt: integer('created_at', { mode: 'timestamp' })
+			.default(sql`(unixepoch())`)
+			.notNull(),
+		updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+		deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+		deletedBy: text('deleted_by')
+	},
+	(t) => ({
+		unq: index('electricity_readings_unq').on(t.contractId, t.month, t.year)
+	})
+);
 
 export const relationsDef = defineRelations(
 	{
@@ -469,7 +510,8 @@ export const relationsDef = defineRelations(
 		amenities,
 		propertyAmenities,
 		contracts,
-		ticketMessages
+		ticketMessages,
+		electricityReadings
 	},
 	(r) => ({
 		user: {
@@ -663,6 +705,36 @@ export const relationsDef = defineRelations(
 		notifications: {
 			user: r.one.user({
 				from: r.notifications.userId,
+				to: r.user.id
+			}),
+			sender: r.one.user({
+				from: r.notifications.senderId,
+				to: r.user.id
+			})
+		},
+		electricityReadings: {
+			contract: r.one.contracts({
+				from: r.electricityReadings.contractId,
+				to: r.contracts.id
+			}),
+			property: r.one.properties({
+				from: r.electricityReadings.propertyId,
+				to: r.properties.id
+			}),
+			room: r.one.rooms({
+				from: r.electricityReadings.roomId,
+				to: r.rooms.id
+			}),
+			customer: r.one.customers({
+				from: r.electricityReadings.customerId,
+				to: r.customers.id
+			}),
+			payment: r.one.payments({
+				from: r.electricityReadings.paymentId,
+				to: r.payments.id
+			}),
+			creator: r.one.user({
+				from: r.electricityReadings.createdBy,
 				to: r.user.id
 			})
 		},

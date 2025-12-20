@@ -6,7 +6,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
-	import { Plus, Search } from 'lucide-svelte';
+	import { Plus, Search, Zap } from 'lucide-svelte';
 	import { Debounced } from 'runed';
 	import { getCustomers } from './customers.remote';
 	import CustomerForm from './_components/customer-form.svelte';
@@ -91,9 +91,19 @@
 									{/if}
 								</Table.Cell>
 								<Table.Cell class="text-right">
-									<Button variant="ghost" size="sm" href="/admin/customers/{customer.id}"
-										>Edit</Button
-									>
+									<div class="flex justify-end gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											href="/admin/electricity?customerId={customer.id}"
+											title="Record Electricity Reading"
+										>
+											<Zap class="h-4 w-4" />
+										</Button>
+										<Button variant="ghost" size="sm" href="/admin/customers/{customer.id}"
+											>Edit</Button
+										>
+									</div>
 								</Table.Cell>
 							</Table.Row>
 						{:else}
