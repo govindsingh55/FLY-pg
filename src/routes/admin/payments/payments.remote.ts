@@ -28,7 +28,7 @@ export const getPayments = query(
 		const { sessionUser } = getSession();
 
 		try {
-			let allowedCustomerIds: string[] | null = null;
+			let allowedBookingIds: string[] | null = null;
 
 			if (sessionUser.role === 'property_manager') {
 				const assigns = await db.query.propertyManagerAssignments.findMany({
@@ -43,36 +43,22 @@ export const getPayments = query(
 						where: {
 							AND: [{ propertyId: { in: propertyIds } }, { deletedAt: { isNull: true } }]
 						},
-						columns: { customerId: true }
+						columns: { id: true }
 					});
-					allowedCustomerIds = Array.from(
-						new Set(bookingResults.map((b) => b.customerId).filter(Boolean) as string[])
-					);
+					allowedBookingIds = bookingResults.map((b) => b.id);
 				} else {
-					return { payments: [] };
-				}
-			}
-			if (sessionUser.role === 'staff') {
-				const profile = await db.query.staffProfiles.findFirst({
-					where: { userId: sessionUser.id },
-					with: { assignments: true }
-				});
-				if (profile && profile.assignments.length > 0) {
-					const propertyIds = profile.assignments.map((a) => a.propertyId);
-					const bookingResults = await db.query.bookings.findMany({
-						where: { propertyId: { in: propertyIds } },
-						columns: { customerId: true }
-					});
-					allowedCustomerIds = Array.from(
-						new Set(bookingResults.map((b) => b.customerId).filter(Boolean) as string[])
-					);
-				} else {
-					return { payments: [] };
+					return { payments: [], total: 0, page, pageSize, totalPages: 0 };
 				}
 			}
 
+			if (allowedBookingIds !== null && allowedBookingIds.length === 0) {
+				return { payments: [], total: 0, page, pageSize, totalPages: 0 };
+			}
+
 			const where = {
-				...(sessionUser.role !== 'admin' ? { customerId: { in: allowedCustomerIds || [] } } : {}),
+				...(sessionUser.role === 'property_manager' && allowedBookingIds
+					? { bookingId: { in: allowedBookingIds } }
+					: {}),
 				...(contractId ? { contractId: { eq: contractId } } : {}),
 				...(bookingId ? { bookingId: { eq: bookingId } } : {}),
 				...(searchTerm

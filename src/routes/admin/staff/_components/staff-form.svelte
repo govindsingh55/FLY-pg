@@ -29,10 +29,10 @@
 			<div class="grid gap-2">
 				<Label for="name">Name</Label>
 				<Input id="name" name="name" required />
-				{#if createStaff.fields.name.issues.length > 0}
+				{#if (createStaff.fields.name?.issues()?.length ?? 0) > 0}
 					<p class="text-sm text-destructive">
 						{createStaff.fields.name
-							.issues()
+							?.issues()
 							?.map((m) => m.message)
 							.join(', ')}
 					</p>
@@ -41,10 +41,10 @@
 			<div class="grid gap-2">
 				<Label for="email">Email</Label>
 				<Input id="email" name="email" type="email" required />
-				{#if createStaff.fields.email.issues.length > 0}
+				{#if (createStaff.fields.email?.issues()?.length ?? 0) > 0}
 					<p class="text-sm text-destructive">
 						{createStaff.fields.email
-							.issues()
+							?.issues()
 							?.map((m) => m.message)
 							.join(', ')}
 					</p>
@@ -53,10 +53,10 @@
 			<div class="grid gap-2">
 				<Label for="password">Password</Label>
 				<Input id="password" name="password" type="password" required minlength={6} />
-				{#if createStaff.fields.password.issues?.length > 0}
+				{#if (createStaff.fields.password?.issues()?.length ?? 0) > 0}
 					<p class="text-sm text-destructive">
 						{createStaff.fields.password
-							.issues()
+							?.issues()
 							?.map((m) => m.message)
 							.join(', ')}
 					</p>

@@ -54,7 +54,12 @@
 					icon: LayoutDashboard,
 					roles: ['admin', 'manager', 'property_manager', 'staff']
 				},
-				{ title: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
+				{
+					title: 'Staff',
+					href: '/admin/staff',
+					icon: UserCog,
+					roles: ['admin', 'manager', 'property_manager']
+				},
 				{ title: 'Assignments', href: '/admin/assignments', icon: ClipboardList, roles: ['admin'] },
 				{ title: 'Settings', href: '/admin/settings', icon: Settings, roles: ['admin'] },
 				{
@@ -125,7 +130,7 @@
 					title: 'Payments',
 					href: '/admin/payments',
 					icon: CreditCard,
-					roles: ['admin', 'manager']
+					roles: ['admin', 'manager', 'property_manager']
 				},
 				{
 					title: 'Tickets',

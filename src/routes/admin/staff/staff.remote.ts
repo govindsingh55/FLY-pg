@@ -23,7 +23,13 @@ export const getStaff = query(
 	}),
 	async ({ searchTerm, page, pageSize }) => {
 		const { sessionUser } = getSession();
-		if (sessionUser.role !== 'admin') throw error(403, 'Forbidden');
+		if (
+			sessionUser.role !== 'admin' &&
+			sessionUser.role !== 'manager' &&
+			sessionUser.role !== 'property_manager'
+		) {
+			throw error(403, 'Forbidden');
+		}
 
 		try {
 			// Define the roles we want to fetch
@@ -61,7 +67,7 @@ export const getStaff = query(
 			const matchedUserIds = matchedUsers.map((u) => u.id);
 
 			// 3. Hydrate relations using db.query (preserves relational types)
-			const usersList = await db.query.user.findMany({
+			let usersList = await db.query.user.findMany({
 				where: {
 					id: { in: matchedUserIds }
 				},
@@ -83,6 +89,24 @@ export const getStaff = query(
 				},
 				orderBy: { createdAt: 'desc' }
 			});
+
+			// Filter for property managers - only show staff assigned to their properties
+			if (sessionUser.role === 'property_manager') {
+				const pmAssignments = await db.query.propertyManagerAssignments.findMany({
+					where: { userId: sessionUser.id },
+					columns: { propertyId: true }
+				});
+				const assignedPropertyIds = pmAssignments.map((a) => a.propertyId);
+
+				usersList = usersList.filter((u) => {
+					if (u.role === 'staff' && u.staffProfile?.assignments) {
+						return u.staffProfile.assignments.some((a) =>
+							assignedPropertyIds.includes(a.propertyId)
+						);
+					}
+					return false;
+				});
+			}
 
 			// Define proper types for the query result
 			type UserWithRelations = (typeof usersList)[number];
@@ -137,7 +161,13 @@ const staffSchema = z.object({
 
 export const createStaff = form(staffSchema, async ({ name, email, password, staffType }) => {
 	const { sessionUser } = getSession();
-	if (sessionUser.role !== 'admin') throw error(403, 'Forbidden');
+	if (
+		sessionUser.role !== 'admin' &&
+		sessionUser.role !== 'manager' &&
+		sessionUser.role !== 'property_manager'
+	) {
+		throw error(403, 'Forbidden');
+	}
 
 	try {
 		const response = await auth.api.signUpEmail({
@@ -180,7 +210,31 @@ const updateStaffSchema = z.object({
 
 export const updateStaff = form(updateStaffSchema, async ({ id, staffType }) => {
 	const { sessionUser } = getSession();
-	if (sessionUser.role !== 'admin') throw error(403, 'Forbidden');
+	if (
+		sessionUser.role !== 'admin' &&
+		sessionUser.role !== 'manager' &&
+		sessionUser.role !== 'property_manager'
+	) {
+		throw error(403, 'Forbidden');
+	}
+
+	// For property managers, verify they can only update staff assigned to their properties
+	if (sessionUser.role === 'property_manager') {
+		const pmAssignments = await db.query.propertyManagerAssignments.findMany({
+			where: { userId: sessionUser.id },
+			columns: { propertyId: true }
+		});
+		const assignedPropertyIds = pmAssignments.map((a) => a.propertyId);
+
+		const staffProfile = await db.query.staffProfiles.findFirst({
+			where: { id },
+			with: { assignments: true }
+		});
+
+		if (!staffProfile?.assignments.some((a) => assignedPropertyIds.includes(a.propertyId))) {
+			throw error(403, 'You can only update staff assigned to your properties');
+		}
+	}
 
 	await db.update(staffProfiles).set({ staffType }).where(eq(staffProfiles.id, id));
 	await getStaff({}).refresh();
@@ -189,7 +243,31 @@ export const updateStaff = form(updateStaffSchema, async ({ id, staffType }) => 
 
 export const deleteStaff = form(z.object({ id: z.string() }), async ({ id }) => {
 	const { sessionUser } = getSession();
-	if (sessionUser.role !== 'admin') throw error(403, 'Forbidden');
+	if (
+		sessionUser.role !== 'admin' &&
+		sessionUser.role !== 'manager' &&
+		sessionUser.role !== 'property_manager'
+	) {
+		throw error(403, 'Forbidden');
+	}
+
+	// For property managers, verify they can only delete staff assigned to their properties
+	if (sessionUser.role === 'property_manager') {
+		const pmAssignments = await db.query.propertyManagerAssignments.findMany({
+			where: { userId: sessionUser.id },
+			columns: { propertyId: true }
+		});
+		const assignedPropertyIds = pmAssignments.map((a) => a.propertyId);
+
+		const staffProfile = await db.query.staffProfiles.findFirst({
+			where: { id },
+			with: { assignments: true }
+		});
+
+		if (!staffProfile?.assignments.some((a) => assignedPropertyIds.includes(a.propertyId))) {
+			throw error(403, 'You can only delete staff assigned to your properties');
+		}
+	}
 
 	await db.update(staffProfiles).set(softDelete(sessionUser.id)).where(eq(staffProfiles.id, id));
 

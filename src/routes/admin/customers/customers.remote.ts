@@ -27,24 +27,14 @@ export const getCustomers = query(
 		try {
 			let allowedCustomerIds: string[] | null = null;
 
-			if (sessionUser.role === 'property_manager' || sessionUser.role === 'staff') {
+			if (sessionUser.role === 'property_manager') {
 				let assignedProperties: string[] = [];
 
-				if (sessionUser.role === 'property_manager') {
-					const assigns = await db.query.propertyManagerAssignments.findMany({
-						where: { userId: sessionUser.id },
-						columns: { propertyId: true }
-					});
-					assignedProperties = assigns.map((a) => a.propertyId);
-				} else {
-					const profile = await db.query.staffProfiles.findFirst({
-						where: { userId: sessionUser.id },
-						with: { assignments: true }
-					});
-					if (profile) {
-						assignedProperties = profile.assignments.map((a) => a.propertyId);
-					}
-				}
+				const assigns = await db.query.propertyManagerAssignments.findMany({
+					where: { userId: sessionUser.id },
+					columns: { propertyId: true }
+				});
+				assignedProperties = assigns.map((a) => a.propertyId);
 
 				if (assignedProperties.length > 0) {
 					const bookingResults = await db.query.bookings.findMany({
@@ -57,10 +47,17 @@ export const getCustomers = query(
 						columns: { customerId: true }
 					});
 
+					// Get customers from contracts
+					const contractResults = await db.query.contracts.findMany({
+						where: { propertyId: { in: assignedProperties } },
+						columns: { customerId: true }
+					});
+
 					const uniqueIds = new Set(
 						[
 							...bookingResults.map((b) => b.customerId),
-							...visitResults.map((v) => v.customerId)
+							...visitResults.map((v) => v.customerId),
+							...contractResults.map((c) => c.customerId)
 						].filter((id) => id !== null) as string[]
 					);
 
