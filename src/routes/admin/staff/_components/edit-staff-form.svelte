@@ -1,15 +1,25 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Sheet from '$lib/components/ui/sheet';
-	import { page } from '$app/state';
 	import { toast } from 'svelte-sonner';
-	import { createStaff } from '../staff.remote';
+	import { updateStaff } from '../staff.remote';
 
-	let { open = $bindable(false) } = $props();
+	let { open = $bindable(false), staffMember } = $props<{
+		open: boolean;
+		staffMember: {
+			id: string;
+			userId: string;
+			name: string;
+			email: string;
+			role: string;
+			staffType?: string;
+		};
+	}>();
 
-	let selectedRole = $state('staff');
+	let selectedRole = $derived(staffMember.role);
 
 	// Determine available roles based on logged-in user
 	const userRole = $derived(page.data.user?.role || 'staff');
@@ -35,27 +45,30 @@
 <Sheet.Root bind:open>
 	<Sheet.Content class="p-4">
 		<Sheet.Header>
-			<Sheet.Title>Add New Team Member</Sheet.Title>
+			<Sheet.Title>Edit Team Member</Sheet.Title>
 		</Sheet.Header>
 		<form
 			class="space-y-4 mt-4"
-			{...createStaff.enhance(async ({ submit }) => {
+			{...updateStaff.enhance(async ({ submit }) => {
 				try {
 					await submit();
-					toast.success('Team member created successfully');
+					toast.success('Team member updated successfully');
 					open = false;
-					selectedRole = 'staff'; // Reset
 				} catch (e: any) {
-					toast.error(e.message || 'Failed to create team member');
+					toast.error(e.message || 'Failed to update team member');
 				}
 			})}
 		>
+			<!-- Hidden fields -->
+			<input type="hidden" name="id" value={staffMember.id} />
+			<input type="hidden" name="userId" value={staffMember.userId} />
+
 			<div class="grid gap-2">
-				<Label for="name">Name</Label>
-				<Input id="name" name="name" required />
-				{#if (createStaff.fields.name?.issues()?.length ?? 0) > 0}
+				<Label for="edit-name">Name</Label>
+				<Input id="edit-name" name="name" value={staffMember.name} required />
+				{#if (updateStaff.fields.name?.issues()?.length ?? 0) > 0}
 					<p class="text-sm text-destructive">
-						{createStaff.fields.name
+						{updateStaff.fields.name
 							?.issues()
 							?.map((m) => m.message)
 							.join(', ')}
@@ -63,11 +76,11 @@
 				{/if}
 			</div>
 			<div class="grid gap-2">
-				<Label for="email">Email</Label>
-				<Input id="email" name="email" type="email" required />
-				{#if (createStaff.fields.email?.issues()?.length ?? 0) > 0}
+				<Label for="edit-email">Email</Label>
+				<Input id="edit-email" name="email" type="email" value={staffMember.email} required />
+				{#if (updateStaff.fields.email?.issues()?.length ?? 0) > 0}
 					<p class="text-sm text-destructive">
-						{createStaff.fields.email
+						{updateStaff.fields.email
 							?.issues()
 							?.map((m) => m.message)
 							.join(', ')}
@@ -75,21 +88,9 @@
 				{/if}
 			</div>
 			<div class="grid gap-2">
-				<Label for="password">Password</Label>
-				<Input id="password" name="password" type="password" required minlength={6} />
-				{#if (createStaff.fields.password?.issues()?.length ?? 0) > 0}
-					<p class="text-sm text-destructive">
-						{createStaff.fields.password
-							?.issues()
-							?.map((m) => m.message)
-							.join(', ')}
-					</p>
-				{/if}
-			</div>
-			<div class="grid gap-2">
-				<Label for="role">Role</Label>
+				<Label for="edit-role">Role</Label>
 				<select
-					id="role"
+					id="edit-role"
 					name="role"
 					bind:value={selectedRole}
 					required
@@ -102,10 +103,11 @@
 			</div>
 			{#if selectedRole === 'staff'}
 				<div class="grid gap-2">
-					<Label for="staffType">Staff Type</Label>
+					<Label for="edit-staffType">Staff Type</Label>
 					<select
-						id="staffType"
+						id="edit-staffType"
 						name="staffType"
+						value={staffMember.staffType || ''}
 						required={selectedRole === 'staff'}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					>
@@ -117,8 +119,8 @@
 				</div>
 			{/if}
 			<Sheet.Footer>
-				<Button type="submit" disabled={!!createStaff.pending}>
-					{createStaff.pending ? 'Creating...' : 'Create Team Member'}
+				<Button type="submit" disabled={!!updateStaff.pending}>
+					{updateStaff.pending ? 'Updating...' : 'Update Team Member'}
 				</Button>
 			</Sheet.Footer>
 		</form>

@@ -6,16 +6,24 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
-	import { Search } from 'lucide-svelte';
+	import { Edit, Search } from 'lucide-svelte';
 	import { Debounced } from 'runed';
 	import { toast } from 'svelte-sonner';
+	import EditStaffForm from './_components/edit-staff-form.svelte';
 	import StaffForm from './_components/staff-form.svelte';
 	import { deleteStaff, getStaff } from './staff.remote';
+	import type { LayoutData } from '../$types';
+
+	let { data }: { data: LayoutData } = $props();
 
 	let searchTerm = $state('');
 	let currentPage = $state(1);
 	let pageSize = $state(10);
 	let staffDialogOpen = $state(false);
+	let editDialogOpen = $state(false);
+	let selectedStaff = $state<any>(null);
+
+	const isAdmin = $derived(data.user.role === 'admin');
 
 	const debouncedSearchTerm = new Debounced(() => searchTerm, 500);
 
@@ -52,6 +60,11 @@
 			toast.error(`Failed to impersonate: ${e?.message || 'Unknown error'}`);
 		}
 	}
+
+	function openEdit(staff: any) {
+		selectedStaff = staff;
+		editDialogOpen = true;
+	}
 </script>
 
 <div class="space-y-6 p-6">
@@ -70,6 +83,9 @@
 	</div>
 
 	<StaffForm bind:open={staffDialogOpen} />
+	{#if selectedStaff}
+		<EditStaffForm bind:open={editDialogOpen} staffMember={selectedStaff} />
+	{/if}
 
 	<div class="rounded-md border">
 		<svelte:boundary>
@@ -112,37 +128,39 @@
 									{/if}
 								</Table.Cell>
 								<Table.Cell class="text-right">
-									<Button
-										variant="outline"
-										size="sm"
-										class="mr-2"
-										onclick={() => impersonate(s.userId)}
-									>
-										Impersonate
-									</Button>
-
-									<form
-										class="inline-block"
-										{...deleteStaff.for(`delete-${s.id}`).enhance(async ({ submit }) => {
-											if (!confirm('Delete this staff member?')) return;
-											try {
-												await submit();
-												toast.success('Staff deleted');
-											} catch (e) {
-												toast.error('Failed to delete');
-											}
-										})}
-									>
-										<input type="hidden" name="id" value={s.id} />
-										<Button
-											variant="destructive"
-											size="sm"
-											type="submit"
-											disabled={!!deleteStaff.pending}
-										>
-											Delete
+									<div class="flex items-center justify-end gap-2">
+										<Button variant="ghost" size="sm" onclick={() => openEdit(s)}>
+											<Edit class="h-4 w-4" />
 										</Button>
-									</form>
+										{#if isAdmin}
+											<Button variant="outline" size="sm" onclick={() => impersonate(s.userId)}>
+												Impersonate
+											</Button>
+										{/if}
+
+										<form
+											class="inline-block"
+											{...deleteStaff.for(`delete-${s.id}`).enhance(async ({ submit }) => {
+												if (!confirm('Delete this staff member?')) return;
+												try {
+													await submit();
+													toast.success('Staff deleted');
+												} catch (e) {
+													toast.error('Failed to delete');
+												}
+											})}
+										>
+											<input type="hidden" name="id" value={s.id} />
+											<Button
+												variant="destructive"
+												size="sm"
+												type="submit"
+												disabled={!!deleteStaff.pending}
+											>
+												Delete
+											</Button>
+										</form>
+									</div>
 								</Table.Cell>
 							</Table.Row>
 						{:else}

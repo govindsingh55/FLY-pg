@@ -156,10 +156,11 @@ const staffSchema = z.object({
 	name: z.string().min(1),
 	email: z.string().email(),
 	password: z.string().min(6),
-	staffType: z.enum(['chef', 'janitor', 'security'])
+	role: z.enum(['manager', 'property_manager', 'staff']),
+	staffType: z.enum(['chef', 'janitor', 'security']).optional()
 });
 
-export const createStaff = form(staffSchema, async ({ name, email, password, staffType }) => {
+export const createStaff = form(staffSchema, async ({ name, email, password, role, staffType }) => {
 	const { sessionUser } = getSession();
 	if (
 		sessionUser.role !== 'admin' &&
@@ -169,6 +170,23 @@ export const createStaff = form(staffSchema, async ({ name, email, password, sta
 		throw error(403, 'Forbidden');
 	}
 
+	// Role-based restrictions
+	if (sessionUser.role === 'manager' && role === 'manager') {
+		throw error(403, 'Managers cannot create other managers');
+	}
+
+	if (
+		sessionUser.role === 'property_manager' &&
+		(role === 'manager' || role === 'property_manager')
+	) {
+		throw error(403, 'Property managers can only create staff');
+	}
+
+	// Validate staffType is provided for staff role
+	if (role === 'staff' && !staffType) {
+		throw error(400, 'Staff type is required for staff role');
+	}
+
 	try {
 		const response = await auth.api.signUpEmail({
 			body: {
@@ -176,24 +194,29 @@ export const createStaff = form(staffSchema, async ({ name, email, password, sta
 				password,
 				name
 			},
-			asResponse: false
+			asResponse: true
 		});
 
-		if (!response || !response.user) {
+		const data = await response.json();
+
+		if (!data || !data.user) {
 			throw error(500, 'Failed to create user');
 		}
 
 		await db
 			.update(user)
 			.set({
-				role: 'staff'
+				role
 			})
-			.where(eq(user.id, response.user.id));
+			.where(eq(user.id, data.user.id));
 
-		await db.insert(staffProfiles).values({
-			userId: response.user.id,
-			staffType
-		});
+		// Create staff profile only for staff role
+		if (role === 'staff' && staffType) {
+			await db.insert(staffProfiles).values({
+				userId: data.user.id,
+				staffType
+			});
+		}
 
 		await getStaff({}).refresh();
 		return { success: true };
@@ -205,41 +228,103 @@ export const createStaff = form(staffSchema, async ({ name, email, password, sta
 
 const updateStaffSchema = z.object({
 	id: z.string(),
-	staffType: z.enum(['chef', 'janitor', 'security'])
+	userId: z.string(),
+	name: z.string().min(1),
+	email: z.string().email(),
+	role: z.enum(['manager', 'property_manager', 'staff']),
+	staffType: z.enum(['chef', 'janitor', 'security']).optional()
 });
 
-export const updateStaff = form(updateStaffSchema, async ({ id, staffType }) => {
-	const { sessionUser } = getSession();
-	if (
-		sessionUser.role !== 'admin' &&
-		sessionUser.role !== 'manager' &&
-		sessionUser.role !== 'property_manager'
-	) {
-		throw error(403, 'Forbidden');
-	}
-
-	// For property managers, verify they can only update staff assigned to their properties
-	if (sessionUser.role === 'property_manager') {
-		const pmAssignments = await db.query.propertyManagerAssignments.findMany({
-			where: { userId: sessionUser.id },
-			columns: { propertyId: true }
-		});
-		const assignedPropertyIds = pmAssignments.map((a) => a.propertyId);
-
-		const staffProfile = await db.query.staffProfiles.findFirst({
-			where: { id },
-			with: { assignments: true }
-		});
-
-		if (!staffProfile?.assignments.some((a) => assignedPropertyIds.includes(a.propertyId))) {
-			throw error(403, 'You can only update staff assigned to your properties');
+export const updateStaff = form(
+	updateStaffSchema,
+	async ({ id, userId, name, email, role, staffType }) => {
+		const { sessionUser } = getSession();
+		if (
+			sessionUser.role !== 'admin' &&
+			sessionUser.role !== 'manager' &&
+			sessionUser.role !== 'property_manager'
+		) {
+			throw error(403, 'Forbidden');
 		}
-	}
 
-	await db.update(staffProfiles).set({ staffType }).where(eq(staffProfiles.id, id));
-	await getStaff({}).refresh();
-	return { success: true };
-});
+		// Role-based restrictions (same as create)
+		if (sessionUser.role === 'manager' && role === 'manager') {
+			throw error(403, 'Managers cannot edit other managers');
+		}
+
+		if (
+			sessionUser.role === 'property_manager' &&
+			(role === 'manager' || role === 'property_manager')
+		) {
+			throw error(403, 'Property managers can only edit staff');
+		}
+
+		// Validate staffType is provided for staff role
+		if (role === 'staff' && !staffType) {
+			throw error(400, 'Staff type is required for staff role');
+		}
+
+		// For property managers, verify they can only update staff assigned to their properties
+		if (sessionUser.role === 'property_manager') {
+			const pmAssignments = await db.query.propertyManagerAssignments.findMany({
+				where: { userId: sessionUser.id },
+				columns: { propertyId: true }
+			});
+			const assignedPropertyIds = pmAssignments.map((a) => a.propertyId);
+
+			const staffProfile = await db.query.staffProfiles.findFirst({
+				where: { id },
+				with: { assignments: true }
+			});
+
+			if (!staffProfile?.assignments.some((a) => assignedPropertyIds.includes(a.propertyId))) {
+				throw error(403, 'You can only update staff assigned to your properties');
+			}
+		}
+
+		// Update user table (name, email, role)
+		await db
+			.update(user)
+			.set({
+				name,
+				email,
+				role,
+				updatedAt: new Date()
+			})
+			.where(eq(user.id, userId));
+
+		// Handle staff profile based on role
+		if (role === 'staff') {
+			// Check if staff profile exists
+			const existingProfile = await db.query.staffProfiles.findFirst({
+				where: { userId }
+			});
+
+			if (existingProfile && staffType) {
+				// Update existing profile
+				await db.update(staffProfiles).set({ staffType }).where(eq(staffProfiles.userId, userId));
+			} else if (!existingProfile && staffType) {
+				// Create new profile (role changed to staff)
+				await db.insert(staffProfiles).values({
+					userId,
+					staffType
+				});
+			}
+		} else {
+			// Role is manager or property_manager
+			// Delete staff profile if exists (role changed from staff)
+			const existingProfile = await db.query.staffProfiles.findFirst({
+				where: { userId }
+			});
+			if (existingProfile) {
+				await db.delete(staffProfiles).where(eq(staffProfiles.userId, userId));
+			}
+		}
+
+		await getStaff({}).refresh();
+		return { success: true };
+	}
+);
 
 export const deleteStaff = form(z.object({ id: z.string() }), async ({ id }) => {
 	const { sessionUser } = getSession();
