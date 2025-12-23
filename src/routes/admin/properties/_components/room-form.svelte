@@ -25,14 +25,15 @@
 			priceMonthly: number;
 			depositAmount?: number | null;
 			status: string;
+
 			features?: string[] | null;
-			images?: string[] | null;
+			media?: { url: string; type: string }[] | null;
 		} | null;
 	}>();
 
 	$effect(() => {
 		if (open) {
-			selectedImages = room?.images || [];
+			selectedImages = room?.media?.map((m: { url: string }) => m.url) || [];
 		} else {
 			selectedImages = [];
 		}

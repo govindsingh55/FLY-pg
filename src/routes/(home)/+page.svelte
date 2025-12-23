@@ -43,7 +43,11 @@
 
 							<div class="pt-4">
 								<h3 class="mb-4 text-lg font-semibold">Amenities</h3>
-								<AmenitiesGrid amenities={property.amenities as string[]} />
+								<AmenitiesGrid
+									amenities={property.amenities
+										.map((a: any) => a.amenity?.name)
+										.filter((n: any) => n)}
+								/>
 							</div>
 						</section>
 

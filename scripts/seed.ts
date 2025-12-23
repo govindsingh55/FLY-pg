@@ -17,10 +17,12 @@ import {
 	systemSettings,
 	staffAssignments,
 	foodMenuItems,
-	media,
 	amenities,
 	propertyAmenities,
-	contracts
+	contracts,
+	propertyMedia,
+	roomMedia,
+	media
 } from '../src/lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 
@@ -31,9 +33,11 @@ async function seed() {
 		// Clear new tables
 		await db.delete(systemSettings);
 		await db.delete(foodMenuItems);
-		await db.delete(media);
 		await db.delete(propertyAmenities);
-		await db.delete(amenities);
+
+		await db.delete(propertyMedia);
+		await db.delete(roomMedia);
+		await db.delete(media);
 		await db.delete(visitBookings);
 		await db.delete(staffAssignments);
 		await db.delete(propertyManagerAssignments);
@@ -214,23 +218,27 @@ async function seed() {
 		}
 
 		// Create Property Media
-		await db.insert(media).values([
-			{
-				url: '/images/sunrise-1.jpg',
-				type: 'image',
-				propertyId: property1Id
-			},
-			{
-				url: '/images/sunrise-2.jpg',
-				type: 'image',
-				propertyId: property1Id
-			},
-			{
-				url: '/images/greenvalley-1.jpg',
-				type: 'image',
-				propertyId: property2Id
-			}
-		]);
+		console.log('Creating Property Media...');
+		const propMediaItems = [
+			{ url: '/images/sunrise-1.jpg', type: 'image', propId: property1Id },
+			{ url: '/images/sunrise-2.jpg', type: 'image', propId: property1Id },
+			{ url: '/images/greenvalley-1.jpg', type: 'image', propId: property2Id }
+		];
+
+		for (const item of propMediaItems) {
+			const mId = crypto.randomUUID();
+			await db.insert(media).values({
+				id: mId,
+				url: item.url,
+				type: item.type
+			});
+			await db.insert(propertyMedia).values({
+				propertyId: item.propId,
+				mediaId: mId,
+				isFeatured: true
+			});
+		}
+		console.log('✅ Property Media Created');
 
 		// Create food menu items
 		console.log('Creating food menu items...');
@@ -388,13 +396,28 @@ async function seed() {
 		]);
 
 		// Create Room Media
-		await db.insert(media).values([
+		console.log('Creating Room Media...');
+		const roomMediaItems = [
 			{ url: '/images/room101-1.jpg', type: 'image', roomId: room1Id },
 			{ url: '/images/room101-2.jpg', type: 'image', roomId: room1Id },
 			{ url: '/images/room102.jpg', type: 'image', roomId: room2Id },
 			{ url: '/images/room201.jpg', type: 'image', roomId: room3Id },
 			{ url: '/images/room202.jpg', type: 'image', roomId: room4Id }
-		]);
+		];
+
+		for (const item of roomMediaItems) {
+			const mId = crypto.randomUUID();
+			await db.insert(media).values({
+				id: mId,
+				url: item.url,
+				type: item.type
+			});
+			await db.insert(roomMedia).values({
+				roomId: item.roomId,
+				mediaId: mId
+			});
+		}
+		console.log('✅ Room Media Created');
 
 		console.log('✅ Rooms created');
 

@@ -3,6 +3,7 @@
 	import { Sheet, SheetContent, SheetTrigger } from '$lib/components/ui/sheet';
 	import { cn } from '$lib/utils';
 	import { Menu, Home, Info, Phone, LogIn } from 'lucide-svelte';
+	import ThemeToggle from '$lib/components/theme-toggle.svelte';
 
 	let isOpen = $state(false);
 
@@ -38,12 +39,14 @@
 
 		<!-- Desktop Auth -->
 		<div class="hidden md:flex md:items-center md:gap-4">
+			<ThemeToggle />
 			<Button variant="ghost" size="sm" href="/login">Login</Button>
 			<Button size="sm" href="/register">Sign Up</Button>
 		</div>
 
 		<!-- Mobile Menu -->
-		<div class="md:hidden">
+		<div class="flex items-center gap-2 md:hidden">
+			<ThemeToggle />
 			<Sheet bind:open={isOpen}>
 				<SheetTrigger>
 					{#snippet child({ props })}

@@ -37,6 +37,17 @@
 	--sidebar-accent-foreground: oklch(0.21 0.006 285.885);
 	--sidebar-border: oklch(0.92 0.004 286.32);
 	--sidebar-ring: oklch(0.623 0.214 259.815);
+
+	/* Earthy Palette */
+	--forest-green: #2c3e33;
+	--plum: #4a3440;
+	--inky-blue: #344146;
+	--sage-green: #6f7d62;
+	--rust: #8b4b36;
+	--muted-ochre: #c89f3a;
+	--mushroom-taupe: #948570;
+	--warm-cream: #d4cdba;
+	--deep-blue: #2f3e4e;
 }
 
 .dark {
@@ -110,6 +121,60 @@
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
+
+	/* Earthy Palette Utilities */
+	--color-forest-green: var(--forest-green);
+	--color-plum: var(--plum);
+	--color-inky-blue: var(--inky-blue);
+	--color-sage-green: var(--sage-green);
+	--color-rust: var(--rust);
+	--color-muted-ochre: var(--muted-ochre);
+	--color-mushroom-taupe: var(--mushroom-taupe);
+	--color-warm-cream: var(--warm-cream);
+	--color-deep-blue: var(--deep-blue);
+}
+
+.theme-earthy {
+	--background: var(--warm-cream);
+	--foreground: var(--inky-blue);
+	--card: #fdfbf7;
+	--card-foreground: var(--inky-blue);
+	--popover: #fdfbf7;
+	--popover-foreground: var(--inky-blue);
+	--primary: var(--forest-green);
+	--primary-foreground: var(--warm-cream);
+	--secondary: var(--sage-green);
+	--secondary-foreground: #ffffff;
+	--muted: var(--mushroom-taupe);
+	--muted-foreground: var(--forest-green);
+	--accent: var(--muted-ochre);
+	--accent-foreground: var(--inky-blue);
+	--destructive: var(--rust);
+	/* --destructive-foreground: ...; */
+	--border: var(--mushroom-taupe);
+	--input: var(--mushroom-taupe);
+	--ring: var(--forest-green);
+}
+
+.dark .theme-earthy {
+	--background: var(--deep-blue);
+	--foreground: var(--warm-cream);
+	--card: var(--inky-blue);
+	--card-foreground: var(--warm-cream);
+	--popover: var(--inky-blue);
+	--popover-foreground: var(--warm-cream);
+	--primary: var(--sage-green);
+	--primary-foreground: var(--deep-blue);
+	--secondary: var(--forest-green);
+	--secondary-foreground: var(--warm-cream);
+	--muted: var(--plum);
+	--muted-foreground: var(--mushroom-taupe);
+	--accent: var(--rust);
+	--accent-foreground: var(--warm-cream);
+	--destructive: var(--rust);
+	--border: var(--plum);
+	--input: var(--plum);
+	--ring: var(--sage-green);
 }
 
 @layer base {

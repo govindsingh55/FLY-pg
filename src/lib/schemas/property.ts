@@ -41,17 +41,15 @@ export const propertySchema = z.object({
 			)
 		])
 		.optional(),
-	images: z
-		.union([
-			z.array(z.string()),
-			z.string().transform((val) =>
-				val
-					.split(',')
-					.map((s) => s.trim())
-					.filter((s) => s.length > 0)
-			)
-		])
-		.optional(),
+	media: z
+		.array(
+			z.object({
+				url: z.string(),
+				type: z.enum(['image', 'video']).default('image')
+			})
+		)
+		.optional()
+		.default([]),
 	isFoodServiceAvailable: z.boolean().default(false),
 	foodMenu: z.string().optional(), // URL
 	bookingCharge: z.union([z.string(), z.number()]).pipe(z.coerce.number()).default(0),

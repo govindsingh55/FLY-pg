@@ -11,14 +11,16 @@
 		state: string | null;
 		zip: string | null;
 		contactPhone: string | null;
-		images: unknown | null;
+		media: { url: string; type: string }[] | null;
 		isFoodServiceAvailable: boolean | null;
 		id: string;
 	}
 
 	let { property } = $props<{ property: Property }>();
 
-	const images = $derived(Array.isArray(property.images) ? (property.images as string[]) : []);
+	const images = $derived(
+		Array.isArray(property.media) ? property.media.map((m: { url: string }) => m.url) : []
+	);
 
 	const imageId = $derived(
 		Math.abs(

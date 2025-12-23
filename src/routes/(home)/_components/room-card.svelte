@@ -12,7 +12,7 @@
 		depositAmount: number | null;
 		capacity: number | null;
 		features: unknown | null;
-		images: unknown | null;
+		media: { url: string; type: string }[] | null;
 	}
 
 	let { room } = $props<{ room: Room }>();
@@ -27,7 +27,9 @@
 
 	// Helper to extract features from JSON or array
 	const features = $derived(Array.isArray(room.features) ? room.features : []);
-	const images = $derived(Array.isArray(room.images) ? (room.images as string[]) : []);
+	const images = $derived(
+		Array.isArray(room.media) ? room.media.map((m: { url: string }) => m.url) : []
+	);
 
 	const imageId = $derived(
 		Math.abs(

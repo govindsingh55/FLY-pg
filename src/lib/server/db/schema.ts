@@ -98,18 +98,6 @@ export const verification = sqliteTable(
 
 // --- Business Domain Tables ---
 
-export const media = sqliteTable('media', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	url: text('url').notNull(),
-	type: text('type', { enum: ['image', 'document', 'video', 'other'] }).default('image'),
-	propertyId: text('property_id').references(() => properties.id, { onDelete: 'cascade' }),
-	roomId: text('room_id').references(() => rooms.id, { onDelete: 'cascade' }),
-	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
-});
-
 export const amenities = sqliteTable('amenities', {
 	id: text('id')
 		.primaryKey()
@@ -117,10 +105,48 @@ export const amenities = sqliteTable('amenities', {
 	name: text('name').notNull(),
 	description: text('description'),
 	image: text('image'), // URL
-	icon: text('icon'), // Lucide icon name
-	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
-	updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date())
+	icon: text('icon') // lucide icon name
 });
+
+export const media = sqliteTable('media', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	url: text('url').notNull(),
+	type: text('type').notNull(), // 'image' | 'video' | 'document'
+	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`)
+});
+
+export const propertyMedia = sqliteTable(
+	'property_media',
+	{
+		propertyId: text('property_id')
+			.notNull()
+			.references(() => properties.id, { onDelete: 'cascade' }),
+		mediaId: text('media_id')
+			.notNull()
+			.references(() => media.id, { onDelete: 'cascade' }),
+		isFeatured: integer('is_featured', { mode: 'boolean' }).default(false)
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.propertyId, t.mediaId] })
+	})
+);
+
+export const roomMedia = sqliteTable(
+	'room_media',
+	{
+		roomId: text('room_id')
+			.notNull()
+			.references(() => rooms.id, { onDelete: 'cascade' }),
+		mediaId: text('media_id')
+			.notNull()
+			.references(() => media.id, { onDelete: 'cascade' })
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.roomId, t.mediaId] })
+	})
+);
 
 export const propertyAmenities = sqliteTable(
 	'property_amenities',
@@ -507,6 +533,8 @@ export const relationsDef = defineRelations(
 		systemSettings,
 		foodMenuItems,
 		media,
+		propertyMedia,
+		roomMedia,
 		amenities,
 		propertyAmenities,
 		contracts,
@@ -563,9 +591,9 @@ export const relationsDef = defineRelations(
 				from: r.properties.id,
 				to: r.foodMenuItems.propertyId
 			}),
-			media: r.many.media({
+			propertyMedia: r.many.propertyMedia({
 				from: r.properties.id,
-				to: r.media.propertyId
+				to: r.propertyMedia.propertyId
 			}),
 			amenities: r.many.propertyAmenities({
 				from: r.properties.id,
@@ -581,19 +609,39 @@ export const relationsDef = defineRelations(
 				from: r.rooms.id,
 				to: r.bookings.roomId
 			}),
-			media: r.many.media({
+			roomMedia: r.many.roomMedia({
 				from: r.rooms.id,
-				to: r.media.roomId
+				to: r.roomMedia.roomId
 			})
 		},
 		media: {
+			propertyMedia: r.many.propertyMedia({
+				from: r.media.id,
+				to: r.propertyMedia.mediaId
+			}),
+			roomMedia: r.many.roomMedia({
+				from: r.media.id,
+				to: r.roomMedia.mediaId
+			})
+		},
+		propertyMedia: {
 			property: r.one.properties({
-				from: r.media.propertyId,
+				from: r.propertyMedia.propertyId,
 				to: r.properties.id
 			}),
+			media: r.one.media({
+				from: r.propertyMedia.mediaId,
+				to: r.media.id
+			})
+		},
+		roomMedia: {
 			room: r.one.rooms({
-				from: r.media.roomId,
+				from: r.roomMedia.roomId,
 				to: r.rooms.id
+			}),
+			media: r.one.media({
+				from: r.roomMedia.mediaId,
+				to: r.media.id
 			})
 		},
 		amenities: {

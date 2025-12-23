@@ -9,14 +9,16 @@
 		name: string;
 		address: string;
 		city: string | null;
-		images: unknown | null;
+		media: { url: string; type: string }[] | null;
 		isFoodServiceAvailable: boolean | null;
 		rooms: any[]; // Using any[] for now as we just need length/min price
 	}
 
 	let { property } = $props<{ property: Property }>();
 
-	const images = $derived(Array.isArray(property.images) ? (property.images as string[]) : []);
+	const images = $derived(
+		Array.isArray(property.media) ? property.media.map((m: { url: string }) => m.url) : []
+	);
 
 	const imageId = $derived(
 		Math.abs(

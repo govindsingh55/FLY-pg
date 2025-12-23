@@ -1,7 +1,7 @@
 import { command, form, getRequestEvent, query } from '$app/server';
 import { propertySchema } from '$lib/schemas/property';
 import { db } from '$lib/server/db';
-import { media, properties, propertyAmenities } from '$lib/server/db/schema';
+import { properties, propertyAmenities, media, propertyMedia } from '$lib/server/db/schema';
 import { softDelete } from '$lib/server/db/soft-delete';
 import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
@@ -85,15 +85,29 @@ export const getProperties = query(
 					...searchFilter
 				},
 				with: {
-					rooms: true
+					rooms: true,
+					propertyMedia: {
+						with: {
+							media: true
+						}
+					}
 				},
 				orderBy: { createdAt: 'desc' },
 				limit: pageSize,
 				offset: offset
 			});
 
+			// Transform to flatten media
+			const mappedProps = props.map((p) => ({
+				...p,
+				media: p.propertyMedia.map((pm) => ({
+					url: pm.media!.url,
+					type: pm.media!.type as 'image' | 'video'
+				}))
+			}));
+
 			return {
-				properties: props,
+				properties: mappedProps,
 				total: propertiesList.length,
 				page,
 				pageSize,
@@ -116,13 +130,26 @@ export const getProperty = query(z.string(), async (id) => {
 			},
 			with: {
 				rooms: true,
-				media: true,
-				amenities: true
+				amenities: true,
+				propertyMedia: {
+					with: {
+						media: true
+					}
+				}
 			}
 		});
 
 		if (!property) throw error(404, 'Property not found');
-		return { property };
+
+		const flattenedProperty = {
+			...property,
+			media: property.propertyMedia.map((pm) => ({
+				url: pm.media!.url,
+				type: pm.media!.type as 'image' | 'video'
+			}))
+		};
+
+		return { property: flattenedProperty };
 	} catch (e) {
 		console.error(e);
 		throw error(500, 'Failed to fetch property');
@@ -136,7 +163,7 @@ export const createProperty = form(propertySchema, async (data) => {
 	}
 
 	try {
-		const { amenities: amenityIds, images: imageUrls, ...propData } = data;
+		const { amenities: amenityIds, media: mediaFiles, ...propData } = data;
 
 		// 1. Create Property
 		const propertyId = crypto.randomUUID();
@@ -155,13 +182,21 @@ export const createProperty = form(propertySchema, async (data) => {
 		}
 
 		// 3. Add Images (Media)
-		if (imageUrls && imageUrls.length > 0) {
-			const mediaItems = imageUrls.map((url: string) => ({
-				url,
-				propertyId,
-				type: 'image' as const
-			}));
-			await db.insert(media).values(mediaItems);
+		// 3. Add Media
+		if (mediaFiles && mediaFiles.length > 0) {
+			for (const m of mediaFiles) {
+				const mId = crypto.randomUUID();
+				await db.insert(media).values({
+					id: mId,
+					url: m.url,
+					type: m.type
+				});
+				await db.insert(propertyMedia).values({
+					propertyId,
+					mediaId: mId,
+					isFeatured: false // Default
+				});
+			}
 		}
 
 		await getProperties({}).refresh();
@@ -183,7 +218,7 @@ export const updateProperty = form(updateSchema, async (data) => {
 	}
 
 	try {
-		const { amenities: amenityIds, images: imageUrls, id, ...propData } = data;
+		const { amenities: amenityIds, media: mediaFiles, id, ...propData } = data;
 
 		// 1. Update Property
 		await db
@@ -205,14 +240,27 @@ export const updateProperty = form(updateSchema, async (data) => {
 		}
 
 		// 3. Update Media
-		await db.delete(media).where(eq(media.propertyId, id));
-		if (imageUrls && imageUrls.length > 0) {
-			const mediaItems = imageUrls.map((url: string) => ({
-				url,
-				propertyId: id,
-				type: 'image' as const
-			}));
-			await db.insert(media).values(mediaItems);
+		// 3. Update Media (Directly in main update)
+		// 3. Update Media (Delete existing links and re-create)
+		await db.delete(propertyMedia).where(eq(propertyMedia.propertyId, id));
+		// Note: orphan media records in 'media' table are not cleaned up here.
+		// Ideally we should find them and delete them if not used elsewhere, or use a periodic cleanup job.
+
+		if (mediaFiles && mediaFiles.length > 0) {
+			for (const m of mediaFiles) {
+				// We create NEW media records because we don't know if the URL changed or if it's a new file.
+				// A more optimized approach would be to check if URL exists.
+				const mId = crypto.randomUUID();
+				await db.insert(media).values({
+					id: mId,
+					url: m.url,
+					type: m.type
+				});
+				await db.insert(propertyMedia).values({
+					propertyId: id,
+					mediaId: mId
+				});
+			}
 		}
 
 		await getProperties({}).refresh();

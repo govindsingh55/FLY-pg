@@ -1,7 +1,7 @@
 import { form, getRequestEvent, query } from '$app/server';
 import { roomSchema } from '$lib/schemas/room';
 import { db } from '$lib/server/db';
-import { rooms, media } from '$lib/server/db/schema';
+import { media, roomMedia, rooms } from '$lib/server/db/schema';
 import { softDelete } from '$lib/server/db/soft-delete';
 import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
@@ -19,15 +19,29 @@ export const getRoom = query(z.string(), async (id) => {
 	await getSession();
 	try {
 		// Use callback syntax
-		const room = await db.query.rooms.findFirst({
+		const roomData = await db.query.rooms.findFirst({
 			where: { id, deletedAt: { isNull: true } },
 			with: {
-				property: true
+				property: true,
+				roomMedia: {
+					with: {
+						media: true
+					}
+				}
 			}
 		});
 
-		if (!room) throw error(404, 'Room not found');
-		return { room };
+		if (!roomData) throw error(404, 'Room not found');
+
+		const mappedRoom = {
+			...roomData,
+			media: roomData.roomMedia.map((rm) => ({
+				url: rm.media!.url,
+				type: rm.media!.type as 'image' | 'video'
+			}))
+		};
+
+		return { room: mappedRoom };
 	} catch (e) {
 		console.error(e);
 		throw error(500, 'Failed to fetch room');
@@ -45,22 +59,30 @@ export const createRoom = form(createRoomSchema, async (data) => {
 	}
 
 	try {
-		const { images: imageUrls, ...roomData } = data;
-		const roomId = crypto.randomUUID();
+		const { media: mediaFiles, ...roomData } = data;
 
+		// 1. Create Room
+		const roomId = crypto.randomUUID();
 		await db.insert(rooms).values({
 			id: roomId,
 			...roomData,
 			features: roomData.features || []
 		});
 
-		if (imageUrls && imageUrls.length > 0) {
-			const mediaItems = imageUrls.map((url: string) => ({
-				url,
-				roomId,
-				type: 'image' as const
-			}));
-			await db.insert(media).values(mediaItems);
+		// 2. Add Media
+		if (mediaFiles && mediaFiles.length > 0) {
+			for (const m of mediaFiles) {
+				const mId = crypto.randomUUID();
+				await db.insert(media).values({
+					id: mId,
+					url: m.url,
+					type: m.type
+				});
+				await db.insert(roomMedia).values({
+					roomId,
+					mediaId: mId
+				});
+			}
 		}
 
 		return { success: true };
@@ -82,31 +104,32 @@ export const updateRoom = form(updateRoomSchema, async (data) => {
 	}
 
 	try {
-		const { images: imageUrls, ...roomData } = data;
+		const { media: mediaFiles, id, ...roomData } = data;
 
+		// 1. Update Room
 		await db
 			.update(rooms)
 			.set({
-				number: roomData.number,
-				type: roomData.type,
-				capacity: roomData.capacity,
-				priceMonthly: roomData.priceMonthly,
-				depositAmount: roomData.depositAmount,
-				status: roomData.status,
-				features: roomData.features,
+				...roomData,
 				updatedAt: new Date()
 			})
-			.where(eq(rooms.id, roomData.id));
+			.where(eq(rooms.id, id));
 
-		// Update Media
-		await db.delete(media).where(eq(media.roomId, roomData.id));
-		if (imageUrls && imageUrls.length > 0) {
-			const mediaItems = imageUrls.map((url: string) => ({
-				url,
-				roomId: roomData.id,
-				type: 'image' as const
-			}));
-			await db.insert(media).values(mediaItems);
+		// 2. Update Media
+		await db.delete(roomMedia).where(eq(roomMedia.roomId, id));
+		if (mediaFiles && mediaFiles.length > 0) {
+			for (const m of mediaFiles) {
+				const mId = crypto.randomUUID();
+				await db.insert(media).values({
+					id: mId,
+					url: m.url,
+					type: m.type
+				});
+				await db.insert(roomMedia).values({
+					roomId: id,
+					mediaId: mId
+				});
+			}
 		}
 
 		await getRoom(data.id).refresh();

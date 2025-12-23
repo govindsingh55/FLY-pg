@@ -1,10 +1,10 @@
 import { form, getRequestEvent, query } from '$app/server';
 import { mediaUpdateSchema } from '$lib/schemas/media';
 import { db } from '$lib/server/db';
-import { media } from '$lib/server/db/schema';
+import { media, propertyMedia, roomMedia } from '$lib/server/db/schema';
 import { getStorageProvider } from '$lib/server/storage';
 import { error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { eq, type InferSelectModel } from 'drizzle-orm';
 import { z } from 'zod';
 
 const getSession = () => {
@@ -13,6 +13,19 @@ const getSession = () => {
 		throw error(401, 'Unauthorized');
 	}
 	return { session: event.locals.session, sessionUser: event.locals.user };
+};
+
+// Define explicit types to bypass Drizzle inference complexity
+type Media = InferSelectModel<typeof media>;
+type MediaWithRelations = Media & {
+	propertyMedia: {
+		propertyId: string;
+		property: { name: string } | null;
+	}[];
+	roomMedia: {
+		roomId: string; // Corrected from mediaId based on error context, but join table has roomId
+		room: { number: string } | null;
+	}[];
 };
 
 export const getMedias = query(
@@ -24,17 +37,48 @@ export const getMedias = query(
 		await getSession();
 
 		const results = await db.query.media.findMany({
-			where: {
-				AND: [propertyId ? { propertyId } : {}, roomId ? { roomId } : {}]
-			},
 			with: {
-				property: { columns: { name: true } },
-				room: { columns: { number: true } }
+				propertyMedia: {
+					with: {
+						property: { columns: { name: true } }
+					}
+				},
+				roomMedia: {
+					with: {
+						room: { columns: { number: true } }
+					}
+				}
 			},
-			orderBy: { createdAt: 'desc' }
+			orderBy: (media, { desc }) => [desc(media.createdAt)]
 		});
 
-		return { media: results };
+		// Cast results to our explicit type
+		const typedResults = results as unknown as MediaWithRelations[];
+
+		// Filter results in application layer
+		const filteredResults = typedResults.filter((m) => {
+			if (propertyId) {
+				const linked = m.propertyMedia.some((pm) => pm.propertyId === propertyId);
+				if (!linked) return false;
+			}
+			if (roomId) {
+				const linked = m.roomMedia.some((rm) => rm.roomId === roomId); // Note: Drizzle relation name usually matches table col? Check schema.
+				// In schema: roomMedia relation on media table is defined as 'roomMedia'.
+				// roomMedia table has 'roomId' column.
+				// Drizzle result for roomMedia relation is array of roomMedia rows.
+				// roomMedia row has roomId. Correct.
+				if (!linked) return false;
+			}
+			return true;
+		});
+
+		const mappedResults = filteredResults.map((m) => ({
+			...m,
+			property: m.propertyMedia[0]?.property || null,
+			room: m.roomMedia[0]?.room || null
+		}));
+
+		return { media: mappedResults };
 	}
 );
 
@@ -62,12 +106,23 @@ export const uploadMedia = form(
 				.values({
 					url,
 					type: payload.type,
-					propertyId: payload.propertyId || null,
-					roomId: payload.roomId || null,
-					createdAt: new Date(),
-					updatedAt: new Date()
+					createdAt: new Date()
 				})
 				.returning();
+
+			if (payload.propertyId) {
+				await db.insert(propertyMedia).values({
+					mediaId: newMedia.id,
+					propertyId: payload.propertyId
+				});
+			}
+
+			if (payload.roomId) {
+				await db.insert(roomMedia).values({
+					mediaId: newMedia.id,
+					roomId: payload.roomId
+				});
+			}
 
 			return { success: true, media: newMedia };
 		} catch (e) {
@@ -91,12 +146,28 @@ export const updateMedia = form(mediaUpdateSchema, async (data) => {
 			.update(media)
 			.set({
 				url: updateData.url,
-				type: updateData.type,
-				propertyId: updateData.propertyId || null,
-				roomId: updateData.roomId || null,
-				updatedAt: new Date()
+				type: updateData.type
 			})
 			.where(eq(media.id, id));
+
+		// Update links
+		// For property
+		await db.delete(propertyMedia).where(eq(propertyMedia.mediaId, id));
+		if (updateData.propertyId) {
+			await db.insert(propertyMedia).values({
+				mediaId: id,
+				propertyId: updateData.propertyId
+			});
+		}
+
+		// For room
+		await db.delete(roomMedia).where(eq(roomMedia.mediaId, id));
+		if (updateData.roomId) {
+			await db.insert(roomMedia).values({
+				mediaId: id,
+				roomId: updateData.roomId
+			});
+		}
 
 		return { success: true };
 	} catch (e) {
@@ -161,8 +232,7 @@ export const replaceMedia = form(
 			await db
 				.update(media)
 				.set({
-					url: newUrl,
-					updatedAt: new Date()
+					url: newUrl
 				})
 				.where(eq(media.id, payload.id));
 
