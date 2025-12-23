@@ -21,10 +21,11 @@ export const getPayments = query(
 		dateTo: z.string().optional(),
 		contractId: z.string().optional(),
 		bookingId: z.string().optional(),
+		statusFilter: z.enum(['pending', 'paid', 'failed', 'refunded']).optional(),
 		page: z.number().default(1),
 		pageSize: z.number().default(10)
 	}),
-	async ({ searchTerm, dateFrom, dateTo, contractId, bookingId, page, pageSize }) => {
+	async ({ searchTerm, dateFrom, dateTo, contractId, bookingId, statusFilter, page, pageSize }) => {
 		const { sessionUser } = getSession();
 
 		try {
@@ -61,6 +62,7 @@ export const getPayments = query(
 					: {}),
 				...(contractId ? { contractId: { eq: contractId } } : {}),
 				...(bookingId ? { bookingId: { eq: bookingId } } : {}),
+				...(statusFilter ? { status: { eq: statusFilter } } : {}),
 				...(searchTerm
 					? {
 							OR: [
@@ -161,5 +163,140 @@ export const updatePayment = form(updateSchema, async (data) => {
 	} catch (e) {
 		console.error(e);
 		throw error(500, 'Failed to update payment');
+	}
+});
+
+// Payment verification schema
+const verifyPaymentSchema = z.object({
+	id: z.string(),
+	status: z.enum(['paid', 'failed'])
+});
+
+export const verifyPayment = form(verifyPaymentSchema, async (data) => {
+	const { sessionUser } = getSession();
+
+	// Check role - admin, manager, or property_manager
+	if (!['admin', 'manager', 'property_manager'].includes(sessionUser.role || '')) {
+		throw error(403, 'Forbidden');
+	}
+
+	// If property manager, verify they have access to this payment's property
+	if (sessionUser.role === 'property_manager') {
+		const payment = await db.query.payments.findFirst({
+			where: { id: data.id },
+			with: {
+				booking: {
+					columns: { propertyId: true }
+				},
+				contract: {
+					columns: { propertyId: true }
+				}
+			}
+		});
+
+		if (!payment) {
+			throw error(404, 'Payment not found');
+		}
+
+		const propertyId = payment.booking?.propertyId || payment.contract?.propertyId;
+
+		if (propertyId) {
+			const hasAccess = await db.query.propertyManagerAssignments.findFirst({
+				where: {
+					userId: sessionUser.id,
+					propertyId: propertyId
+				}
+			});
+
+			if (!hasAccess) {
+				throw error(403, 'You do not have access to verify this payment');
+			}
+		}
+	}
+
+	try {
+		await db
+			.update(payments)
+			.set({
+				status: data.status,
+				paymentDate: data.status === 'paid' ? new Date() : null,
+				updatedAt: new Date()
+			})
+			.where(eq(payments.id, data.id));
+
+		await getPayments({}).refresh();
+
+		return {
+			success: true,
+			message: data.status === 'paid' ? 'Payment verified successfully' : 'Payment marked as failed'
+		};
+	} catch (e) {
+		console.error(e);
+		throw error(500, 'Failed to verify payment');
+	}
+});
+
+// Bulk payment verification
+const bulkVerifySchema = z.object({
+	paymentIds: z.array(z.string()).min(1, 'At least one payment must be selected'),
+	status: z.enum(['paid', 'failed'])
+});
+
+export const bulkVerifyPayments = form(bulkVerifySchema, async (data) => {
+	const { sessionUser } = getSession();
+
+	if (!['admin', 'manager', 'property_manager'].includes(sessionUser.role || '')) {
+		throw error(403, 'Forbidden');
+	}
+
+	try {
+		// For property managers, verify all payments belong to their properties
+		if (sessionUser.role === 'property_manager') {
+			const paymentsToVerify = await db.query.payments.findMany({
+				where: {
+					id: { in: data.paymentIds }
+				},
+				with: {
+					booking: { columns: { propertyId: true } },
+					contract: { columns: { propertyId: true } }
+				}
+			});
+
+			const assigns = await db.query.propertyManagerAssignments.findMany({
+				where: { userId: sessionUser.id },
+				columns: { propertyId: true }
+			});
+
+			const allowedPropertyIds = assigns.map((a) => a.propertyId);
+
+			for (const payment of paymentsToVerify) {
+				const propertyId = payment.booking?.propertyId || payment.contract?.propertyId;
+				if (propertyId && !allowedPropertyIds.includes(propertyId)) {
+					throw error(403, 'You do not have access to verify all selected payments');
+				}
+			}
+		}
+
+		// Update all payments
+		for (const paymentId of data.paymentIds) {
+			await db
+				.update(payments)
+				.set({
+					status: data.status,
+					paymentDate: data.status === 'paid' ? new Date() : null,
+					updatedAt: new Date()
+				})
+				.where(eq(payments.id, paymentId));
+		}
+
+		await getPayments({}).refresh();
+
+		return {
+			success: true,
+			message: `${data.paymentIds.length} payment(s) ${data.status === 'paid' ? 'verified' : 'rejected'} successfully`
+		};
+	} catch (e) {
+		console.error(e);
+		throw error(500, 'Failed to bulk verify payments');
 	}
 });

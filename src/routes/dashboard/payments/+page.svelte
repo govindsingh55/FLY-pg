@@ -3,9 +3,12 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';
+	import { Plus } from 'lucide-svelte';
 	import { getPayments } from './payments.remote';
+	import PaymentSubmissionForm from './_components/payment-submission-form.svelte';
 
 	let dataPromise = $state(getPayments());
+	let submitFormOpen = $state(false);
 </script>
 
 <div class="flex h-full flex-col gap-4 p-6">
@@ -31,6 +34,10 @@
 					<h1 class="text-3xl font-bold tracking-tight">Payment History</h1>
 					<p class="text-muted-foreground">View your rent and deposit payments.</p>
 				</div>
+				<Button onclick={() => (submitFormOpen = true)}>
+					<Plus class="mr-2 h-4 w-4" />
+					Submit Payment
+				</Button>
 			</div>
 
 			<div class="rounded-md border">
@@ -57,6 +64,13 @@
 											<span>{payment.booking.property?.name ?? 'Unknown Property'}</span>
 											<span class="text-xs text-muted-foreground"
 												>Room {payment.booking.room?.number ?? '?'}</span
+											>
+										</div>
+									{:else if payment.contract}
+										<div class="flex flex-col">
+											<span>{payment.contract.property?.name ?? 'Unknown Property'}</span>
+											<span class="text-xs text-muted-foreground"
+												>Room {payment.contract.room?.number ?? '?'}</span
 											>
 										</div>
 									{:else}
@@ -110,3 +124,5 @@
 		{/snippet}
 	</svelte:boundary>
 </div>
+
+<PaymentSubmissionForm bind:open={submitFormOpen} />

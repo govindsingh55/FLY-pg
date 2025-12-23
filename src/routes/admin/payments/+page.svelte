@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Calendar } from '$lib/components/ui/calendar';
@@ -6,24 +7,26 @@
 	import * as InputGroup from '$lib/components/ui/input-group';
 	import * as Pagination from '$lib/components/ui/pagination';
 	import * as Popover from '$lib/components/ui/popover';
+	import * as Select from '$lib/components/ui/select';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
+	import * as ToggleGroup from '$lib/components/ui/toggle-group';
 	import { type DateValue } from '@internationalized/date';
-	import { Calendar as CalendarIcon, Plus, Search, X } from 'lucide-svelte';
+	import { Calendar as CalendarIcon, Check, Plus, Search, X, X as XIcon } from 'lucide-svelte';
 	import { Debounced } from 'runed';
-	import { page } from '$app/state';
+	import { toast } from 'svelte-sonner';
 	import { getBookings } from '../bookings/bookings.remote';
-	import { getCustomers } from '../customers/customers.remote';
 	import { getContracts } from '../contracts/contracts.remote';
+	import { getCustomers } from '../customers/customers.remote';
 	import PaymentForm from './_components/payment-form.svelte';
-	import { getPayments } from './payments.remote';
-	import * as Select from '$lib/components/ui/select';
+	import { getPayments, verifyPayment } from './payments.remote';
 
 	let searchTerm = $state('');
 	let dateFrom = $state<DateValue | undefined>(undefined);
 	let dateTo = $state<DateValue | undefined>(undefined);
 	let currentPage = $state(1);
 	let pageSize = $state(10);
+	let statusFilter = $state<'all' | 'pending' | 'paid' | 'failed'>('all');
 
 	let contractId = $derived(page.url.searchParams.get('contractId'));
 	let bookingId = $derived(page.url.searchParams.get('bookingId'));
@@ -37,6 +40,7 @@
 			dateTo: dateTo?.toString(),
 			contractId: contractId ?? undefined,
 			bookingId: bookingId ?? undefined,
+			statusFilter: statusFilter !== 'all' ? statusFilter : undefined,
 			page: currentPage,
 			pageSize: pageSize
 		})
@@ -120,6 +124,20 @@
 				<X class="h-4 w-4" />
 			</Button>
 		{/if}
+
+		<!-- Status Filter -->
+		<ToggleGroup.Root
+			type="single"
+			value={statusFilter}
+			onValueChange={(value) => {
+				if (value) statusFilter = value as typeof statusFilter;
+			}}
+		>
+			<ToggleGroup.Item value="all">All</ToggleGroup.Item>
+			<ToggleGroup.Item value="pending">Pending</ToggleGroup.Item>
+			<ToggleGroup.Item value="paid">Paid</ToggleGroup.Item>
+			<ToggleGroup.Item value="failed">Failed</ToggleGroup.Item>
+		</ToggleGroup.Root>
 	</div>
 
 	<svelte:boundary>
@@ -141,8 +159,10 @@
 								<Table.Head>Property / Booking</Table.Head>
 								<Table.Head>Type</Table.Head>
 								<Table.Head>Mode</Table.Head>
+								<Table.Head>Transaction ID</Table.Head>
 								<Table.Head>Amount</Table.Head>
 								<Table.Head>Status</Table.Head>
+								<Table.Head class="text-right">Actions</Table.Head>
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
@@ -190,6 +210,20 @@
 										{payment.mode}
 									</Table.Cell>
 									<Table.Cell>
+										{#if payment.transactionId}
+											<code class="text-xs bg-muted px-1 py-0.5 rounded"
+												>{payment.transactionId}</code
+											>
+											{#if payment.paymentMethod}
+												<span class="text-xs text-muted-foreground block mt-1"
+													>{payment.paymentMethod}</span
+												>
+											{/if}
+										{:else}
+											<span class="text-muted-foreground">-</span>
+										{/if}
+									</Table.Cell>
+									<Table.Cell>
 										${payment.amount}
 									</Table.Cell>
 									<Table.Cell>
@@ -202,6 +236,50 @@
 										>
 											{payment.status}
 										</Badge>
+									</Table.Cell>
+									<Table.Cell class="text-right">
+										{#if payment.status === 'pending'}
+											<div class="flex gap-2 justify-end">
+												<!-- Verify Form -->
+												<form
+													{...verifyPayment.enhance(async ({ submit }) => {
+														try {
+															await submit();
+															toast.success('Payment verified successfully');
+														} catch (e: any) {
+															toast.error(e.message || 'Failed to verify payment');
+														}
+													})}
+												>
+													<input type="hidden" name="id" value={payment.id} />
+													<input type="hidden" name="status" value="paid" />
+													<Button type="submit" size="sm" variant="default">
+														<Check class="h-4 w-4 mr-1" />
+														Verify
+													</Button>
+												</form>
+												<!-- Reject Form -->
+												<form
+													{...verifyPayment.enhance(async ({ submit }) => {
+														try {
+															await submit();
+															toast.success('Payment rejected');
+														} catch (e: any) {
+															toast.error(e.message || 'Failed to reject payment');
+														}
+													})}
+												>
+													<input type="hidden" name="id" value={payment.id} />
+													<input type="hidden" name="status" value="failed" />
+													<Button type="submit" size="sm" variant="destructive">
+														<XIcon class="h-4 w-4 mr-1" />
+														Reject
+													</Button>
+												</form>
+											</div>
+										{:else}
+											<span class="text-muted-foreground text-sm">-</span>
+										{/if}
 									</Table.Cell>
 								</Table.Row>
 							{:else}
