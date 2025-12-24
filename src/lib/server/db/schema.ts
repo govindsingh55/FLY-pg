@@ -105,7 +105,11 @@ export const amenities = sqliteTable('amenities', {
 	name: text('name').notNull(),
 	description: text('description'),
 	image: text('image'), // URL
-	icon: text('icon') // lucide icon name
+	icon: text('icon'), // lucide icon name
+	createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+	updatedAt: integer('updated_at', { mode: 'timestamp' })
+		.default(sql`(unixepoch())`)
+		.$onUpdate(() => /* @__PURE__ */ new Date())
 });
 
 export const media = sqliteTable('media', {

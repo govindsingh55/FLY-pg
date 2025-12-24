@@ -34,23 +34,24 @@
 
 <div class="relative w-full">
 	<!-- Immersive Hero Image -->
-	<div class="relative h-[50vh] min-h-[400px] w-full overflow-hidden lg:h-[60vh]">
+	<div class="relative h-[50vh] min-h-[450px] w-full overflow-hidden lg:h-[65vh] lg:min-h-[500px]">
 		<img src={coverImage} alt={property.name} class="h-full w-full object-cover" />
+		<!-- Stronger gradient for better text contrast -->
 		<div
-			class="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent lg:via-background/40"
+			class="absolute inset-0 bg-linear-to-t from-background/95 via-background/70 to-background/20 lg:from-background/90 lg:via-background/60"
 		></div>
 
-		<div class="container mx-auto absolute bottom-0 left-0 right-0 z-10 pb-12 lg:pb-16">
+		<div class="container mx-auto px-4 absolute bottom-0 left-0 right-0 z-10 pb-8 lg:pb-12">
 			<div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-				<div class="space-y-4">
+				<div class="space-y-4 max-w-3xl">
 					<div>
 						<h1
-							class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-foreground drop-shadow-sm"
+							class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-foreground"
 						>
 							{property.name}
 						</h1>
 						<div
-							class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-lg text-muted-foreground/90 font-medium"
+							class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-base lg:text-lg text-muted-foreground font-medium"
 						>
 							<div class="flex items-center">
 								<MapPin class="mr-2 h-5 w-5 text-primary" />
@@ -72,27 +73,28 @@
 						{#if property.isFoodServiceAvailable}
 							<Badge
 								variant="secondary"
-								class="px-3 py-1 text-sm bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+								class="px-3 py-1.5 text-sm bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
 							>
 								Food Service Available
 							</Badge>
 						{/if}
-						<Badge variant="outline" class="px-3 py-1 text-sm">Premium Amenities</Badge>
+						<Badge variant="outline" class="px-3 py-1.5 text-sm">Premium Amenities</Badge>
 					</div>
 				</div>
 
-				<div class="flex flex-col gap-3 sm:flex-row lg:min-w-[280px]">
+				<!-- Action Buttons - Now more visible -->
+				<div class="flex flex-col gap-3 sm:flex-row lg:min-w-[320px] lg:shrink-0">
 					<Button
 						size="lg"
-						class="w-full text-base font-semibold shadow-lg shadow-primary/20"
+						class="w-full sm:w-auto text-base font-semibold shadow-lg hover:shadow-xl transition-all"
 						href="#rooms"
 					>
 						View Available Rooms
 					</Button>
 					<Button
 						size="lg"
-						variant="secondary"
-						class="w-full text-base font-semibold bg-background/80 backdrop-blur hover:bg-background/90"
+						variant="outline"
+						class="w-full sm:w-auto text-base font-semibold border-2 hover:bg-muted"
 						href="/login"
 					>
 						Schedule Visit

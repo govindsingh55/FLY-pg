@@ -4,92 +4,170 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ===========================================
+   UNIFIED PREMIUM THEME
+   Sophisticated color palette combining earthy tones
+   =========================================== */
+
 :root {
 	--radius: 0.65rem;
-	--background: oklch(1 0 0);
-	--foreground: oklch(0.141 0.005 285.823);
-	--card: oklch(1 0 0);
-	--card-foreground: oklch(0.141 0.005 285.823);
-	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.141 0.005 285.823);
-	--primary: oklch(0.623 0.214 259.815);
-	--primary-foreground: oklch(0.97 0.014 254.604);
-	--secondary: oklch(0.967 0.001 286.375);
-	--secondary-foreground: oklch(0.21 0.006 285.885);
-	--muted: oklch(0.967 0.001 286.375);
-	--muted-foreground: oklch(0.552 0.016 285.938);
-	--accent: oklch(0.967 0.001 286.375);
-	--accent-foreground: oklch(0.21 0.006 285.885);
-	--destructive: oklch(0.577 0.245 27.325);
-	--border: oklch(0.92 0.004 286.32);
-	--input: oklch(0.92 0.004 286.32);
-	--ring: oklch(0.623 0.214 259.815);
-	--chart-1: oklch(0.646 0.222 41.116);
-	--chart-2: oklch(0.6 0.118 184.704);
-	--chart-3: oklch(0.398 0.07 227.392);
-	--chart-4: oklch(0.828 0.189 84.429);
-	--chart-5: oklch(0.769 0.188 70.08);
-	--sidebar: oklch(0.985 0 0);
-	--sidebar-foreground: oklch(0.141 0.005 285.823);
-	--sidebar-primary: oklch(0.623 0.214 259.815);
-	--sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-	--sidebar-accent: oklch(0.967 0.001 286.375);
-	--sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-	--sidebar-border: oklch(0.92 0.004 286.32);
-	--sidebar-ring: oklch(0.623 0.214 259.815);
 
-	/* Earthy Palette */
-	--forest-green: #2c3e33;
-	--plum: #4a3440;
-	--inky-blue: #344146;
-	--sage-green: #6f7d62;
-	--rust: #8b4b36;
-	--muted-ochre: #c89f3a;
-	--mushroom-taupe: #948570;
-	--warm-cream: #d4cdba;
-	--deep-blue: #2f3e4e;
+	/* Light Mode - Warm & Inviting */
+
+	/* Base Colors */
+	--background: #faf8f5; /* Light warm cream */
+	--foreground: #1a2419; /* Deep forest for text */
+
+	/* Card & Surfaces */
+	--card: #ffffff; /* Pure white for cards */
+	--card-foreground: #1a2419;
+	--popover: #ffffff;
+	--popover-foreground: #1a2419;
+
+	/* Primary - Forest Green */
+	--primary: #2c3e33; /* Forest green */
+	--primary-foreground: #faf8f5;
+
+	/* Secondary - Sage Green */
+	--secondary: #7a8870; /* Sage green - softer variant */
+	--secondary-foreground: #ffffff;
+
+	/* Muted - Warm Cream */
+	--muted: #f0ede7; /* Lighter warm cream */
+	--muted-foreground: #5a5850;
+
+	/* Accent - Muted Ochre/India Yellow */
+	--accent: #d4a850; /* Warmed ochre */
+	--accent-foreground: #2a2219;
+
+	/* Destructive - Rust */
+	--destructive: #a05438; /* Rust tone */
+	--destructive-foreground: #ffffff;
+
+	/* Borders & Inputs */
+	--border: #e0d9d0; /* Soft mushroom taupe */
+	--input: #f0ede7;
+	--ring: #2c3e33; /* Forest green ring */
+
+	/* Chart Colors - Using all palette colors */
+	--chart-1: #2c3e33; /* Forest green */
+	--chart-2: #d4a850; /* Ochre */
+	--chart-3: #a05438; /* Rust */
+	--chart-4: #7a8870; /* Sage */
+	--chart-5: #4a3440; /* Plum accent */
+
+	/* Sidebar */
+	--sidebar: #fcfbf9;
+	--sidebar-foreground: #1a2419;
+	--sidebar-primary: #2c3e33;
+	--sidebar-primary-foreground: #faf8f5;
+	--sidebar-accent: #f0ede7;
+	--sidebar-accent-foreground: #1a2419;
+	--sidebar-border: #e0d9d0;
+	--sidebar-ring: #2c3e33;
+
+	/* Extended Palette for Advanced Usage */
+	--color-forest: #2c3e33;
+	--color-plum: #4a3440;
+	--color-inky-blue: #344146;
+	--color-sage: #7a8870;
+	--color-rust: #a05438;
+	--color-ochre: #d4a850;
+	--color-mushroom: #948570;
+	--color-cream: #f0ede7;
+	--color-deep-blue: #2f3e4e;
 }
 
 .dark {
-	--background: oklch(0.141 0.005 285.823);
-	--foreground: oklch(0.985 0 0);
-	--card: oklch(0.21 0.006 285.885);
-	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.21 0.006 285.885);
-	--popover-foreground: oklch(0.985 0 0);
-	--primary: oklch(0.546 0.245 262.881);
-	/* --primary-foreground: oklch(0.379 0.146 265.522); */
-	--primary-foreground: oklch(0.97 0.014 254.604);
-	--secondary: oklch(0.274 0.006 286.033);
-	--secondary-foreground: oklch(0.985 0 0);
-	--muted: oklch(0.274 0.006 286.033);
-	--muted-foreground: oklch(0.705 0.015 286.067);
-	--accent: oklch(0.274 0.006 286.033);
-	--accent-foreground: oklch(0.985 0 0);
-	--destructive: oklch(0.704 0.191 22.216);
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: oklch(0.488 0.243 264.376);
-	--chart-1: oklch(0.488 0.243 264.376);
-	--chart-2: oklch(0.696 0.17 162.48);
-	--chart-3: oklch(0.769 0.188 70.08);
-	--chart-4: oklch(0.627 0.265 303.9);
-	--chart-5: oklch(0.645 0.246 16.439);
-	--sidebar: oklch(0.21 0.006 285.885);
-	--sidebar-foreground: oklch(0.985 0 0);
-	--sidebar-primary: oklch(0.546 0.245 262.881);
-	--sidebar-primary-foreground: oklch(0.379 0.146 265.522);
-	--sidebar-accent: oklch(0.274 0.006 286.033);
-	--sidebar-accent-foreground: oklch(0.985 0 0);
-	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: oklch(0.488 0.243 264.376);
+	/* Dark Mode - Rich & Sophisticated */
+
+	/* Base Colors */
+	--background: #1c1e1a; /* Deep forest base */
+	--foreground: #f5f3f0; /* Warm cream for text */
+
+	/* Card & Surfaces */
+	--card: #262a24; /* Slightly lighter than background */
+	--card-foreground: #f5f3f0;
+	--popover: #2d3229;
+	--popover-foreground: #f5f3f0;
+
+	/* Primary - Ochre/Gold (reversed for dark mode) */
+	--primary: #e5bd6a; /* Brighter ochre for visibility */
+	--primary-foreground: #1c1e1a;
+
+	/* Secondary - Sage Green */
+	--secondary: #8a9b7c; /* Lighter sage for dark mode */
+	--secondary-foreground: #1c1e1a;
+
+	/* Muted - Deep Olive */
+	--muted: #2d3229; /* Deep olive tone */
+	--muted-foreground: #b8b2a8;
+
+	/* Accent - Warm Rust */
+	--accent: #c97958; /* Warmer rust */
+	--accent-foreground: #f5f3f0;
+
+	/* Destructive - Bright Rust */
+	--destructive: #d47656;
+	--destructive-foreground: #ffffff;
+
+	/* Borders & Inputs */
+	--border: #3a3f36; /* Subtle green-gray */
+	--input: #2d3229;
+	--ring: #e5bd6a; /* Ochre ring for focus */
+
+	/* Chart Colors - Adjusted for dark mode */
+	--chart-1: #8a9b7c; /* Sage */
+	--chart-2: #e5bd6a; /* Ochre */
+	--chart-3: #c97958; /* Rust */
+	--chart-4: #6f7d62; /* Forest */
+	--chart-5: #7d5e72; /* Plum */
+
+	/* Sidebar */
+	--sidebar: #1c1e1a;
+	--sidebar-foreground: #f5f3f0;
+	--sidebar-primary: #e5bd6a;
+	--sidebar-primary-foreground: #1c1e1a;
+	--sidebar-accent: #2d3229;
+	--sidebar-accent-foreground: #f5f3f0;
+	--sidebar-border: #3a3f36;
+	--sidebar-ring: #e5bd6a;
 }
+
+/* ===========================================
+   SUCCESS & INFO STATES
+   Using palette colors for semantic meaning
+   =========================================== */
+
+:root {
+	--success: #7a8870; /* Sage green for success */
+	--success-foreground: #ffffff;
+	--info: #2f3e4e; /* Deep blue for info */
+	--info-foreground: #ffffff;
+	--warning: #d4a850; /* Ochre for warnings */
+	--warning-foreground: #2a2219;
+}
+
+.dark {
+	--success: #8a9b7c;
+	--success-foreground: #1c1e1a;
+	--info: #5a7189;
+	--info-foreground: #f5f3f0;
+	--warning: #e5bd6a;
+	--warning-foreground: #1c1e1a;
+}
+
+/* ===========================================
+   TAILWINDCSS THEME INTEGRATION
+   =========================================== */
 
 @theme inline {
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
+
+	/* Core Colors */
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
@@ -105,14 +183,27 @@
 	--color-accent: var(--accent);
 	--color-accent-foreground: var(--accent-foreground);
 	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
+
+	/* Semantic Colors */
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
+	--color-info: var(--info);
+	--color-info-foreground: var(--info-foreground);
+	--color-warning: var(--warning);
+	--color-warning-foreground: var(--warning-foreground);
+
+	/* Charts */
 	--color-chart-1: var(--chart-1);
 	--color-chart-2: var(--chart-2);
 	--color-chart-3: var(--chart-3);
 	--color-chart-4: var(--chart-4);
 	--color-chart-5: var(--chart-5);
+
+	/* Sidebar */
 	--color-sidebar: var(--sidebar);
 	--color-sidebar-foreground: var(--sidebar-foreground);
 	--color-sidebar-primary: var(--sidebar-primary);
@@ -122,66 +213,95 @@
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
 
-	/* Earthy Palette Utilities */
-	--color-forest-green: var(--forest-green);
-	--color-plum: var(--plum);
-	--color-inky-blue: var(--inky-blue);
-	--color-sage-green: var(--sage-green);
-	--color-rust: var(--rust);
-	--color-muted-ochre: var(--muted-ochre);
-	--color-mushroom-taupe: var(--mushroom-taupe);
-	--color-warm-cream: var(--warm-cream);
-	--color-deep-blue: var(--deep-blue);
+	/* Extended Palette */
+	--color-forest: var(--color-forest);
+	--color-plum: var(--color-plum);
+	--color-inky-blue: var(--color-inky-blue);
+	--color-sage: var(--color-sage);
+	--color-rust: var(--color-rust);
+	--color-ochre: var(--color-ochre);
+	--color-mushroom: var(--color-mushroom);
+	--color-cream: var(--color-cream);
+	--color-deep-blue: var(--color-deep-blue);
 }
 
-.theme-earthy {
-	--background: var(--warm-cream);
-	--foreground: var(--inky-blue);
-	--card: #fdfbf7;
-	--card-foreground: var(--inky-blue);
-	--popover: #fdfbf7;
-	--popover-foreground: var(--inky-blue);
-	--primary: var(--forest-green);
-	--primary-foreground: var(--warm-cream);
-	--secondary: var(--sage-green);
-	--secondary-foreground: #ffffff;
-	--muted: var(--mushroom-taupe);
-	--muted-foreground: var(--forest-green);
-	--accent: var(--muted-ochre);
-	--accent-foreground: var(--inky-blue);
-	--destructive: var(--rust);
-	/* --destructive-foreground: ...; */
-	--border: var(--mushroom-taupe);
-	--input: var(--mushroom-taupe);
-	--ring: var(--forest-green);
+/* ===========================================
+   UTILITY CLASSES
+   =========================================== */
+
+@layer utilities {
+	/* Gradient backgrounds using palette colors */
+	.bg-gradient-forest-ochre {
+		background: linear-gradient(135deg, var(--color-forest) 0%, var(--color-ochre) 100%);
+	}
+
+	.bg-gradient-sage-cream {
+		background: linear-gradient(135deg, var(--color-sage) 0%, var(--color-cream) 100%);
+	}
+
+	.bg-gradient-rust-ochre {
+		background: linear-gradient(135deg, var(--color-rust) 0%, var(--color-ochre) 100%);
+	}
+
+	/* Text gradients */
+	.text-gradient-primary {
+		@apply bg-linear-to-r from-primary to-accent bg-clip-text text-transparent;
+	}
+
+	/* Glassmorphism effects */
+	.glass {
+		background: rgba(255, 255, 255, 0.8);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.3);
+	}
+
+	.dark .glass {
+		background: rgba(38, 42, 36, 0.8);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
 }
 
-.dark .theme-earthy {
-	--background: var(--deep-blue);
-	--foreground: var(--warm-cream);
-	--card: var(--inky-blue);
-	--card-foreground: var(--warm-cream);
-	--popover: var(--inky-blue);
-	--popover-foreground: var(--warm-cream);
-	--primary: var(--sage-green);
-	--primary-foreground: var(--deep-blue);
-	--secondary: var(--forest-green);
-	--secondary-foreground: var(--warm-cream);
-	--muted: var(--plum);
-	--muted-foreground: var(--mushroom-taupe);
-	--accent: var(--rust);
-	--accent-foreground: var(--warm-cream);
-	--destructive: var(--rust);
-	--border: var(--plum);
-	--input: var(--plum);
-	--ring: var(--sage-green);
-}
+/* ===========================================
+   BASE STYLES
+   =========================================== */
 
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
 	}
+
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-foreground antialiased;
+		font-feature-settings:
+			'rlig' 1,
+			'calt' 1;
+	}
+
+	/* Custom scrollbar */
+	::-webkit-scrollbar {
+		width: 10px;
+		height: 10px;
+	}
+
+	::-webkit-scrollbar-track {
+		@apply bg-muted;
+	}
+
+	::-webkit-scrollbar-thumb {
+		@apply rounded-lg bg-muted-foreground/30;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		@apply bg-muted-foreground/50;
+	}
+
+	/* Selection colors */
+	::selection {
+		@apply bg-primary/20;
+	}
+
+	.dark ::selection {
+		@apply bg-primary/30;
 	}
 }
