@@ -17,6 +17,8 @@ type PropertyQueryResult = Property & {
 	rooms: (Room & {
 		roomMedia: {
 			media: Media | null;
+			order: number | null;
+			isFeatured: boolean | null;
 		}[];
 	})[];
 	foodMenuItems: FoodMenuItem[];
@@ -25,6 +27,8 @@ type PropertyQueryResult = Property & {
 	}[];
 	propertyMedia: {
 		media: Media | null;
+		order: number | null;
+		isFeatured: boolean | null;
 	}[];
 };
 
@@ -83,6 +87,7 @@ export const getHomeData = query(async () => {
 	const mapProperty = (p: PropertyQueryResult): TransformedProperty => ({
 		...p,
 		media: p.propertyMedia
+			.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 			.map((pm) => pm.media)
 			.filter((m): m is Media => !!m)
 			.map((m) => ({
@@ -92,6 +97,7 @@ export const getHomeData = query(async () => {
 		rooms: p.rooms.map((r) => ({
 			...r,
 			media: r.roomMedia
+				.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 				.map((rm) => rm.media)
 				.filter((m): m is Media => !!m)
 				.map((m) => ({
@@ -169,6 +175,7 @@ export const getPropertyById = query(z.string().min(1).max(255), async (id: stri
 	const mappedProperty: TransformedProperty = {
 		...typedProperty,
 		media: typedProperty.propertyMedia
+			.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 			.map((pm) => pm.media)
 			.filter((m): m is Media => !!m)
 			.map((m) => ({
@@ -178,6 +185,7 @@ export const getPropertyById = query(z.string().min(1).max(255), async (id: stri
 		rooms: typedProperty.rooms.map((r) => ({
 			...r,
 			media: r.roomMedia
+				.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 				.map((rm) => rm.media)
 				.filter((m): m is Media => !!m)
 				.map((m) => ({

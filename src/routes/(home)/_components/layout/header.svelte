@@ -1,21 +1,19 @@
 <script lang="ts">
+	import ThemeToggle from '$lib/components/theme-toggle.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Sheet, SheetContent, SheetTrigger } from '$lib/components/ui/sheet';
-	import { cn } from '$lib/utils';
-	import { Menu, Home, Info, Phone, LogIn } from 'lucide-svelte';
-	import ThemeToggle from '$lib/components/theme-toggle.svelte';
+	import { Info, LogIn, Menu, Phone } from 'lucide-svelte';
 
 	let isOpen = $state(false);
 
 	const navItems = [
-		{ label: 'Home', href: '/', icon: Home },
-		{ label: 'About', href: '#about', icon: Info },
-		{ label: 'Contact', href: '#contact', icon: Phone }
+		{ label: 'About', href: '/about', icon: Info },
+		{ label: 'Contact', href: '/contact', icon: Phone }
 	];
 </script>
 
 <header
-	class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60"
+	class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/10 backdrop-blur-lg supports-backdrop-filter:bg-background/60"
 >
 	<div class="container mx-auto flex h-16 items-center justify-between">
 		<!-- Logo -->

@@ -1,122 +1,88 @@
 <script lang="ts">
-	import PropertyHero from './_components/property-hero.svelte';
-	import PropertyCard from './_components/property-card.svelte';
-	import RoomCard from './_components/room-card.svelte';
-	import AmenitiesGrid from './_components/amenities-grid.svelte';
-	import FoodMenuSection from './_components/food-menu-section.svelte';
-	import PropertySearch from './_components/property-search.svelte';
+	import LandingHero from './_components/landing/landing-hero.svelte';
+	import LandingPropertyCard from './_components/landing/landing-property-card.svelte';
+	import LandingFeatures from './_components/landing/landing-features.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { MessageCircle } from 'lucide-svelte';
+	import { getMediaType } from '$lib/utils'; // Ensure we have this for logic if needed
 
 	let { data } = $props();
-	let searchTerm = $state('');
 
-	// Derived filtered properties for multiple view
-	const filteredProperties = $derived(
-		data.mode === 'multiple'
-			? data.properties.filter(
-					(p: any) =>
-						p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-						p.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-						p.city?.toLowerCase().includes(searchTerm.toLowerCase())
-				)
-			: []
-	);
+	// Determine video for hero from first featured property if available
+	const heroVideo = $derived.by(() => {
+		// Try to find a property with a video
+		const props = data.properties || (data.property ? [data.property] : []);
+		for (const p of props) {
+			const video = p.media?.find((m) => getMediaType(m.url) === 'video');
+			if (video) return video.url;
+		}
+		// Fallback
+		return undefined;
+	});
+
+	// Use properties from either single or multiple mode
+	const allProperties = $derived(data.mode === 'single' ? [data.property] : data.properties);
 </script>
 
-<div class="flex min-h-screen flex-col">
+<div class="flex min-h-screen flex-col bg-background font-sans">
 	<main class="flex-1">
-		{#if data.mode === 'single'}
-			<!-- Single Property Showcase -->
-			{@const property = data.property}
+		<!-- Hero Section -->
+		<!-- Pass videoUrl if we found one from properties, else default will fallback in component -->
+		<LandingHero videoUrl={heroVideo} />
 
-			<PropertyHero {property} />
-
-			<div class="container mx-auto py-12">
-				<div class="grid gap-12 lg:grid-cols-[1fr_300px]">
-					<div class="space-y-12">
-						<!-- About Section -->
-						<section id="about" class="space-y-4">
-							<h2 class="text-2xl font-bold tracking-tight">About this property</h2>
-							<p class="leading-relaxed text-muted-foreground">
-								{property.description || 'Experience comfortable living with modern amenities.'}
-							</p>
-
-							<div class="pt-4">
-								<h3 class="mb-4 text-lg font-semibold">Amenities</h3>
-								<AmenitiesGrid
-									amenities={property.amenities
-										.map((a: any) => a.amenity?.name)
-										.filter((n: any) => n)}
-								/>
-							</div>
-						</section>
-
-						<!-- Food Menu Section -->
-						{#if property.isFoodServiceAvailable}
-							<section id="food" class="scroll-mt-20 border-t pt-12">
-								<FoodMenuSection menuItems={property.foodMenuItems} />
-							</section>
-						{/if}
-
-						<!-- Rooms Section -->
-						<section id="rooms" class="scroll-mt-20 border-t pt-12">
-							<h2 class="mb-6 text-2xl font-bold tracking-tight">Available Rooms</h2>
-							{#if property.rooms.length === 0}
-								<p class="text-muted-foreground">No rooms currently listed.</p>
-							{:else}
-								<div class="grid gap-6 sm:grid-cols-2">
-									{#each property.rooms as room}
-										<RoomCard {room} />
-									{/each}
-								</div>
-							{/if}
-						</section>
-					</div>
-
-					<!-- Sidebar / Contact (Desktop) -->
-					<div class="hidden lg:block">
-						<div class="sticky top-24 rounded-xl border bg-card p-6 shadow-xs">
-							<h3 class="mb-4 text-lg font-semibold">Interested?</h3>
-							<p class="mb-6 text-sm text-muted-foreground">
-								Schedule a visit or contact us to know more about this property.
-							</p>
-							<div class="space-y-3">
-								<Button class="w-full" href="/login">Schedule Visit</Button>
-								<Button variant="outline" class="w-full">Contact Support</Button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		{:else}
-			<!-- Multiple Properties Listing -->
-			<div class="container mx-auto py-12">
-				<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<!-- Property Grid Section -->
+		<section id="properties" class="bg-background py-20">
+			<div class="container mx-auto px-4">
+				<div class="mb-12 flex items-center justify-between">
 					<div>
-						<h1 class="text-3xl font-bold tracking-tight">Our Properties</h1>
-						<p class="text-muted-foreground">
-							Find your perfect stay from our curated list of PGs.
-						</p>
+						<h2 class="text-3xl font-extrabold sm:text-4xl text-foreground">
+							Our <span class="text-primary">Properties</span>
+						</h2>
+						<p class="mt-2 text-muted-foreground">Thoughtfully designed for urban indians</p>
 					</div>
+					<Button variant="outline" class="hidden sm:flex" href="/properties">View All</Button>
 				</div>
 
-				<div class="mb-8 max-w-md">
-					<PropertySearch bind:searchTerm />
-				</div>
-
-				{#if filteredProperties.length === 0}
+				{#if allProperties.length === 0}
 					<div class="py-12 text-center">
-						<p class="text-lg font-medium">No properties found.</p>
-						<p class="text-muted-foreground">Try adjusting your search terms.</p>
+						<p class="text-lg font-medium text-muted-foreground">No properties found.</p>
 					</div>
 				{:else}
-					<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-						{#each filteredProperties as property}
-							<PropertyCard {property} />
+					<div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+						{#each allProperties as property}
+							<LandingPropertyCard {property} />
 						{/each}
 					</div>
 				{/if}
 			</div>
-		{/if}
+		</section>
+
+		<!-- Features Section -->
+		<LandingFeatures />
+
+		<!-- Connect Section -->
+		<section class="bg-background py-20 pt-0">
+			<div class="container mx-auto px-4 text-center">
+				<h2 class="mb-6 text-3xl font-bold text-foreground">
+					Connect on <span class="text-primary">WhatsApp</span>
+				</h2>
+				<p class="mb-8 text-muted-foreground max-w-lg mx-auto">
+					Speak to a relationship manager, see photos of homes in your preferred location & get
+					guided move-in directions.
+				</p>
+
+				<div class="inline-flex items-center rounded-2xl bg-card border p-2 pl-4">
+					<input
+						type="text"
+						placeholder="Enter location (e.g. Koramangala)"
+						class="w-64 bg-transparent text-foreground placeholder-muted-foreground focus:outline-none"
+					/>
+					<Button class="rounded-xl bg-green-500 font-bold text-white hover:bg-green-600">
+						<MessageCircle class="mr-2 h-4 w-4" />
+						Start Chat
+					</Button>
+				</div>
+			</div>
+		</section>
 	</main>
 </div>
