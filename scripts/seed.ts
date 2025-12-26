@@ -225,6 +225,7 @@ async function seed() {
 			{ url: '/images/greenvalley-1.jpg', type: 'image', propId: property2Id }
 		];
 
+		const propMediaCounts: Record<string, number> = {};
 		for (const item of propMediaItems) {
 			const mId = crypto.randomUUID();
 			await db.insert(media).values({
@@ -232,10 +233,15 @@ async function seed() {
 				url: item.url,
 				type: item.type
 			});
+
+			const count = propMediaCounts[item.propId] || 0;
+			propMediaCounts[item.propId] = count + 1;
+
 			await db.insert(propertyMedia).values({
 				propertyId: item.propId,
 				mediaId: mId,
-				isFeatured: true
+				isFeatured: count === 0,
+				order: count
 			});
 		}
 		console.log('✅ Property Media Created');
@@ -405,6 +411,7 @@ async function seed() {
 			{ url: '/images/room202.jpg', type: 'image', roomId: room4Id }
 		];
 
+		const roomMediaCounts: Record<string, number> = {};
 		for (const item of roomMediaItems) {
 			const mId = crypto.randomUUID();
 			await db.insert(media).values({
@@ -412,9 +419,15 @@ async function seed() {
 				url: item.url,
 				type: item.type
 			});
+
+			const count = roomMediaCounts[item.roomId] || 0;
+			roomMediaCounts[item.roomId] = count + 1;
+
 			await db.insert(roomMedia).values({
 				roomId: item.roomId,
-				mediaId: mId
+				mediaId: mId,
+				isFeatured: count === 0,
+				order: count
 			});
 		}
 		console.log('✅ Room Media Created');

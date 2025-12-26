@@ -130,7 +130,8 @@ export const propertyMedia = sqliteTable(
 		mediaId: text('media_id')
 			.notNull()
 			.references(() => media.id, { onDelete: 'cascade' }),
-		isFeatured: integer('is_featured', { mode: 'boolean' }).default(false)
+		isFeatured: integer('is_featured', { mode: 'boolean' }).default(false),
+		order: integer('order').default(0)
 	},
 	(t) => ({
 		pk: primaryKey({ columns: [t.propertyId, t.mediaId] })
@@ -145,7 +146,9 @@ export const roomMedia = sqliteTable(
 			.references(() => rooms.id, { onDelete: 'cascade' }),
 		mediaId: text('media_id')
 			.notNull()
-			.references(() => media.id, { onDelete: 'cascade' })
+			.references(() => media.id, { onDelete: 'cascade' }),
+		isFeatured: integer('is_featured', { mode: 'boolean' }).default(false),
+		order: integer('order').default(0)
 	},
 	(t) => ({
 		pk: primaryKey({ columns: [t.roomId, t.mediaId] })

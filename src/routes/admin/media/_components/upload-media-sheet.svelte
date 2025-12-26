@@ -22,6 +22,22 @@
 	let propertiesPromise = $derived(
 		open ? getProperties({ pageSize: 100 }) : Promise.resolve({ properties: [] })
 	);
+
+	function handleFileChange(e: Event) {
+		const file = (e.target as HTMLInputElement).files?.[0];
+		if (file) {
+			if (file.type.startsWith('image/')) uploadType = 'image';
+			else if (file.type.startsWith('video/')) uploadType = 'video';
+			else if (
+				file.type.startsWith('application/') ||
+				file.type.startsWith('text/') ||
+				file.name.endsWith('.pdf') ||
+				file.name.endsWith('.docx')
+			)
+				uploadType = 'document';
+			else uploadType = 'other';
+		}
+	}
 </script>
 
 <Sheet.Root {open} {onOpenChange}>
@@ -46,7 +62,7 @@
 		>
 			<div class="grid gap-2">
 				<Label for="file">File</Label>
-				<Input id="file" name="file" type="file" required />
+				<Input id="file" name="file" type="file" required onchange={handleFileChange} />
 			</div>
 
 			<div class="grid gap-2">

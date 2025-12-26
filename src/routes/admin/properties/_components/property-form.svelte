@@ -6,10 +6,11 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { createProperty } from '../properties.remote';
 	import { getAmenities } from '../../amenities/amenities.remote';
-	import { toast } from 'svelte-sonner';
+	import { Loader, toast } from 'svelte-sonner';
 	import * as Select from '$lib/components/ui/select';
 	import { Trash, Plus } from 'lucide-svelte';
 	import MediaSelection from '$lib/components/media/media-selection.svelte';
+	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
 
 	let { open = $bindable(false) } = $props<{ open: boolean }>();
 
@@ -19,6 +20,7 @@
 	let selectedAmenities = $state<string[]>([]);
 	let selectedImages = $state<string[]>([]);
 	let selectedStatus = $state('draft');
+	let descriptionValue = $state('');
 	let nearbyItems = $state([{ title: '', distance: '', image: '' }]);
 
 	// Reset selection when dialog closes/opens
@@ -27,6 +29,7 @@
 			selectedAmenities = [];
 			selectedImages = [];
 			selectedStatus = 'draft';
+			descriptionValue = '';
 			nearbyItems = [{ title: '', distance: '', image: '' }];
 		}
 	});
@@ -52,6 +55,10 @@
 			{...createProperty.enhance(async ({ submit }) => {
 				try {
 					await submit();
+					if (createProperty.fields.allIssues()?.length) {
+						toast.error('Failed to create property');
+						return;
+					}
 					toast.success('Property created successfully');
 					open = false;
 				} catch (e: any) {
@@ -59,6 +66,13 @@
 				}
 			})}
 		>
+			{#if createProperty.fields.allIssues()?.length}
+				<ul>
+					{#each createProperty.fields.allIssues() as issue}
+						<li>{issue.message}</li>
+					{/each}
+				</ul>
+			{/if}
 			<!-- Hidden Input for Amenities (Comma separated for schema transform) -->
 			<input type="hidden" name="amenities" value={selectedAmenities.join(',')} />
 
@@ -67,8 +81,10 @@
 				onValueChange={(urls) => (selectedImages = urls as string[])}
 				mode="multiple"
 				label="Property Images"
-				name="images"
+				name=""
 			/>
+			<!-- Send media as comma-separated URLs (schema will split and map to IDs) -->
+			<input type="hidden" name="media" value={selectedImages.join(',')} />
 
 			<div class="grid gap-2">
 				<Label for="name">Property Name</Label>
@@ -80,7 +96,12 @@
 
 			<div class="grid gap-2">
 				<Label for="description">Description</Label>
-				<Textarea id="description" name="description" placeholder="A brief description..." />
+				<RichTextEditor
+					bind:value={descriptionValue}
+					placeholder="Enter property description with rich formatting..."
+					maxLength={5000}
+				/>
+				<input type="hidden" name="description" value={descriptionValue} />
 			</div>
 
 			<div class="grid gap-2">

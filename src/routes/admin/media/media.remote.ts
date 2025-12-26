@@ -1,4 +1,5 @@
 import { form, getRequestEvent, query } from '$app/server';
+import { getMediaType } from '$lib/utils';
 import { mediaUpdateSchema } from '$lib/schemas/media';
 import { db } from '$lib/server/db';
 import { media, propertyMedia, roomMedia } from '$lib/server/db/schema';
@@ -105,7 +106,7 @@ export const uploadMedia = form(
 				.insert(media)
 				.values({
 					url,
-					type: payload.type,
+					type: getMediaType(url) === 'video' ? 'video' : payload.type,
 					createdAt: new Date()
 				})
 				.returning();
@@ -187,12 +188,16 @@ export const deleteMedia = form(z.object({ id: z.string() }), async ({ id }) => 
 			where: { id }
 		});
 
-		if (mediaItem) {
-			const storage = getStorageProvider();
-			await storage.delete(mediaItem.url);
-
-			await db.delete(media).where(eq(media.id, id));
+		if (!mediaItem) {
+			throw error(404, 'Media not found');
 		}
+
+		// Delete from storage first
+		const storage = getStorageProvider();
+		await storage.delete(mediaItem.url);
+
+		// Delete from database - cascade will automatically clean up propertyMedia and roomMedia
+		await db.delete(media).where(eq(media.id, id));
 
 		return { success: true };
 	} catch (e) {
@@ -232,7 +237,8 @@ export const replaceMedia = form(
 			await db
 				.update(media)
 				.set({
-					url: newUrl
+					url: newUrl,
+					type: getMediaType(newUrl) === 'video' ? 'video' : 'image'
 				})
 				.where(eq(media.id, payload.id));
 

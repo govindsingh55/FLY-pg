@@ -8,13 +8,11 @@
 	import { Plus, Search } from 'lucide-svelte';
 	import { Debounced } from 'runed';
 	import { getProperties, updatePropertyStatus } from './properties.remote';
-	import PropertyForm from './_components/property-form.svelte';
 	import { toast } from 'svelte-sonner';
 
 	let searchTerm = $state('');
 	let currentPage = $state(1);
 	let pageSize = $state(10);
-	let isCreateOpen = $state(false);
 
 	const debouncedSearchTerm = new Debounced(() => searchTerm, 500);
 
@@ -33,7 +31,7 @@
 			<h1 class="text-3xl font-bold tracking-tight">Properties</h1>
 			<p class="text-muted-foreground">Manage your properties and rooms.</p>
 		</div>
-		<Button onclick={() => (isCreateOpen = true)}>
+		<Button href="/admin/properties/create">
 			<Plus class="mr-2 h-4 w-4" />
 			Add Property
 		</Button>
@@ -195,5 +193,3 @@
 		</svelte:boundary>
 	</div>
 </div>
-
-<PropertyForm bind:open={isCreateOpen} />

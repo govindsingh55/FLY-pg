@@ -1,12 +1,13 @@
 <script lang="ts">
-	import * as Sheet from '$lib/components/ui/sheet';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { Label } from '$lib/components/ui/label';
-	import { createRoom, updateRoom, deleteRoom } from '../rooms.remote';
-	import { toast } from 'svelte-sonner';
 	import MediaSelection from '$lib/components/media/media-selection.svelte';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Sheet from '$lib/components/ui/sheet';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import { toast } from 'svelte-sonner';
+	import { createRoom, deleteRoom, updateRoom } from '../rooms.remote';
 
 	let selectedImages = $state<string[]>([]);
 
@@ -43,7 +44,48 @@
 <Sheet.Root bind:open>
 	<Sheet.Content side="right" class="w-[400px] sm:w-[540px] overflow-y-auto">
 		<Sheet.Header>
-			<Sheet.Title>{room ? 'Edit Room' : 'Add Room'}</Sheet.Title>
+			<div class="flex items-center justify-between pr-8">
+				<Sheet.Title>{room ? 'Edit Room' : 'Add Room'}</Sheet.Title>
+				{#if room}
+					<AlertDialog.Root>
+						<AlertDialog.Trigger>
+							{#snippet child({ props })}
+								<Button {...props} variant="destructive" size="sm">Delete</Button>
+							{/snippet}
+						</AlertDialog.Trigger>
+						<AlertDialog.Content>
+							<AlertDialog.Header>
+								<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+								<AlertDialog.Description>
+									This action cannot be undone. This will permanently delete the room and its data.
+								</AlertDialog.Description>
+							</AlertDialog.Header>
+							<AlertDialog.Footer>
+								<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+								<form
+									{...deleteRoom.enhance(async ({ submit }) => {
+										try {
+											await submit();
+											toast.success('Room deleted');
+											open = false;
+										} catch (e: any) {
+											toast.error(e.message || 'Failed to delete room');
+										}
+									})}
+								>
+									<input type="hidden" name="id" value={room.id} />
+									<AlertDialog.Action
+										type="submit"
+										class={buttonVariants({ variant: 'destructive' })}
+									>
+										Delete
+									</AlertDialog.Action>
+								</form>
+							</AlertDialog.Footer>
+						</AlertDialog.Content>
+					</AlertDialog.Root>
+				{/if}
+			</div>
 			<Sheet.Description>
 				{room ? 'Update the details for this room.' : 'Add a new room to this property.'}
 			</Sheet.Description>
@@ -52,7 +94,7 @@
 		{#if room}
 			<!-- Update Form -->
 			<form
-				class="space-y-4 py-4"
+				class="space-y-4 p-4"
 				{...updateRoom.enhance(async ({ submit }) => {
 					try {
 						await submit();
@@ -64,13 +106,15 @@
 				})}
 			>
 				<input type="hidden" name="id" value={room.id} />
+				<input type="hidden" name="media" value={selectedImages.join(',')} />
 
 				<MediaSelection
 					value={selectedImages}
 					onValueChange={(urls) => (selectedImages = urls as string[])}
 					mode="multiple"
 					label="Room Images"
-					name="images"
+					name=""
+					gridClass="grid-cols-3 gap-2"
 					{propertyId}
 				/>
 				<div class="grid gap-2">
@@ -171,25 +215,7 @@
 					</select>
 				</div>
 
-				<Sheet.Footer class="flex justify-between items-center gap-4 pt-4">
-					<form
-						{...deleteRoom.enhance(async ({ submit }) => {
-							if (!confirm('Are you sure you want to delete this room?')) return;
-							try {
-								await submit();
-								toast.success('Room deleted');
-								open = false;
-							} catch (e: any) {
-								toast.error(e.message || 'Failed to delete room');
-							}
-						})}
-					>
-						<input type="hidden" name="id" value={room.id} />
-						<Button variant="destructive" type="submit" disabled={!!deleteRoom.pending}>
-							{deleteRoom.pending ? 'Deleting...' : 'Delete Room'}
-						</Button>
-					</form>
-
+				<Sheet.Footer class="pt-4">
 					<Button type="submit" disabled={!!updateRoom.pending}>
 						{updateRoom.pending ? 'Saving...' : 'Save Changes'}
 					</Button>
@@ -210,13 +236,15 @@
 				})}
 			>
 				<input type="hidden" name="propertyId" value={propertyId} />
+				<input type="hidden" name="media" value={selectedImages.join(',')} />
 
 				<MediaSelection
 					value={selectedImages}
 					onValueChange={(urls) => (selectedImages = urls as string[])}
 					mode="multiple"
 					label="Room Images"
-					name="images"
+					name=""
+					gridClass="grid-cols-3 gap-2"
 					{propertyId}
 				/>
 				<div class="grid gap-2">

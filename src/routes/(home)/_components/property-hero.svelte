@@ -103,13 +103,4 @@
 			</div>
 		</div>
 	</div>
-
-	<!-- Description Section -->
-	{#if property.description}
-		<div class="container mx-auto space-y-4 py-8 border-b">
-			<p class="max-w-4xl text-lg leading-relaxed text-muted-foreground">
-				{property.description}
-			</p>
-		</div>
-	{/if}
 </div>

@@ -1,10 +1,11 @@
 import { form, getRequestEvent, query } from '$app/server';
+import { getMediaType } from '$lib/utils';
 import { roomSchema } from '$lib/schemas/room';
 import { db } from '$lib/server/db';
-import { media, roomMedia, rooms } from '$lib/server/db/schema';
+import { media as mediaTable, roomMedia, rooms } from '$lib/server/db/schema';
 import { softDelete } from '$lib/server/db/soft-delete';
 import { error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 
 const getSession = () => {
@@ -35,10 +36,12 @@ export const getRoom = query(z.string(), async (id) => {
 
 		const mappedRoom = {
 			...roomData,
-			media: roomData.roomMedia.map((rm) => ({
-				url: rm.media!.url,
-				type: rm.media!.type as 'image' | 'video'
-			}))
+			media: roomData.roomMedia
+				.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+				.map((rm) => ({
+					url: rm.media!.url,
+					type: rm.media!.type as 'image' | 'video'
+				}))
 		};
 
 		return { room: mappedRoom };
@@ -48,8 +51,25 @@ export const getRoom = query(z.string(), async (id) => {
 	}
 });
 
+// Reusable media schema that handles comma-separated string from FormData
+const mediaSchema = z
+	.union([
+		z.string().transform((val) =>
+			val
+				? val
+						.split(',')
+						.map((s) => s.trim())
+						.filter((s) => s.length > 0)
+				: []
+		),
+		z.array(z.string())
+	])
+	.optional()
+	.default([]);
+
 const createRoomSchema = roomSchema.extend({
-	propertyId: z.string()
+	propertyId: z.string(),
+	media: mediaSchema
 });
 
 export const createRoom = form(createRoomSchema, async (data) => {
@@ -59,7 +79,8 @@ export const createRoom = form(createRoomSchema, async (data) => {
 	}
 
 	try {
-		const { media: mediaFiles, ...roomData } = data;
+		const { media: mediaFilesRaw, ...roomData } = data;
+		const mediaUrls = mediaFilesRaw as string[];
 
 		// 1. Create Room
 		const roomId = crypto.randomUUID();
@@ -70,18 +91,37 @@ export const createRoom = form(createRoomSchema, async (data) => {
 		});
 
 		// 2. Add Media
-		if (mediaFiles && mediaFiles.length > 0) {
-			for (const m of mediaFiles) {
-				const mId = crypto.randomUUID();
-				await db.insert(media).values({
-					id: mId,
-					url: m.url,
-					type: m.type
-				});
-				await db.insert(roomMedia).values({
-					roomId,
-					mediaId: mId
-				});
+		if (mediaUrls && mediaUrls.length > 0) {
+			const uniqueUrls = [...new Set(mediaUrls)];
+
+			// Reuse existing media or create new
+			const existingMedia = await db
+				.select()
+				.from(mediaTable)
+				.where(inArray(mediaTable.url, uniqueUrls));
+			const urlToIdMap = new Map(existingMedia.map((m) => [m.url, m.id]));
+
+			for (const url of uniqueUrls) {
+				if (!urlToIdMap.has(url)) {
+					const newId = crypto.randomUUID();
+					await db.insert(mediaTable).values({
+						id: newId,
+						url,
+						type: getMediaType(url)
+					});
+					urlToIdMap.set(url, newId);
+				}
+			}
+
+			const links = uniqueUrls.map((url, index) => ({
+				roomId,
+				mediaId: urlToIdMap.get(url)!,
+				isFeatured: index === 0,
+				order: index
+			}));
+
+			if (links.length > 0) {
+				await db.insert(roomMedia).values(links);
 			}
 		}
 
@@ -94,7 +134,8 @@ export const createRoom = form(createRoomSchema, async (data) => {
 
 const updateRoomSchema = roomSchema.extend({
 	id: z.string(),
-	propertyId: z.string().optional() // Usually redundant but might be passed
+	propertyId: z.string().optional(), // Usually redundant but might be passed
+	media: mediaSchema
 });
 
 export const updateRoom = form(updateRoomSchema, async (data) => {
@@ -104,7 +145,9 @@ export const updateRoom = form(updateRoomSchema, async (data) => {
 	}
 
 	try {
-		const { media: mediaFiles, id, ...roomData } = data;
+		const { media: mediaFilesRaw, id: rawId, ...roomData } = data;
+		const id = rawId as string;
+		const targetMediaUrls = (mediaFilesRaw as string[]) || [];
 
 		// 1. Update Room
 		await db
@@ -115,21 +158,54 @@ export const updateRoom = form(updateRoomSchema, async (data) => {
 			})
 			.where(eq(rooms.id, id));
 
-		// 2. Update Media
-		await db.delete(roomMedia).where(eq(roomMedia.roomId, id));
-		if (mediaFiles && mediaFiles.length > 0) {
-			for (const m of mediaFiles) {
-				const mId = crypto.randomUUID();
-				await db.insert(media).values({
-					id: mId,
-					url: m.url,
-					type: m.type
-				});
-				await db.insert(roomMedia).values({
-					roomId: id,
-					mediaId: mId
-				});
+		// 2. Update Media Logic (Mirroring properties.remote.ts)
+
+		// Get existing room-media links
+		// const existingRoomMedia = await db.query.roomMedia.findMany({
+		// 	where: { roomId: id }
+		// });
+		// const existingMediaIds = existingRoomMedia.map((rm) => rm.mediaId); // Unused
+
+		const incomingMediaIds: string[] = [];
+
+		if (targetMediaUrls.length > 0) {
+			// Find existing media records for these URLs
+			const mediaRecords = await db
+				.select()
+				.from(mediaTable)
+				.where(inArray(mediaTable.url, targetMediaUrls));
+			const mediaUrlToIdMap = new Map(mediaRecords.map((m) => [m.url, m.id]));
+
+			for (const url of targetMediaUrls) {
+				let mId = mediaUrlToIdMap.get(url);
+				if (!mId) {
+					// Create new media record
+					mId = crypto.randomUUID();
+					await db.insert(mediaTable).values({
+						id: mId,
+						url,
+						type: getMediaType(url)
+					});
+					mediaUrlToIdMap.set(url, mId);
+				}
+				incomingMediaIds.push(mId);
 			}
+		}
+
+		// Deduplicate incoming IDs
+		const uniqueIncomingMediaIds = [...new Set(incomingMediaIds)];
+
+		// 3. Re-sync Room Media Links (Delete All & Insert All)
+		await db.delete(roomMedia).where(eq(roomMedia.roomId, id));
+
+		if (uniqueIncomingMediaIds.length > 0) {
+			const newLinks = uniqueIncomingMediaIds.map((mediaId, index) => ({
+				roomId: id,
+				mediaId,
+				isFeatured: index === 0,
+				order: index
+			}));
+			await db.insert(roomMedia).values(newLinks);
 		}
 
 		await getRoom(data.id).refresh();

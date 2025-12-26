@@ -6,6 +6,7 @@
 	import { Search, Upload, FileText, Video, ImageIcon } from 'lucide-svelte';
 	import { getMedias } from '../../../routes/admin/media/media.remote';
 	import UploadMediaSheet from '../../../routes/admin/media/_components/upload-media-sheet.svelte';
+	import { getMediaType } from '$lib/utils';
 
 	interface MediaLibraryDialogProps {
 		open: boolean;
@@ -137,7 +138,17 @@
 							>
 								<!-- Media Preview -->
 								<div class="w-full h-full bg-muted flex items-center justify-center">
-									{#if item.type === 'image'}
+									{#if getMediaType(item.url) === 'video'}
+										<!-- svelte-ignore a11y_media_has_caption -->
+										<video
+											src={item.url}
+											class="w-full h-full object-cover"
+											muted
+											loop
+											playsinline
+											autoplay
+										></video>
+									{:else if item.type === 'image'}
 										<img src={item.url} alt="" class="w-full h-full object-cover" />
 									{:else}
 										{@const Icon = getMediaIcon(item.type)}

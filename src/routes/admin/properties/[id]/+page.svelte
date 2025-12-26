@@ -1,27 +1,28 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
+	import MediaSelection from '$lib/components/media/media-selection.svelte';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import {
 		Card,
 		CardContent,
-		CardHeader,
-		CardTitle,
 		CardDescription,
-		CardFooter
+		CardFooter,
+		CardHeader,
+		CardTitle
 	} from '$lib/components/ui/card';
-	import * as Table from '$lib/components/ui/table';
-	import { Plus, Trash, Pencil } from 'lucide-svelte';
-	import { page } from '$app/state';
-	import { getProperty, updateProperty, deleteProperty } from '../properties.remote';
-	import { getAmenities } from '../../amenities/amenities.remote';
-	import { Skeleton } from '$lib/components/ui/skeleton';
-	import { toast } from 'svelte-sonner';
-	import { goto } from '$app/navigation';
-	import RoomForm from '../_components/room-form.svelte';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
-	import MediaSelection from '$lib/components/media/media-selection.svelte';
+	import { Skeleton } from '$lib/components/ui/skeleton';
+	import * as Table from '$lib/components/ui/table';
+	import { Plus, Trash, Pencil, ChevronLeft } from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
+	import { getAmenities } from '../../amenities/amenities.remote';
+	import RoomForm from '../_components/room-form.svelte';
+	import { deleteProperty, getProperty, updateProperty } from '../properties.remote';
 
 	let id = $derived(page.params.id);
 	let dataPromise = $derived(getProperty(id as string));
@@ -33,9 +34,13 @@
 	let selectedImages = $state<string[]>([]);
 	let selectedStatus = $state('draft');
 	let nearbyItems = $state<any[]>([{ title: '', distance: '', image: '' }]);
+	let descriptionValue = $state('');
 
 	$effect(() => {
 		dataPromise.then((data) => {
+			if (data.property?.description) {
+				descriptionValue = data.property.description || '';
+			}
 			if (data.property?.amenities) {
 				selectedAmenities = data.property.amenities.map((a: any) => a.amenityId);
 			}
@@ -76,6 +81,14 @@
 	});
 </script>
 
+{#if updateProperty.fields.issues()}
+	<ul>
+		{#each updateProperty.fields.issues() as issue}
+			<li>{issue.message}</li>
+		{/each}
+	</ul>
+{/if}
+
 <div class="mx-auto max-w-4xl p-6 space-y-6">
 	<svelte:boundary>
 		{#await dataPromise}
@@ -92,22 +105,80 @@
 				</Card>
 			</div>
 		{:then { property }}
+			<div class="flex items-center justify-between mb-6">
+				<div class="flex items-center gap-4">
+					<Button variant="outline" size="icon" href="/admin/properties">
+						<ChevronLeft class="h-4 w-4" />
+					</Button>
+					<h1 class="text-3xl font-bold tracking-tight">Edit Property</h1>
+				</div>
+				<AlertDialog.Root>
+					<AlertDialog.Trigger>
+						{#snippet child({ props })}
+							<Button {...props} variant="destructive">
+								<Trash class="mr-2 h-4 w-4" />
+								Delete Property
+							</Button>
+						{/snippet}
+					</AlertDialog.Trigger>
+					<AlertDialog.Content>
+						<AlertDialog.Header>
+							<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+							<AlertDialog.Description>
+								This action cannot be undone. This will permanently delete the property and all its
+								associated rooms, media, and data.
+							</AlertDialog.Description>
+						</AlertDialog.Header>
+						<AlertDialog.Footer>
+							<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+							<form
+								{...deleteProperty.enhance(async ({ submit }) => {
+									try {
+										await submit();
+										toast.success('Property deleted');
+										goto('/admin/properties');
+									} catch (e: any) {
+										toast.error(e.message || 'Failed to delete');
+										console.error(e);
+									}
+								})}
+							>
+								<input type="hidden" name="id" value={property.id} />
+								<AlertDialog.Action
+									type="submit"
+									class={buttonVariants({ variant: 'destructive' })}
+								>
+									Delete Property
+								</AlertDialog.Action>
+							</form>
+						</AlertDialog.Footer>
+					</AlertDialog.Content>
+				</AlertDialog.Root>
+			</div>
+
 			<!-- Room Form Sheet -->
 			<RoomForm bind:open={roomSheetOpen} propertyId={property.id} room={selectedRoom} />
 
 			<!-- Property Edit Form -->
 			<Card>
 				<CardHeader>
-					<CardTitle>Edit Property</CardTitle>
+					<CardTitle>Property Details</CardTitle>
 					<CardDescription>Update property details.</CardDescription>
 				</CardHeader>
 				<form
 					class="grid gap-4"
 					{...updateProperty.enhance(async ({ submit }) => {
 						try {
+							console.log('Submitting update...');
 							await submit();
+							console.log(
+								'Submitted update...',
+								updateProperty.fields.allIssues(),
+								updateProperty.result
+							);
 							toast.success('Property updated successfully');
 						} catch (e: any) {
+							console.error(e);
 							toast.error(e.message || 'Failed to update');
 						}
 					})}
@@ -122,8 +193,10 @@
 							onValueChange={(urls) => (selectedImages = urls as string[])}
 							mode="multiple"
 							label="Property Images"
-							name="images"
+							name=""
 						/>
+						<!-- Send media as comma-separated URLs (schema will split and map to IDs) -->
+						<input type="hidden" name="media" value={selectedImages.join(',')} />
 
 						<div class="grid gap-2">
 							<Label for="name">Property Name</Label>
@@ -137,7 +210,12 @@
 
 						<div class="grid gap-2">
 							<Label for="description">Description</Label>
-							<Textarea id="description" name="description" value={property.description} />
+							<RichTextEditor
+								bind:value={descriptionValue}
+								placeholder="Enter property description with rich formatting..."
+								maxLength={5000}
+							/>
+							<input type="hidden" name="description" value={descriptionValue} />
 						</div>
 
 						<div class="grid gap-2">
@@ -327,33 +405,11 @@
                              -->
 						</div>
 
-						<Button type="submit" disabled={!!updateProperty.pending}>
+						<Button {...updateProperty.buttonProps}>
 							{updateProperty.pending ? 'Saving...' : 'Save Changes'}
 						</Button>
 					</CardFooter>
 				</form>
-
-				<!-- Delete Form Positioned absolutely or flexed if needed, but here simple separate form in footer area -->
-				<div class="px-6 pb-6">
-					<form
-						{...deleteProperty.enhance(async ({ submit }) => {
-							if (!confirm('Are you sure you want to delete this property?')) return;
-							try {
-								await submit();
-								toast.success('Property deleted');
-								goto('/admin/properties');
-							} catch (e: any) {
-								toast.error(e.message || 'Failed to delete');
-							}
-						})}
-					>
-						<input type="hidden" name="id" value={property.id} />
-						<Button variant="destructive" type="submit" disabled={!!deleteProperty.pending}>
-							<Trash class="mr-2 h-4 w-4" />
-							{deleteProperty.pending ? 'Deleting...' : 'Delete Property'}
-						</Button>
-					</form>
-				</div>
 			</Card>
 
 			<!-- Rooms List -->

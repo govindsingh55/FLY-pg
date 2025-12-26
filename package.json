@@ -59,6 +59,16 @@
 	},
 	"dependencies": {
 		"@libsql/client": "^0.15.15",
+		"@tiptap/core": "^3.14.0",
+		"@tiptap/extension-character-count": "^3.14.0",
+		"@tiptap/extension-hard-break": "^3.14.0",
+		"@tiptap/extension-link": "^3.14.0",
+		"@tiptap/extension-placeholder": "^3.14.0",
+		"@tiptap/extension-table": "^3.14.0",
+		"@tiptap/extension-table-cell": "^3.14.0",
+		"@tiptap/extension-table-header": "^3.14.0",
+		"@tiptap/extension-table-row": "^3.14.0",
+		"@tiptap/starter-kit": "^3.14.0",
 		"@tursodatabase/database": "^0.3.2",
 		"better-auth": "^1.4.6",
 		"better-sqlite3": "^12.4.1",
@@ -67,6 +77,7 @@
 		"dotenv": "^17.2.3",
 		"lucide-svelte": "^0.561.0",
 		"runed": "^0.37.0",
+		"svelte-tiptap": "^3.0.1",
 		"zod": "^4.1.13"
 	},
 	"optionalDependencies": {

@@ -1,8 +1,17 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import { X, Plus, Image as ImageIcon } from 'lucide-svelte';
+	import {
+		X,
+		Plus,
+		Image as ImageIcon,
+		ChevronLeft,
+		ChevronRight,
+		Star,
+		Trash2
+	} from 'lucide-svelte';
 	import MediaLibraryDialog from './media-library-dialog.svelte';
+	import { getMediaType } from '$lib/utils';
 
 	interface MediaSelectionProps {
 		value: string | string[];
@@ -50,6 +59,26 @@
 		handleSelectionChange(newUrls);
 	}
 
+	function moveMedia(index: number, direction: 'left' | 'right') {
+		if (direction === 'left' && index > 0) {
+			const newUrls = [...selectedUrls];
+			[newUrls[index - 1], newUrls[index]] = [newUrls[index], newUrls[index - 1]];
+			handleSelectionChange(newUrls);
+		} else if (direction === 'right' && index < selectedUrls.length - 1) {
+			const newUrls = [...selectedUrls];
+			[newUrls[index + 1], newUrls[index]] = [newUrls[index], newUrls[index + 1]];
+			handleSelectionChange(newUrls);
+		}
+	}
+
+	function makeFeatured(index: number) {
+		if (index === 0) return;
+		const newUrls = [...selectedUrls];
+		const item = newUrls.splice(index, 1)[0];
+		newUrls.unshift(item);
+		handleSelectionChange(newUrls);
+	}
+
 	function openDialog() {
 		dialogOpen = true;
 	}
@@ -69,16 +98,67 @@
 
 	<div class="grid {gridClass} gap-3">
 		<!-- Selected Media Cards -->
-		{#each selectedUrls as url}
-			<div class="relative group aspect-square rounded-lg overflow-hidden border bg-muted">
-				<img src={url} alt="" class="w-full h-full object-cover" />
-				<button
-					type="button"
-					class="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-					onclick={() => removeMedia(url)}
+		{#each selectedUrls as url, index}
+			{@const isFeatured = index === 0}
+			<div
+				class="relative group aspect-square rounded-lg overflow-hidden border bg-muted {isFeatured
+					? 'ring-2 ring-yellow-400 border-yellow-400'
+					: ''}"
+			>
+				{#if getMediaType(url) === 'video'}
+					<!-- svelte-ignore a11y_media_has_caption -->
+					<video src={url} class="w-full h-full object-cover" muted loop playsinline autoplay
+					></video>
+				{:else}
+					<img src={url} alt="" class="w-full h-full object-cover" />
+				{/if}
+
+				<!-- Controls Overlay -->
+				<div
+					class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2"
 				>
-					<X class="h-3 w-3" />
-				</button>
+					<div class="flex justify-between">
+						<button
+							type="button"
+							class="p-1.5 rounded-full bg-background/80 hover:bg-background text-foreground transition-colors {isFeatured
+								? 'text-yellow-500'
+								: 'text-muted-foreground hover:text-yellow-500'}"
+							onclick={() => makeFeatured(index)}
+							title="Make Featured"
+						>
+							<Star class="h-3.5 w-3.5 {isFeatured ? 'fill-yellow-500' : ''}" />
+						</button>
+						<button
+							type="button"
+							class="p-1.5 rounded-full bg-destructive/80 hover:bg-destructive text-destructive-foreground transition-colors"
+							onclick={() => removeMedia(url)}
+							title="Remove"
+						>
+							<Trash2 class="h-3.5 w-3.5" />
+						</button>
+					</div>
+
+					<div class="flex justify-between">
+						<button
+							type="button"
+							class="p-1.5 rounded-full bg-background/80 hover:bg-background text-foreground transition-colors disabled:opacity-50"
+							onclick={() => moveMedia(index, 'left')}
+							disabled={index === 0}
+							title="Move Left"
+						>
+							<ChevronLeft class="h-3.5 w-3.5" />
+						</button>
+						<button
+							type="button"
+							class="p-1.5 rounded-full bg-background/80 hover:bg-background text-foreground transition-colors disabled:opacity-50"
+							onclick={() => moveMedia(index, 'right')}
+							disabled={index === selectedUrls.length - 1}
+							title="Move Right"
+						>
+							<ChevronRight class="h-3.5 w-3.5" />
+						</button>
+					</div>
+				</div>
 			</div>
 		{/each}
 

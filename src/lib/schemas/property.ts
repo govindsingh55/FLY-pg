@@ -42,12 +42,15 @@ export const propertySchema = z.object({
 		])
 		.optional(),
 	media: z
-		.array(
-			z.object({
-				url: z.string(),
-				type: z.enum(['image', 'video']).default('image')
-			})
-		)
+		.union([
+			z.array(z.string()),
+			z.string().transform((val) =>
+				val
+					.split(',')
+					.map((s) => s.trim())
+					.filter((s) => s.length > 0)
+			)
+		])
 		.optional()
 		.default([]),
 	isFoodServiceAvailable: z.boolean().default(false),

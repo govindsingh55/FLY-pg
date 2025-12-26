@@ -1,13 +1,14 @@
 import { command, form, getRequestEvent, query } from '$app/server';
+import { getMediaType } from '$lib/utils';
 import { propertySchema } from '$lib/schemas/property';
 import { db } from '$lib/server/db';
 import { properties, propertyAmenities, media, propertyMedia } from '$lib/server/db/schema';
 import { softDelete } from '$lib/server/db/soft-delete';
 import { error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 
-const getSession = () => {
+const getSession = async () => {
 	const event = getRequestEvent();
 	if (!event || !event.locals.session || !event.locals.user) {
 		throw error(401, 'Unauthorized');
@@ -22,7 +23,7 @@ export const getProperties = query(
 		pageSize: z.number().default(10)
 	}),
 	async ({ searchTerm, page, pageSize }) => {
-		const { sessionUser } = getSession();
+		const { sessionUser } = await getSession();
 
 		try {
 			// Prepare arrays of IDs for filtering if needed
@@ -100,10 +101,12 @@ export const getProperties = query(
 			// Transform to flatten media
 			const mappedProps = props.map((p) => ({
 				...p,
-				media: p.propertyMedia.map((pm) => ({
-					url: pm.media!.url,
-					type: pm.media!.type as 'image' | 'video'
-				}))
+				media: p.propertyMedia
+					.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+					.map((pm) => ({
+						url: pm.media!.url,
+						type: pm.media!.type as 'image' | 'video'
+					}))
 			}));
 
 			return {
@@ -129,7 +132,15 @@ export const getProperty = query(z.string(), async (id) => {
 				deletedAt: { isNull: true }
 			},
 			with: {
-				rooms: true,
+				rooms: {
+					with: {
+						roomMedia: {
+							with: {
+								media: true
+							}
+						}
+					}
+				},
 				amenities: true,
 				propertyMedia: {
 					with: {
@@ -143,10 +154,21 @@ export const getProperty = query(z.string(), async (id) => {
 
 		const flattenedProperty = {
 			...property,
-			media: property.propertyMedia.map((pm) => ({
-				url: pm.media!.url,
-				type: pm.media!.type as 'image' | 'video'
-			}))
+			rooms: property.rooms
+				.filter((room) => !room.deletedAt)
+				.map((room) => ({
+					...room,
+					media: room.roomMedia.map((rm) => ({
+						url: rm.media!.url,
+						type: rm.media!.type as 'image' | 'video'
+					}))
+				})),
+			media: property.propertyMedia
+				.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+				.map((pm) => ({
+					url: pm.media!.url,
+					type: pm.media!.type as 'image' | 'video'
+				}))
 		};
 
 		return { property: flattenedProperty };
@@ -157,7 +179,7 @@ export const getProperty = query(z.string(), async (id) => {
 });
 
 export const createProperty = form(propertySchema, async (data) => {
-	const { sessionUser } = getSession();
+	const { sessionUser } = await getSession();
 	if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
 		throw error(403, 'Forbidden');
 	}
@@ -188,13 +210,14 @@ export const createProperty = form(propertySchema, async (data) => {
 				const mId = crypto.randomUUID();
 				await db.insert(media).values({
 					id: mId,
-					url: m.url,
-					type: m.type
+					url: m,
+					type: getMediaType(m)
 				});
 				await db.insert(propertyMedia).values({
 					propertyId,
 					mediaId: mId,
-					isFeatured: false // Default
+					isFeatured: mediaFiles.indexOf(m) === 0,
+					order: mediaFiles.indexOf(m)
 				});
 			}
 		}
@@ -208,18 +231,64 @@ export const createProperty = form(propertySchema, async (data) => {
 });
 
 const updateSchema = propertySchema.extend({
-	id: z.string()
+	id: z.string(),
+	// Robust handling for FormData (comma-separated strings, empty values, 'on' checkboxes)
+	media: z
+		.union([
+			z.string().transform((val) =>
+				val
+					? val
+							.split(',')
+							.map((s) => s.trim())
+							.filter((s) => s.length > 0)
+					: []
+			),
+			z.array(z.string())
+		])
+		.optional()
+		.default([]),
+	amenities: z
+		.union([
+			z.string().transform((val) =>
+				val
+					? val
+							.split(',')
+							.map((s) => s.trim())
+							.filter((s) => s.length > 0)
+					: []
+			),
+			z.array(z.string())
+		])
+		.optional(),
+	isFoodServiceAvailable: z
+		.union([z.boolean(), z.literal('on'), z.literal('true'), z.literal('false')])
+		.transform((val) => val === true || val === 'on' || val === 'true')
+		.optional()
+		.default(false),
+	lat: z
+		.union([z.string(), z.number()])
+		.optional()
+		.transform((val) => (val === '' || val === undefined ? undefined : Number(val))),
+	lng: z
+		.union([z.string(), z.number()])
+		.optional()
+		.transform((val) => (val === '' || val === undefined ? undefined : Number(val)))
 });
 
 export const updateProperty = form(updateSchema, async (data) => {
-	const { sessionUser } = getSession();
+	const { sessionUser } = await getSession();
+	console.log({ sessionUser, data });
 	if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
 		throw error(403, 'Forbidden');
 	}
 
 	try {
-		const { amenities: amenityIds, media: mediaFiles, id, ...propData } = data;
+		const { amenities, media: mediaFilesRaw, id: rawId, ...propData } = data;
+		const id = rawId as string;
+		const mediaFiles = mediaFilesRaw as string[];
+		const amenityIds = amenities as string[];
 
+		console.log({ propData, mediaFiles, amenityIds });
 		// 1. Update Property
 		await db
 			.update(properties)
@@ -239,32 +308,58 @@ export const updateProperty = form(updateSchema, async (data) => {
 			await db.insert(propertyAmenities).values(links);
 		}
 
-		// 3. Update Media
-		// 3. Update Media (Directly in main update)
-		// 3. Update Media (Delete existing links and re-create)
-		await db.delete(propertyMedia).where(eq(propertyMedia.propertyId, id));
-		// Note: orphan media records in 'media' table are not cleaned up here.
-		// Ideally we should find them and delete them if not used elsewhere, or use a periodic cleanup job.
+		// (Assume mediaFiles is array of strings from schema transform)
+		const targetMediaUrls = mediaFiles || [];
 
-		if (mediaFiles && mediaFiles.length > 0) {
-			for (const m of mediaFiles) {
-				// We create NEW media records because we don't know if the URL changed or if it's a new file.
-				// A more optimized approach would be to check if URL exists.
-				const mId = crypto.randomUUID();
-				await db.insert(media).values({
-					id: mId,
-					url: m.url,
-					type: m.type
-				});
-				await db.insert(propertyMedia).values({
-					propertyId: id,
-					mediaId: mId
-				});
+		// Get existing property-media links (only need to check IDs if selective)
+		// But since we are replacing all links, we don't strictly need this query unless we wanted to cleanup orphaned Media usage elsewhere.
+		// For now, removing unused read.
+
+		const incomingMediaIds: string[] = [];
+
+		if (targetMediaUrls.length > 0) {
+			// Query media table to get IDs for the incoming URLs
+			const mediaRecords = await db.select().from(media).where(inArray(media.url, targetMediaUrls));
+			const mediaUrlToIdMap = new Map(mediaRecords.map((m) => [m.url, m.id]));
+
+			for (const url of targetMediaUrls) {
+				let id = mediaUrlToIdMap.get(url);
+				if (!id) {
+					// Create new media record if it doesn't exist
+					id = crypto.randomUUID();
+					await db.insert(media).values({
+						id,
+						url,
+						type: getMediaType(url)
+					});
+					// Update local map to avoid creating duplicates for same URL if passed twice
+					mediaUrlToIdMap.set(url, id);
+				}
+				incomingMediaIds.push(id);
 			}
 		}
 
+		// Deduplicate incoming IDs
+		const uniqueIncomingMediaIds = [...new Set(incomingMediaIds)];
+
+		// 3. Re-sync Property Media Links (Delete All & Insert All to preserve order)
+		await db.delete(propertyMedia).where(eq(propertyMedia.propertyId, id));
+
+		if (uniqueIncomingMediaIds.length > 0) {
+			const newLinks = uniqueIncomingMediaIds.map((mediaId, index) => ({
+				propertyId: id,
+				mediaId,
+				isFeatured: index === 0,
+				order: index
+			}));
+			await db.insert(propertyMedia).values(newLinks);
+		}
+
+		// Note: We don't delete orphaned media from the 'media' table here.
+		// Media should only be deleted via /admin/media management interface.
+
 		await getProperties({}).refresh();
-		await getProperty(data.id).refresh();
+		await getProperty(data.id as string).refresh();
 		return { success: true };
 	} catch (e) {
 		console.error(e);
@@ -273,7 +368,7 @@ export const updateProperty = form(updateSchema, async (data) => {
 });
 
 export const deleteProperty = form(z.object({ id: z.string() }), async ({ id }) => {
-	const { sessionUser } = getSession();
+	const { sessionUser } = await getSession();
 	if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
 		throw error(403, 'Forbidden');
 	}
@@ -302,7 +397,7 @@ export const updatePropertyStatus = command(
 			.optional()
 	}),
 	async ({ id, status, filterProps }) => {
-		const { sessionUser } = getSession();
+		const { sessionUser } = await getSession();
 		if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
 			throw error(403, 'Forbidden');
 		}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RichTextDisplay from '$lib/components/editor/rich-text-display.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Separator } from '$lib/components/ui/separator';
@@ -35,7 +36,7 @@
 
 	<!-- Navigation Tabs (Sticky) -->
 	<div
-		class="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+		class="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
 	>
 		<div class="container mx-auto">
 			<nav class="flex gap-6 overflow-x-auto py-3">
@@ -102,7 +103,7 @@
 								<h1 class="text-3xl font-bold tracking-tight mb-2">{property.name}</h1>
 								{#if property.address}
 									<div class="flex items-start gap-2 text-muted-foreground">
-										<MapPin class="h-4 w-4 mt-1 flex-shrink-0" />
+										<MapPin class="h-4 w-4 mt-1 shrink-0" />
 										<p class="text-sm">
 											{property.address}, {property.city}, {property.state} - {property.zip}
 										</p>
@@ -115,9 +116,10 @@
 							<!-- About -->
 							<div>
 								<h2 class="text-xl font-semibold mb-3">About This Property</h2>
-								<p class="text-muted-foreground leading-relaxed">
-									{property.description || 'Experience comfortable living with modern amenities.'}
-								</p>
+								<RichTextDisplay
+									content={property.description}
+									fallback="Experience comfortable living with modern amenities."
+								/>
 							</div>
 						</div>
 					</section>
@@ -184,7 +186,7 @@
 							<div class="space-y-4">
 								{#if property.address}
 									<div class="flex gap-3">
-										<MapPin class="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+										<MapPin class="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
 										<div>
 											<p class="font-medium">Address</p>
 											<p class="text-sm text-muted-foreground">
@@ -197,7 +199,7 @@
 
 								{#if property.contactPhone}
 									<div class="flex gap-3">
-										<Phone class="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+										<Phone class="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
 										<div>
 											<p class="font-medium">Contact Number</p>
 											<a

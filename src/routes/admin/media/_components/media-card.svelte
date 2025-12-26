@@ -77,7 +77,7 @@
 		</div>
 
 		<!-- Actions -->
-		<div class="flex items-center gap-2" onclick={(e) => e.stopPropagation()}>
+		<div class="flex items-center gap-2">
 			<Button
 				variant="outline"
 				size="sm"
@@ -127,6 +127,7 @@
 								}
 							})}
 						>
+							<input type="hidden" name="id" value={item.id} />
 							<Button
 								type="submit"
 								variant="ghost"
