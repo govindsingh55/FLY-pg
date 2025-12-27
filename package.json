@@ -69,7 +69,6 @@
 		"@tiptap/extension-table-header": "^3.14.0",
 		"@tiptap/extension-table-row": "^3.14.0",
 		"@tiptap/starter-kit": "^3.14.0",
-		"@tursodatabase/database": "^0.3.2",
 		"better-auth": "^1.4.6",
 		"better-sqlite3": "^12.4.1",
 		"bits-ui": "^2.14.4",

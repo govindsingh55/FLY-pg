@@ -133,9 +133,7 @@ export const propertyMedia = sqliteTable(
 		isFeatured: integer('is_featured', { mode: 'boolean' }).default(false),
 		order: integer('order').default(0)
 	},
-	(t) => ({
-		pk: primaryKey({ columns: [t.propertyId, t.mediaId] })
-	})
+	(t) => [primaryKey({ columns: [t.propertyId, t.mediaId] })]
 );
 
 export const roomMedia = sqliteTable(
@@ -150,9 +148,7 @@ export const roomMedia = sqliteTable(
 		isFeatured: integer('is_featured', { mode: 'boolean' }).default(false),
 		order: integer('order').default(0)
 	},
-	(t) => ({
-		pk: primaryKey({ columns: [t.roomId, t.mediaId] })
-	})
+	(t) => [primaryKey({ columns: [t.roomId, t.mediaId] })]
 );
 
 export const propertyAmenities = sqliteTable(
@@ -165,9 +161,7 @@ export const propertyAmenities = sqliteTable(
 			.notNull()
 			.references(() => amenities.id, { onDelete: 'cascade' })
 	},
-	(t) => ({
-		pk: primaryKey({ columns: [t.propertyId, t.amenityId] })
-	})
+	(t) => [primaryKey({ columns: [t.propertyId, t.amenityId] })]
 );
 
 export const properties = sqliteTable('properties', {
@@ -515,9 +509,7 @@ export const electricityReadings = sqliteTable(
 		deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 		deletedBy: text('deleted_by')
 	},
-	(t) => ({
-		unq: index('electricity_readings_unq').on(t.contractId, t.month, t.year)
-	})
+	(t) => [index('electricity_readings_unq').on(t.contractId, t.month, t.year)]
 );
 
 export const relationsDef = defineRelations(

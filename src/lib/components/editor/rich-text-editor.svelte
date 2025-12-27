@@ -1,16 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Editor } from '@tiptap/core';
-	import CharacterCount from '@tiptap/extension-character-count';
-	import HardBreak from '@tiptap/extension-hard-break';
-	import Link from '@tiptap/extension-link';
-	import Placeholder from '@tiptap/extension-placeholder';
-	import { Table } from '@tiptap/extension-table';
-	import TableCell from '@tiptap/extension-table-cell';
-	import TableHeader from '@tiptap/extension-table-header';
-	import TableRow from '@tiptap/extension-table-row';
-	import StarterKit from '@tiptap/starter-kit';
+	import type { Editor } from '@tiptap/core';
 	import {
 		Bold,
 		Italic,
@@ -50,8 +41,32 @@
 		}
 
 		// Wait for next tick to ensure element is fully mounted
-		const timeoutId = setTimeout(() => {
+		const timeoutId = setTimeout(async () => {
 			try {
+				const [
+					{ Editor },
+					{ default: StarterKit },
+					{ default: CharacterCount },
+					{ default: HardBreak },
+					{ default: Link },
+					{ default: Placeholder },
+					{ Table },
+					{ default: TableCell },
+					{ default: TableHeader },
+					{ default: TableRow }
+				] = await Promise.all([
+					import('@tiptap/core'),
+					import('@tiptap/starter-kit'),
+					import('@tiptap/extension-character-count'),
+					import('@tiptap/extension-hard-break'),
+					import('@tiptap/extension-link'),
+					import('@tiptap/extension-placeholder'),
+					import('@tiptap/extension-table'),
+					import('@tiptap/extension-table-cell'),
+					import('@tiptap/extension-table-header'),
+					import('@tiptap/extension-table-row')
+				]);
+
 				// Initialize TipTap editor
 				editorState.editor = new Editor({
 					element: editorElement,
