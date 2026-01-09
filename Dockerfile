@@ -17,7 +17,7 @@ COPY . .
 
 # Create data directory and set build-time environment variables
 # DB_FILE_NAME is required by drizzle config during build
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data /app/drizzle
 ENV DB_FILE_NAME=/app/data/mydb.sqlite
 
 # Build SvelteKit app
@@ -34,7 +34,7 @@ COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 
-# Copy drizzle config and migrations for runtime migration
+# Copy drizzle config for runtime migration (drizzle dir may be empty if using db:push)
 COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/drizzle.config.ts ./
 
