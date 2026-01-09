@@ -1,0 +1,53 @@
+# Dependencies - will be installed fresh in container
+node_modules
+
+# Build output - will be built in container
+.svelte-kit
+build
+
+# Version control
+.git
+.gitignore
+
+# Documentation
+*.md
+docs
+
+# IDE and editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# Environment files (pass via docker-compose or runtime)
+.env
+.env.*
+!.env.example
+
+# Database files (will be mounted as volume)
+*.sqlite
+*.db
+mydb.sqlite
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test files
+tests
+*.spec.ts
+*.test.ts
+playwright-report
+test-results
+
+# Misc
+.npmrc
+.prettierrc
+.prettierignore
+eslint.config.js
+tsconfig.json
+components.json

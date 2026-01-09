@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fly-pg
+    ports:
+      - "4173:4173"
+    volumes:
+      # Database persistence - SQLite file stored here
+      - db_data:/app/data
+      # Static file uploads persistence
+      - uploads_data:/app/static/uploads
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=4173
+      - ORIGIN=http://localhost:4173
+      - BODY_SIZE_LIMIT=Infinity
+      # Database path for drizzle/SQLite
+      - DB_FILE_NAME=/app/data/mydb.sqlite
+      # Better Auth configuration (REQUIRED - set a secure secret!)
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-change-me-to-a-secure-random-string}
+      - BETTER_AUTH_URL=http://localhost:4173
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4173/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  db_data:
+    driver: local
+  uploads_data:
+    driver: local

@@ -9,7 +9,7 @@ import {
 	propertyManagerRole,
 	staffRole,
 	customerRole
-} from '$lib/permissions';
+} from '../permissions';
 
 const isDev = process.env.NODE_ENV === 'development';
 
