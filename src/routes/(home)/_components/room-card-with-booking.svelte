@@ -10,7 +10,7 @@
 		DialogTitle
 	} from '$lib/components/ui/dialog';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Users, IndianRupee, Shield, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { Users, IndianRupee, Shield, ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { createBooking } from '../properties/bookings.remote';
 	import { toast } from 'svelte-sonner';
 	import type { RoomSchema } from '$lib/schemas/room';

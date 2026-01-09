@@ -1,7 +1,7 @@
 <script lang="ts">
 	import LandingPropertyCard from '../_components/landing/landing-property-card.svelte';
 	import { Input } from '$lib/components/ui/input';
-	import { Search } from 'lucide-svelte';
+	import { Search } from '@lucide/svelte';
 	import { page } from '$app/stores';
 
 	let { data } = $props();

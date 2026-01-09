@@ -12,7 +12,7 @@
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
 	import { cn } from '$lib/utils';
-	import { Plus, Zap, Check, ChevronsUpDown } from 'lucide-svelte';
+	import { Plus, Zap, Check, ChevronsUpDown } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { getContracts } from '../contracts/contracts.remote';
 	import { getReadings, recordReading } from './electricity.remote';

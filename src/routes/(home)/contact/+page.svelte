@@ -3,7 +3,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Label } from '$lib/components/ui/label';
-	import { MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-svelte';
+	import { MapPin, Phone, Mail, Clock, MessageCircle } from '@lucide/svelte';
 
 	let formData = $state({
 		name: '',

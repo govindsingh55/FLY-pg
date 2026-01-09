@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Separator } from '$lib/components/ui/separator';
 	import { type RoomSchema } from '$lib/schemas/room';
-	import { Home, MapPin, Phone, Star, Users } from 'lucide-svelte';
+	import { Home, MapPin, Phone, Star, Users } from '@lucide/svelte';
 	import AmenitiesGrid from '../../_components/amenities-grid.svelte';
 	import FoodMenuSection from '../../_components/food-menu-section.svelte';
 	import PropertyHero from '../../_components/property-hero.svelte';

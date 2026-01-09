@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-svelte';
+	import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from '@lucide/svelte';
 
 	const currentYear = new Date().getFullYear();
 </script>

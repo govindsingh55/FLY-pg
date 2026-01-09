@@ -13,7 +13,7 @@
 		Table as TableIcon,
 		Undo,
 		WrapText
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 
 	let {
 		value = $bindable(''),

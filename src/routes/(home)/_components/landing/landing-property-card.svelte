@@ -2,7 +2,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
-	import { MapPin, Zap } from 'lucide-svelte';
+	import { MapPin, Zap } from '@lucide/svelte';
 	import { getMediaType } from '$lib/utils';
 
 	interface Property {

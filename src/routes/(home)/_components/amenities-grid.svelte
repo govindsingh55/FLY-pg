@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
-	import { Check } from 'lucide-svelte';
+	import { Check } from '@lucide/svelte';
 
 	let { amenities = [] } = $props<{ amenities?: string[] }>();
 </script>

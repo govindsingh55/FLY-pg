@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { Upload } from 'lucide-svelte';
+	import { Upload } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { getMedias, deleteMedia } from './media.remote';
 	import MediaCard from './_components/media-card.svelte';

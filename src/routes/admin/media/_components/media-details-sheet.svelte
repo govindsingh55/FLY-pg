@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from '$lib/components/ui/button';
-	import { FileText, ImageIcon, Video } from 'lucide-svelte';
+	import { FileText, ImageIcon, Video } from '@lucide/svelte';
 
 	interface MediaDetailsSheetProps {
 		open: boolean;

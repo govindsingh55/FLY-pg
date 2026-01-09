@@ -13,7 +13,7 @@
 	import * as InputGroup from '$lib/components/ui/input-group';
 	import { authClient } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
-	import { Eye, EyeOff } from 'lucide-svelte';
+	import { Eye, EyeOff } from '@lucide/svelte';
 
 	let email = $state('');
 	let password = $state('');

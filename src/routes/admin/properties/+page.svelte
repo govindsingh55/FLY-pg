@@ -5,7 +5,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
-	import { Plus, Search } from 'lucide-svelte';
+	import { Plus, Search } from '@lucide/svelte';
 	import { Debounced } from 'runed';
 	import { getProperties, updatePropertyStatus } from './properties.remote';
 	import { toast } from 'svelte-sonner';

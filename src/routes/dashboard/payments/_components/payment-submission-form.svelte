@@ -8,7 +8,7 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { toast } from 'svelte-sonner';
 	import { getActiveContracts, submitPayment } from '../payments.remote';
-	import { AlertCircle, Info } from 'lucide-svelte';
+	import { AlertCircle, Info } from '@lucide/svelte';
 
 	let { open = $bindable(false) }: { open: boolean } = $props();
 

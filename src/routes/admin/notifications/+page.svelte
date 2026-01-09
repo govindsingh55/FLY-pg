@@ -9,7 +9,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import * as Table from '$lib/components/ui/table';
-	import { Bell, Check, Plus, Search, User } from 'lucide-svelte';
+	import { Bell, Check, Plus, Search, User } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { getCustomers } from '../customers/customers.remote';
 	import { getNotifications, sendNotification } from './notifications.remote';

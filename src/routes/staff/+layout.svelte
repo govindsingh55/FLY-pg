@@ -4,7 +4,7 @@
 	import ThemeToggle from '$lib/components/theme-toggle.svelte';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar';
-	import { LayoutDashboard, Ticket, LogOut } from 'lucide-svelte';
+	import { LayoutDashboard, Ticket, LogOut } from '@lucide/svelte';
 
 	import type { LayoutData } from './$types';
 	import { authClient } from '$lib/auth-client';

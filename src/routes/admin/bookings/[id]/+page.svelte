@@ -8,7 +8,7 @@
 	import { getBooking, cancelBooking, deleteBooking } from '../bookings.remote';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
-	import { ArrowLeft, Trash } from 'lucide-svelte';
+	import { ArrowLeft, Trash } from '@lucide/svelte';
 
 	let id = $derived($page.params.id ?? '');
 	let bookingPromise = $derived(getBooking(id));

@@ -9,7 +9,7 @@
 		ChevronRight,
 		Star,
 		Trash2
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import MediaLibraryDialog from './media-library-dialog.svelte';
 	import { getMediaType } from '$lib/utils';
 

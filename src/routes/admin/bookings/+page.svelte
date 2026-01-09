@@ -10,7 +10,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
 	import { type DateValue } from '@internationalized/date';
-	import { ArrowBigRight, Calendar as CalendarIcon, Loader, Plus, Search, X } from 'lucide-svelte';
+	import { ArrowBigRight, Calendar as CalendarIcon, Loader, Plus, Search, X } from '@lucide/svelte';
 	import { Debounced } from 'runed';
 	import { getCustomers } from '../customers/customers.remote';
 	import { getProperties } from '../properties/properties.remote';

@@ -2,7 +2,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import { MapPin, Utensils } from 'lucide-svelte';
+	import { MapPin, Utensils } from '@lucide/svelte';
 
 	interface Property {
 		id: string;

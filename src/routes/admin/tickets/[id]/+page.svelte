@@ -7,7 +7,7 @@
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import * as Select from '$lib/components/ui/select';
 	import { Skeleton } from '$lib/components/ui/skeleton';
-	import { Building, ChevronLeft, Home as HomeIcon, Send, User, UserCheck } from 'lucide-svelte';
+	import { Building, ChevronLeft, Home as HomeIcon, Send, User, UserCheck } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { getTicket, sendTicketMessage, updateTicketStatus } from '../tickets.remote';
 

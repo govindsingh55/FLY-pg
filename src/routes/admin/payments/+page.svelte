@@ -12,7 +12,7 @@
 	import * as Table from '$lib/components/ui/table';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group';
 	import { type DateValue } from '@internationalized/date';
-	import { Calendar as CalendarIcon, Check, Plus, Search, X, X as XIcon } from 'lucide-svelte';
+	import { Calendar as CalendarIcon, Check, Plus, Search, X, X as XIcon } from '@lucide/svelte';
 	import { Debounced } from 'runed';
 	import { toast } from 'svelte-sonner';
 	import { getBookings } from '../bookings/bookings.remote';

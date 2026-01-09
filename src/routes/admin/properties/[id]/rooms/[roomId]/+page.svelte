@@ -15,7 +15,7 @@
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 	import { Skeleton } from '$lib/components/ui/skeleton';
-	import { Trash } from 'lucide-svelte';
+	import { Trash } from '@lucide/svelte';
 
 	let roomId = $derived($page.params.roomId);
 	let propertyId = $derived($page.params.id);

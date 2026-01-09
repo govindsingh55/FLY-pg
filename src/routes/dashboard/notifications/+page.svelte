@@ -7,7 +7,7 @@
 		CardDescription
 	} from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Bell } from 'lucide-svelte';
+	import { Bell } from '@lucide/svelte';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';
 	import { getNotifications } from './notifications.remote';

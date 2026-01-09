@@ -6,7 +6,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
-	import { Plus, Search, Zap } from 'lucide-svelte';
+	import { Plus, Search, Zap } from '@lucide/svelte';
 	import { Debounced } from 'runed';
 	import { getCustomers } from './customers.remote';
 	import CustomerForm from './_components/customer-form.svelte';

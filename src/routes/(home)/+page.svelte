@@ -3,7 +3,7 @@
 	import LandingPropertyCard from './_components/landing/landing-property-card.svelte';
 	import LandingFeatures from './_components/landing/landing-features.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { MessageCircle } from 'lucide-svelte';
+	import { MessageCircle } from '@lucide/svelte';
 	import { getMediaType } from '$lib/utils'; // Ensure we have this for logic if needed
 
 	let { data } = $props();

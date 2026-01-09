@@ -5,8 +5,8 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
-	import * as Icons from 'lucide-svelte';
-	import { Plus, Search, Pencil, Trash, Info } from 'lucide-svelte';
+	import * as Icons from '@lucide/svelte';
+	import { Plus, Search, Pencil, Trash, Info } from '@lucide/svelte';
 	import { Debounced } from 'runed';
 	import { getAmenities, deleteAmenity } from './amenities.remote';
 	import AmenityForm from './_components/amenity-form.svelte';

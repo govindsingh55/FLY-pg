@@ -23,7 +23,7 @@
 		Users,
 		Zap,
 		Bell
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 
 	import type { LayoutData } from './$types';
 	import { authClient } from '$lib/auth-client';

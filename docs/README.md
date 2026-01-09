@@ -51,7 +51,7 @@ Welcome to the comprehensive documentation for the **Property Management System 
 
 - **[Shadcn-Svelte](https://www.shadcn-svelte.com/docs)** - Component library
 - **[Tailwind CSS](https://tailwindcss.com/docs)** - Utility-first CSS
-- **[Lucide Svelte](https://lucide.dev/guide/packages/lucide-svelte)** - Icons
+- **[Lucide Svelte](https://lucide.dev/guide/packages/@lucide/svelte)** - Icons
 - **[Bits UI](https://www.bits-ui.com/docs/introduction)** - Headless primitives
 - **[Svelte Sonner](https://github.com/wobsoriano/svelte-sonner)** - Toast notifications
 

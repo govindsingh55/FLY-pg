@@ -6,7 +6,7 @@
 		CardTitle,
 		CardDescription
 	} from '$lib/components/ui/card';
-	import { Building, Users, Calendar, CreditCard } from 'lucide-svelte';
+	import { Building, Users, Calendar, CreditCard } from '@lucide/svelte';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';
 

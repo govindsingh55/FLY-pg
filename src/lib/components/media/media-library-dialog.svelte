@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { Search, Upload, FileText, Video, ImageIcon } from 'lucide-svelte';
+	import { Search, Upload, FileText, Video, ImageIcon } from '@lucide/svelte';
 	import { getMedias } from '../../../routes/admin/media/media.remote';
 	import UploadMediaSheet from '../../../routes/admin/media/_components/upload-media-sheet.svelte';
 	import { getMediaType } from '$lib/utils';

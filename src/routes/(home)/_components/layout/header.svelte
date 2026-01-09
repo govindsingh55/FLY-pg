@@ -2,7 +2,7 @@
 	import ThemeToggle from '$lib/components/theme-toggle.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Sheet, SheetContent, SheetTrigger } from '$lib/components/ui/sheet';
-	import { Info, LogIn, Menu, Phone } from 'lucide-svelte';
+	import { Info, LogIn, Menu, Phone } from '@lucide/svelte';
 
 	let isOpen = $state(false);
 

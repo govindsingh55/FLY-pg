@@ -6,7 +6,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
-	import { Edit, Search } from 'lucide-svelte';
+	import { Edit, Search } from '@lucide/svelte';
 	import { Debounced } from 'runed';
 	import { toast } from 'svelte-sonner';
 	import EditStaffForm from './_components/edit-staff-form.svelte';

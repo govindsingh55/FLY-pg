@@ -13,7 +13,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
-	import { Plus, Trash, ChevronLeft } from 'lucide-svelte';
+	import { Plus, Trash, ChevronLeft } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { getAmenities } from '../../amenities/amenities.remote';
 	import { createProperty } from '../properties.remote';

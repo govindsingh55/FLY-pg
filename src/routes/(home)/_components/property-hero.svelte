@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { MapPin, Phone } from 'lucide-svelte';
+	import { MapPin, Phone } from '@lucide/svelte';
 
 	interface Property {
 		name: string;

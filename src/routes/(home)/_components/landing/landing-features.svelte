@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ShieldCheck, Wifi, Users, Wallet, Star, Sparkles } from 'lucide-svelte';
+	import { ShieldCheck, Wifi, Users, Wallet, Star, Sparkles } from '@lucide/svelte';
 
 	const features = [
 		{

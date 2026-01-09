@@ -6,7 +6,7 @@
 		CardTitle,
 		CardDescription
 	} from '$lib/components/ui/card';
-	import { Ticket, AlertCircle, CheckCircle, TrendingUp } from 'lucide-svelte';
+	import { Ticket, AlertCircle, CheckCircle, TrendingUp } from '@lucide/svelte';
 	import { getStaffDashboard } from './staff.remote';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button';

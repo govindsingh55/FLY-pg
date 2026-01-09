@@ -17,7 +17,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { ArrowLeft } from 'lucide-svelte';
+	import { ArrowLeft } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { getContract, updateContract } from '../contracts.remote';
 	import * as Table from '$lib/components/ui/table';

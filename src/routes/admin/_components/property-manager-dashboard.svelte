@@ -6,7 +6,7 @@
 		CardTitle,
 		CardDescription
 	} from '$lib/components/ui/card';
-	import { Building, Users, Calendar, CreditCard, Home, TrendingUp } from 'lucide-svelte';
+	import { Building, Users, Calendar, CreditCard, Home, TrendingUp } from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge';
 
 	let { dashboardData } = $props<{ dashboardData: any }>();

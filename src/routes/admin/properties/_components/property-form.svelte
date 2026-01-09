@@ -8,7 +8,7 @@
 	import { getAmenities } from '../../amenities/amenities.remote';
 	import { Loader, toast } from 'svelte-sonner';
 	import * as Select from '$lib/components/ui/select';
-	import { Trash, Plus } from 'lucide-svelte';
+	import { Trash, Plus } from '@lucide/svelte';
 	import MediaSelection from '$lib/components/media/media-selection.svelte';
 	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
 

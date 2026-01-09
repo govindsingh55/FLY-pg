@@ -11,7 +11,7 @@
 		CardFooter
 	} from '$lib/components/ui/card';
 	import * as Table from '$lib/components/ui/table';
-	import { ArrowLeft, Trash } from 'lucide-svelte';
+	import { ArrowLeft, Trash } from '@lucide/svelte';
 	import { page } from '$app/stores';
 	import { getCustomer, updateCustomer, deleteCustomer } from '../customers.remote';
 	import { Skeleton } from '$lib/components/ui/skeleton';

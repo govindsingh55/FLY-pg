@@ -9,7 +9,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
 	import { type DateValue } from '@internationalized/date';
-	import { Calendar as CalendarIcon, Search, X } from 'lucide-svelte';
+	import { Calendar as CalendarIcon, Search, X } from '@lucide/svelte';
 	import { Debounced } from 'runed';
 	import { toast } from 'svelte-sonner';
 	import { deleteVisit, getVisits, updateVisitStatus } from './visits.remote';

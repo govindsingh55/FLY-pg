@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
-	import { Plus } from 'lucide-svelte';
+	import { Plus } from '@lucide/svelte';
 	import { getTickets } from '../../admin/tickets/tickets.remote';
 	import TicketForm from './_components/ticket-form.svelte';
 

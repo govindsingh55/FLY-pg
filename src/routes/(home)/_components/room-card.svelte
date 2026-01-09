@@ -2,7 +2,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import { Bed, Users } from 'lucide-svelte';
+	import { Bed, Users } from '@lucide/svelte';
 
 	interface Room {
 		id: string;

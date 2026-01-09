@@ -8,7 +8,7 @@
 		CardDescription
 	} from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
-	import { Utensils } from 'lucide-svelte';
+	import { Utensils } from '@lucide/svelte';
 
 	interface FoodMenuItem {
 		id: string;

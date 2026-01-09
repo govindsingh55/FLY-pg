@@ -13,7 +13,7 @@
 		Menu,
 		Ticket,
 		Briefcase
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { authClient } from '$lib/auth-client.js';
 	import { goto } from '$app/navigation';
 

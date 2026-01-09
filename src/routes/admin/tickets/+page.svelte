@@ -6,7 +6,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Search, MessageSquare, FilterX, Clock } from 'lucide-svelte';
+	import { Search, MessageSquare, FilterX, Clock } from '@lucide/svelte';
 	import { Debounced } from 'runed';
 	import { getTickets } from './tickets.remote';
 	import { formatDistanceToNow } from 'date-fns';

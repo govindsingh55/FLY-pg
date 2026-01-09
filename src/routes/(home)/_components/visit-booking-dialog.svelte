@@ -13,7 +13,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { requestVisit } from '../properties/bookings.remote';
 	import { toast } from 'svelte-sonner';
-	import { CalendarDays } from 'lucide-svelte';
+	import { CalendarDays } from '@lucide/svelte';
 
 	interface Props {
 		propertyId: string;

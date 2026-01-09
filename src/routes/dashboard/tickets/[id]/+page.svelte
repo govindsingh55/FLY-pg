@@ -11,7 +11,7 @@
 		Clock,
 		UserCheck,
 		CheckCircle2
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { page } from '$app/state';
 	import {
 		getTicket,
