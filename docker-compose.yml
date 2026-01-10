@@ -25,12 +25,7 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4173/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+    # Note: healthcheck removed - Bun image doesn't have curl
 
 volumes:
   db_data:
