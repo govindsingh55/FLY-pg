@@ -22,6 +22,8 @@ services:
       # Better Auth configuration (REQUIRED - set in .env file or Dokploy!)
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:4173}
+    networks:
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4173/"]
@@ -35,3 +37,7 @@ volumes:
     driver: local
   uploads_data:
     driver: local
+
+networks:
+  dokploy-network:
+    external: true
