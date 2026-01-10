@@ -55,9 +55,9 @@ RUN mkdir -p /app/data /app/static/uploads
 EXPOSE 4173
 
 # Set environment variables for SvelteKit
+# Note: ORIGIN, BETTER_AUTH_SECRET, BETTER_AUTH_URL should come from Dokploy environment
 ENV HOST=0.0.0.0
 ENV PORT=4173
-ENV ORIGIN=http://localhost:4173
 ENV BODY_SIZE_LIMIT=Infinity
 ENV DB_FILE_NAME=/app/data/mydb.sqlite
 
