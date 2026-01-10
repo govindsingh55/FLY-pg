@@ -12,16 +12,16 @@ services:
       # Static file uploads persistence
       - uploads_data:/app/static/uploads
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
       - HOST=0.0.0.0
-      - PORT=4173
-      - ORIGIN=http://localhost:4173
-      - BODY_SIZE_LIMIT=Infinity
+      - PORT=${PORT:-4173}
+      - ORIGIN=${ORIGIN:-http://localhost:4173}
+      - BODY_SIZE_LIMIT=${BODY_SIZE_LIMIT:-Infinity}
       # Database path for drizzle/SQLite
       - DB_FILE_NAME=/app/data/mydb.sqlite
-      # Better Auth configuration (REQUIRED - set a secure secret!)
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-change-me-to-a-secure-random-string}
-      - BETTER_AUTH_URL=http://localhost:4173
+      # Better Auth configuration (REQUIRED - set in .env file or Dokploy!)
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:4173}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4173/"]
