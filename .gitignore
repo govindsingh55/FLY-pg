@@ -28,3 +28,4 @@ vite.config.ts.timestamp-*
 drizzle
 static/robots.txt
 static/uploads
+mydb*
