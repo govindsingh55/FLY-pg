@@ -2,6 +2,7 @@
 	import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from '@lucide/svelte';
 
 	const currentYear = new Date().getFullYear();
+	import logo from '$lib/assets/flypg-logo.jpeg';
 </script>
 
 <footer class="border-t bg-muted/40">
@@ -10,11 +11,9 @@
 			<!-- Brand -->
 			<div class="space-y-4">
 				<div class="flex items-center gap-2">
-					<div
-						class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold"
-					>
-						F
-					</div>
+					<a href="/" class="flex h-8 w-8 items-center justify-center rounded-sm">
+						<img src={logo} alt="FLY PG Logo" class="h-8 w-8 rounded-sm" />
+					</a>
 					<span class="text-xl font-bold tracking-tight">FLY PG</span>
 				</div>
 				<p class="text-sm text-muted-foreground max-w-xs">
@@ -40,11 +39,11 @@
 				<ul class="space-y-3 text-sm text-muted-foreground">
 					<li class="flex items-start gap-2">
 						<MapPin class="h-4 w-4 mt-0.5 shrink-0" />
-						<span>123 PG Street, Tech Park Area,<br />Bangalore, KA 560001</span>
+						<span>PKC- 126/1, near DPS SCHOOL,<br />Block C, Sector 122, Noida, UP 201304</span>
 					</li>
 					<li class="flex items-center gap-2">
 						<Phone class="h-4 w-4 shrink-0" />
-						<span>+91 98765 43210</span>
+						<span>+91 7678688964</span>
 					</li>
 					<li class="flex items-center gap-2">
 						<Mail class="h-4 w-4 shrink-0" />

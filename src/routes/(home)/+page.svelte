@@ -22,6 +22,15 @@
 
 	// Use properties from either single or multiple mode
 	const allProperties = $derived(data.mode === 'single' ? [data.property] : data.properties);
+
+	let location = $state('');
+	const whatsappUrl = $derived(
+		`https://wa.me/917678688964?text=${encodeURIComponent(
+			location
+				? `Hi, I'm interested in properties in ${location}.`
+				: "Hi, I'm interested in your properties."
+		)}`
+	);
 </script>
 
 <div class="flex min-h-screen flex-col bg-background font-sans">
@@ -74,10 +83,15 @@
 				<div class="inline-flex items-center rounded-2xl bg-card border p-2 pl-4">
 					<input
 						type="text"
-						placeholder="Enter location (e.g. Koramangala)"
+						placeholder="Sector 122, Noida"
+						bind:value={location}
 						class="w-64 bg-transparent text-foreground placeholder-muted-foreground focus:outline-none"
 					/>
-					<Button class="rounded-xl bg-green-500 font-bold text-white hover:bg-green-600">
+					<Button
+						href={whatsappUrl}
+						target="_blank"
+						class="rounded-xl bg-green-500 font-bold text-white hover:bg-green-600"
+					>
 						<MessageCircle class="mr-2 h-4 w-4" />
 						Start Chat
 					</Button>

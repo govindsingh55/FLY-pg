@@ -202,7 +202,7 @@ export const createTicket = form(ticketSchema, async (data) => {
 
 		// Automatically find property and room from active booking
 		const booking = await db.query.bookings.findFirst({
-			where: { customerId: customer.id, status: 'active' }
+			where: { customerId: customer.id, status: 'confirmed' }
 		});
 		if (booking) {
 			propertyId = booking.propertyId;

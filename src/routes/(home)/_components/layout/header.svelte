@@ -10,6 +10,7 @@
 		{ label: 'About', href: '/about', icon: Info },
 		{ label: 'Contact', href: '/contact', icon: Phone }
 	];
+	import logo from '$lib/assets/flypg-logo.jpeg';
 </script>
 
 <header
@@ -18,11 +19,7 @@
 	<div class="container mx-auto flex h-16 items-center justify-between">
 		<!-- Logo -->
 		<a href="/" class="flex items-center gap-2">
-			<div
-				class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold"
-			>
-				F
-			</div>
+			<img src={logo} alt="FLY PG Logo" class="h-8 w-8 rounded-sm" />
 			<span class="text-xl font-bold tracking-tight">FLY PG</span>
 		</a>
 
