@@ -92,9 +92,6 @@ export const uploadMedia = form(
 		roomId: z.string().optional()
 	}),
 	async (payload) => {
-		console.log(`[MediaRemote] uploadMedia: payload keys:`, Object.keys(payload));
-		console.log(`[MediaRemote] uploadMedia: file type:`, typeof payload.file, payload.file?.constructor?.name, payload.file?.name, payload.file?.size);
-
 		const { sessionUser } = getSession();
 		if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
 			console.warn(`[MediaRemote] Unauthorized upload attempt: ${sessionUser.id}`);
@@ -102,7 +99,7 @@ export const uploadMedia = form(
 		}
 
 		const file = payload.file;
-		if (!file || !(file instanceof File) || file.size === 0) {
+		if (!file || typeof file.arrayBuffer !== 'function' || !file.name || file.size === 0) {
 			console.error(`[MediaRemote] Invalid file received:`, typeof file, file?.constructor?.name, file?.size);
 			throw error(400, 'No valid file received');
 		}
