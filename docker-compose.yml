@@ -22,6 +22,10 @@ services:
       # Better Auth configuration (REQUIRED - set in .env file or Dokploy!)
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:4173}
+      # Storage configuration
+      - STORAGE_TYPE=${STORAGE_TYPE:-local}
+      - LOCAL_STORAGE_DIR=/app/static/uploads
+      - LOCAL_STORAGE_BASE_URL=/uploads
     networks:
       - dokploy-network
     restart: unless-stopped
