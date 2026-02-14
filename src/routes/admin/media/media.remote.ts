@@ -86,12 +86,15 @@ export const getMedias = query(
 
 export const uploadMedia = form(
 	z.object({
-		file: z.instanceof(File),
+		file: z.any(),
 		type: z.enum(['image', 'document', 'video', 'other']).default('image'),
 		propertyId: z.string().optional(),
 		roomId: z.string().optional()
 	}),
 	async (payload) => {
+		console.log(`[MediaRemote] uploadMedia: payload keys:`, Object.keys(payload));
+		console.log(`[MediaRemote] uploadMedia: file type:`, typeof payload.file, payload.file?.constructor?.name, payload.file?.name, payload.file?.size);
+
 		const { sessionUser } = getSession();
 		if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
 			console.warn(`[MediaRemote] Unauthorized upload attempt: ${sessionUser.id}`);
@@ -99,11 +102,15 @@ export const uploadMedia = form(
 		}
 
 		const file = payload.file;
+		if (!file || !(file instanceof File) || file.size === 0) {
+			console.error(`[MediaRemote] Invalid file received:`, typeof file, file?.constructor?.name, file?.size);
+			throw error(400, 'No valid file received');
+		}
+
 		const storage = getStorageProvider();
 		const url = await storage.upload(file, file.name);
 
 		try {
-			console.log(`[MediaRemote] uploadMedia: Inserting media record into database`);
 			const [newMedia] = await db
 				.insert(media)
 				.values({
@@ -131,9 +138,7 @@ export const uploadMedia = form(
 
 			return { success: true, media: newMedia };
 		} catch (e) {
-			console.error(`[MediaRemote] uploadMedia: Error occurred:`, e);
-			// Cleanup uploaded file if DB fails
-			console.log(`[MediaRemote] uploadMedia: Cleaning up uploaded file due to DB failure`);
+			console.error(`[MediaRemote] uploadMedia DB error:`, e);
 			await storage.delete(url);
 			throw error(500, 'Failed to save media record');
 		}
