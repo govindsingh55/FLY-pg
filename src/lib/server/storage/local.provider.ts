@@ -18,6 +18,7 @@ export class LocalStorageProvider implements StorageProvider {
 
 	async upload(file: File | Blob, fileName: string): Promise<string> {
 		if (!existsSync(this.uploadDir)) {
+			console.log(`[LocalStorage] Creating directory: ${this.uploadDir}`);
 			await mkdir(this.uploadDir, { recursive: true });
 		}
 
@@ -28,7 +29,9 @@ export class LocalStorageProvider implements StorageProvider {
 
 		await writeFile(filePath, buffer);
 
-		return `${this.publicBaseUrl}/${safeFileName}`;
+		const url = `${this.publicBaseUrl}/${safeFileName}`;
+		console.log(`[LocalStorage] Uploaded ${fileName} -> ${url}`);
+		return url;
 	}
 
 	async delete(url: string): Promise<void> {
@@ -37,7 +40,10 @@ export class LocalStorageProvider implements StorageProvider {
 
 		const filePath = join(this.uploadDir, fileName);
 		if (existsSync(filePath)) {
+			console.log(`[LocalStorage] Deleting: ${filePath}`);
 			await unlink(filePath);
+		} else {
+			console.warn(`[LocalStorage] Not found: ${filePath}`);
 		}
 	}
 }

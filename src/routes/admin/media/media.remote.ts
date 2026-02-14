@@ -11,6 +11,7 @@ import { z } from 'zod';
 const getSession = () => {
 	const event = getRequestEvent();
 	if (!event || !event.locals.session || !event.locals.user) {
+		console.warn(`[MediaRemote] Unauthorized access attempt to: ${event?.url.pathname}`);
 		throw error(401, 'Unauthorized');
 	}
 	return { session: event.locals.session, sessionUser: event.locals.user };
@@ -93,15 +94,16 @@ export const uploadMedia = form(
 	async (payload) => {
 		const { sessionUser } = getSession();
 		if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
+			console.warn(`[MediaRemote] Unauthorized upload attempt: ${sessionUser.id}`);
 			throw error(403, 'Forbidden');
 		}
 
 		const file = payload.file;
-
 		const storage = getStorageProvider();
 		const url = await storage.upload(file, file.name);
 
 		try {
+			console.log(`[MediaRemote] uploadMedia: Inserting media record into database`);
 			const [newMedia] = await db
 				.insert(media)
 				.values({
@@ -110,6 +112,8 @@ export const uploadMedia = form(
 					createdAt: new Date()
 				})
 				.returning();
+
+			console.log(`[MediaRemote] Uploaded ID: ${newMedia.id} (${url})`);
 
 			if (payload.propertyId) {
 				await db.insert(propertyMedia).values({
@@ -127,8 +131,9 @@ export const uploadMedia = form(
 
 			return { success: true, media: newMedia };
 		} catch (e) {
-			console.error(e);
+			console.error(`[MediaRemote] uploadMedia: Error occurred:`, e);
 			// Cleanup uploaded file if DB fails
+			console.log(`[MediaRemote] uploadMedia: Cleaning up uploaded file due to DB failure`);
 			await storage.delete(url);
 			throw error(500, 'Failed to save media record');
 		}
@@ -192,16 +197,15 @@ export const deleteMedia = form(z.object({ id: z.string() }), async ({ id }) => 
 			throw error(404, 'Media not found');
 		}
 
-		// Delete from storage first
 		const storage = getStorageProvider();
 		await storage.delete(mediaItem.url);
 
-		// Delete from database - cascade will automatically clean up propertyMedia and roomMedia
 		await db.delete(media).where(eq(media.id, id));
 
+		console.log(`[MediaRemote] Deleted media ID: ${id}`);
 		return { success: true };
 	} catch (e) {
-		console.error(e);
+		console.error(`[MediaRemote] deleteMedia error:`, e);
 		throw error(500, 'Failed to delete media');
 	}
 });
@@ -217,8 +221,6 @@ export const replaceMedia = form(
 			throw error(403, 'Forbidden');
 		}
 
-		const file = payload.file;
-
 		const mediaItem = await db.query.media.findFirst({
 			where: { id: payload.id }
 		});
@@ -228,12 +230,10 @@ export const replaceMedia = form(
 		}
 
 		const storage = getStorageProvider();
-
-		// Upload new file
+		const file = payload.file;
 		const newUrl = await storage.upload(file, file.name);
 
 		try {
-			// Update DB record
 			await db
 				.update(media)
 				.set({
@@ -242,13 +242,12 @@ export const replaceMedia = form(
 				})
 				.where(eq(media.id, payload.id));
 
-			// Delete old file
 			await storage.delete(mediaItem.url);
 
+			console.log(`[MediaRemote] Replaced ID: ${payload.id} -> ${newUrl}`);
 			return { success: true };
 		} catch (e) {
-			console.error(e);
-			// Cleanup the newly uploaded file if DB update fails
+			console.error(`[MediaRemote] replaceMedia error:`, e);
 			await storage.delete(newUrl);
 			throw error(500, 'Failed to update media record');
 		}
